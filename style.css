@@ -1380,3 +1380,149 @@ body.raafat-signature-map .osm-standard-tile{
 @media(prefers-reduced-motion:reduce){
   body.raafat-signature-map .map-area::after{animation:none!important}
 }
+
+
+
+/* === RAAFAT VIP DISTRICT BEACONS / Signature gold navigation === */
+.vip-district-marker{
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+  pointer-events:auto!important;
+  user-select:none;
+  cursor:pointer;
+}
+.vip-district-beacon{
+  --vip-gold:#ffba67;
+  --vip-light:#ffe1ad;
+  --vip-delay:0s;
+  position:relative;
+  width:144px;
+  height:100px;
+  transform:translate(-50%,-78px);
+  pointer-events:auto;
+  isolation:isolate;
+  font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
+}
+.vip-beacon-point{
+  position:absolute;
+  z-index:4;
+  left:calc(50% - 8px);
+  top:70px;
+  width:16px;height:16px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  border:2px solid #fff1d3;
+  background:linear-gradient(145deg,#ffd694,#f49b36);
+  box-shadow:
+    0 0 0 4px rgba(244,149,26,.17),
+    0 0 12px rgba(255,179,85,.78),
+    0 0 30px rgba(244,149,26,.3);
+}
+.vip-beacon-point i{
+  width:4px;height:4px;border-radius:50%;
+  background:#163a34;
+}
+.vip-beacon-wave{
+  position:absolute;left:50%;top:78px;
+  width:32px;height:32px;
+  border:1.5px solid rgba(255,185,103,.7);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,177,78,.15),transparent 68%);
+  box-shadow:0 0 15px rgba(255,164,67,.18);
+  pointer-events:none;
+  transform:translate(-50%,-50%) scale(.75);
+  animation:raafat-vip-wave 3.2s ease-out infinite;
+  animation-delay:var(--vip-delay);
+}
+.vip-beacon-wave.wave-two{animation-delay:calc(var(--vip-delay) + 1.6s)}
+.vip-beacon-stem{
+  position:absolute;left:calc(50% - 1px);top:50px;
+  width:2px;height:24px;z-index:2;
+  background:linear-gradient(to bottom,rgba(255,201,123,.55),rgba(255,210,152,.93));
+  box-shadow:0 0 8px rgba(255,180,83,.5);
+}
+.vip-beacon-label{
+  position:absolute;z-index:5;
+  left:50%;top:0;
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0;
+  min-width:106px;max-width:142px;
+  min-height:53px;
+  padding:6px 16px 7px;
+  border:1px solid rgba(255,185,97,.66);
+  border-radius:13px;
+  background:linear-gradient(140deg,rgba(10,59,51,.98),rgba(4,36,38,.97));
+  color:#ffe7bd;
+  text-align:center;
+  direction:rtl;
+  unicode-bidi:isolate;
+  white-space:nowrap;
+  box-shadow:
+    0 11px 28px rgba(0,18,21,.49),
+    0 0 18px rgba(244,149,26,.18),
+    inset 0 1px rgba(255,233,185,.17);
+  backdrop-filter:blur(9px);
+  overflow:hidden;
+  transition:transform .2s ease,border-color .2s,box-shadow .2s;
+}
+.vip-beacon-label::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(106deg,transparent 30%,rgba(255,237,186,.14) 49%,transparent 65%);
+  transform:translateX(140%);
+  pointer-events:none;
+  animation:raafat-vip-sheen 6.5s ease-in-out infinite;
+  animation-delay:var(--vip-delay);
+}
+.vip-beacon-label strong{
+  display:block;font-size:13px;font-weight:700;
+  line-height:1.5;letter-spacing:0;
+  color:#ffce85;
+  text-shadow:0 0 11px rgba(255,170,74,.43);
+}
+.vip-beacon-label small{
+  display:block;font-size:9px;font-weight:500;
+  line-height:1.45;color:#b9d6c9;letter-spacing:0;
+}
+.vip-district-marker:hover .vip-beacon-label,
+.vip-district-marker.vip-district-active .vip-beacon-label{
+  border-color:#ffdb9f;
+  box-shadow:0 12px 30px rgba(0,18,21,.55),0 0 27px rgba(244,149,26,.3);
+  transform:translateX(-50%) translateY(-3px);
+}
+.vip-district-marker.vip-district-active .vip-beacon-point{
+  background:#ffe6b1;
+  box-shadow:0 0 0 6px rgba(244,149,26,.24),0 0 21px rgba(244,149,26,.87);
+}
+.vip-district-marker:focus-visible .vip-beacon-label{
+  outline:2px solid #ffd49a;outline-offset:3px;
+}
+.vip-map-close .vip-district-beacon{
+  transform:translate(-50%,-70px) scale(.88);
+  transform-origin:center bottom;
+}
+@keyframes raafat-vip-wave{
+  0%{transform:translate(-50%,-50%) scale(.58);opacity:.88}
+  72%{opacity:.38}
+  100%{transform:translate(-50%,-50%) scale(2.55);opacity:0}
+}
+@keyframes raafat-vip-sheen{
+  0%,55%,100%{transform:translateX(140%)}
+  74%{transform:translateX(-140%)}
+}
+@media(max-width:620px){
+  .vip-district-beacon{width:118px;height:96px;transform:translate(-50%,-75px)}
+  .vip-beacon-point{top:68px}
+  .vip-beacon-wave{top:76px}
+  .vip-beacon-stem{top:48px}
+  .vip-beacon-label{min-width:91px;max-width:117px;min-height:50px;padding:5px 11px}
+  .vip-beacon-label strong{font-size:12px}
+  .vip-beacon-label small{font-size:8.5px}
+}
+@media(prefers-reduced-motion:reduce){
+  .vip-beacon-wave,.vip-beacon-label::after{animation:none!important}
+  .vip-beacon-wave{opacity:.3;transform:translate(-50%,-50%) scale(1)}
+  .vip-beacon-label{transition:none!important}
+}
