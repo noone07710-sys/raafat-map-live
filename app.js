@@ -408,7 +408,7 @@ function initializeMap(){
    ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:42,chunkedLoading:true,disableClusteringAtZoom:16})
    : L.layerGroup();
  state.map.addLayer(state.markers);
- addPersistentCityLabels();
+ // City names are already provided by the unmodified OSM standard map.
  state.map.on("click",event=>{
    if(!state.pick)return;
    const {lat,lng}=event.latlng;
