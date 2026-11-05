@@ -209,3 +209,24 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
   .brand-caption { display: none; }
   .brand { font-size: 17px; }
 }
+
+
+/* Legible maps: road-name map as default, optional dark style */
+.map-style-switch {
+ position:absolute;z-index:450;top:18px;left:18px;
+ display:flex;align-items:center;gap:3px;direction:rtl;
+ padding:4px;background:#0b292ce9;border:1px solid #51746e;
+ border-radius:12px;box-shadow:0 8px 25px #071b1c44;
+ backdrop-filter:blur(8px);
+}
+.map-style-btn {
+ border:0;background:transparent;color:#d3e7e0;
+ padding:8px 12px;border-radius:8px;font-size:11px;font-weight:700;
+ min-height:34px;
+}
+.map-style-btn:hover { background:#1c4848; }
+.map-style-btn.active {background:#f4951a;color:#122c2a;}
+@media(max-width:580px){
+ .map-style-switch {top:65px;left:9px;padding:3px;}
+ .map-style-btn {padding:7px 10px;font-size:10px;min-height:30px;}
+}
