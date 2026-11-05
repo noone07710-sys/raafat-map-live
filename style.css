@@ -2371,3 +2371,101 @@ body .map-area .map-reveal.is-ready{
 /* Hidden overlays and stop control must respect their HTML hidden state. */
 body .map-area .map-reveal[hidden]{display:none!important}
 body .map-area .live-location-control .live-location-stop[hidden]{display:none!important}
+
+
+
+/* ===============================================================
+   RAAFAT / APPROVED GRAPHITE #363636
+   The photographed gray is now the map's single base color at
+   ALL zoom levels, while geographic symbols remain high-contrast.
+   =============================================================== */
+body.raafat-signature-map .map-area,
+body.raafat-signature-map .map,
+body.raafat-signature-map .leaflet-container,
+body.raafat-signature-map .leaflet-maplibre-gl-layer,
+body.raafat-signature-map .maplibregl-canvas-container{
+  background:#363636!important;
+  background-image:none!important;
+}
+body.raafat-signature-map .map-area::after{display:none!important}
+/* Leaflet initially uses OSM raster as a recovery map; darken this fallback
+   as well so a WebGL failure does not flash a bright background on zoom. */
+body.raafat-signature-map .osm-standard-tile{
+  filter:grayscale(1) invert(.86) brightness(.96) contrast(.90)!important;
+  opacity:1!important;
+}
+body.raafat-signature-map .map-reveal{
+  background:#363636!important;
+  background-image:none!important;
+  color:#eef0ee!important;
+}
+body.raafat-signature-map .map-reveal-brand{
+  color:#e3e6e3!important;
+  text-shadow:none!important;
+}
+body.raafat-signature-map .map-chip,
+body.raafat-signature-map .vip-tool-button,
+body.raafat-signature-map .live-location-button,
+body.raafat-signature-map .live-location-stop,
+body.raafat-signature-map .map-home,
+body.raafat-signature-map .leaflet-control-zoom a{
+  background:rgba(62,62,62,.97)!important;
+  color:#f0f0ee!important;
+  border-color:rgba(196,196,196,.28)!important;
+  box-shadow:0 4px 13px rgba(15,15,15,.19)!important;
+}
+body.raafat-signature-map .vip-tool-button:hover,
+body.raafat-signature-map .live-location-button:hover,
+body.raafat-signature-map .map-home:hover,
+body.raafat-signature-map .leaflet-control-zoom a:hover{
+  background:#4c4c4c!important;
+  border-color:rgba(221,221,221,.45)!important;
+}
+body.raafat-signature-map .map-chip strong,
+body.raafat-signature-map .vip-tool-button span{color:#e2c5a3!important}
+body.raafat-signature-map .live-location-status{
+  background:rgba(63,63,63,.97)!important;
+  color:#eceeeb!important;
+  border-color:rgba(192,192,192,.29)!important;
+}
+body.raafat-signature-map .vip-legend{
+  background:rgba(65,65,65,.98)!important;
+  color:#f0f0ed!important;
+  border-color:rgba(196,196,196,.25)!important;
+}
+body.raafat-signature-map .vip-legend>strong{color:#f1e6d9!important}
+body.raafat-signature-map .vip-legend>small{color:#c1c7c3!important}
+body.raafat-signature-map .leaflet-control-attribution{
+  background:rgba(57,57,57,.92)!important;
+  color:#cbd0cd!important;
+}
+body.raafat-signature-map .leaflet-control-attribution a{
+  color:#d6dede!important;
+}
+/* Keep district names fixed at their original Leaflet anchors; only
+   recolor the small stationary name cards to match the graphite map. */
+body.raafat-signature-map .vip-district-marker .vip-beacon-label,
+body.raafat-signature-map .vip-district-marker:hover .vip-beacon-label,
+body.raafat-signature-map .vip-district-marker.vip-district-active .vip-beacon-label{
+  background:rgba(70,70,70,.97)!important;
+  border-color:rgba(191,184,176,.70)!important;
+  box-shadow:0 4px 13px rgba(16,16,16,.27)!important;
+}
+body.raafat-signature-map .vip-district-marker .vip-beacon-label strong{
+  color:#f3f3ef!important;
+  text-shadow:none!important;
+}
+body.raafat-signature-map .vip-district-marker .vip-beacon-label small{
+  color:#c7cfcb!important;
+}
+body.raafat-signature-map .vip-district-marker.vip-district-active .vip-beacon-label{
+  border-color:#d5b78e!important;
+}
+body.raafat-signature-map .vip-district-marker .vip-beacon-point{
+  background:#cba76f!important;
+  border-color:#f1e5d4!important;
+  box-shadow:0 0 0 3px rgba(216,180,129,.14),0 0 9px rgba(218,179,118,.24)!important;
+}
+body.raafat-signature-map .vip-district-marker .vip-beacon-wave{
+  border-color:rgba(218,187,141,.26)!important;
+}
