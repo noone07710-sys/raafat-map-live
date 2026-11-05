@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
+import { fetchRaafatMapStyle } from "./brand-map.js";
 
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
 const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
@@ -29,7 +30,7 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
  markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
- layers: null, basemap: null
+ layers: null, basemap: null, mapChoiceMade: false
 };
 let toastTimeout;
 
@@ -55,32 +56,62 @@ function getCoords(str){
  return validCoords(lat,lng) ? {latitude:lat,longitude:lng}:null;
 }
 function setMapStyle(style){
- if(!state.map||!state.layers||!state.layers[style])return;
+ if(!state.map||!state.layers||!state.layers[style])return false;
+ if(state.basemap===state.layers[style])return true;
+ // Keep existing markers and GPS input handlers on the Leaflet map.
  if(state.basemap)state.map.removeLayer(state.basemap);
  state.basemap=state.layers[style];
  state.basemap.addTo(state.map);
- for(const [id,value] of [["mapRoads","roads"],["mapDark","dark"]]){
+ for(const [id,value] of [["mapBrand","brand"],["mapRoads","roads"],["mapDark","dark"]]){
    const btn=el(id);
    btn.classList.toggle("active",value===style);
    btn.setAttribute("aria-pressed",String(value===style));
  }
+ return true;
+}
+async function installBrandBasemap(){
+ // The styled vector map requires both WebGL and the Leaflet/MapLibre adapter.
+ if(!window.maplibregl || typeof window.L.maplibreGL!=="function"){
+   console.warn("MapLibre renderer not loaded. Using readable CARTO raster fallback.");
+   return;
+ }
+ try{
+   const style=await fetchRaafatMapStyle(config.cartoApiKey);
+   if(!state.map)return;
+   const layer=window.L.maplibreGL({style,interactive:false});
+   state.layers.brand=layer;
+   el("mapBrand").disabled=false;
+   if(!state.mapChoiceMade)setMapStyle("brand");
+ }catch(err){
+   console.warn("Custom Raafat basemap unavailable; retaining raster tiles:",err);
+ }
 }
 function initializeMap(){
- if(!window.L){ alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت."); return; }
+ if(!window.L){alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت.");return;}
  const L=window.L;
- state.map=L.map("map",{zoomControl:false, preferCanvas:true}).setView(CITY_CENTERS["تكريت"],11);
+ state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22})
+   .setView(CITY_CENTERS["تكريت"],11);
  const key=encodeURIComponent(String(config.cartoApiKey||""));
  const common={
    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-   subdomains:"abcd",maxZoom:20
+   subdomains:"abcd",
+   // CARTO serves raster zooms to 20. Upscale the last reliable native zoom
+   // rather than requesting missing tiles and showing empty/white squares.
+   maxNativeZoom:19,
+   maxZoom:22,
+   keepBuffer:3,
+   errorTileUrl:""
  };
  state.layers={
    roads:L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key="+key,common),
-   dark:L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+key,common)
+   dark:L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+key,common),
+   brand:null
  };
  setMapStyle("roads");
- el("mapRoads").addEventListener("click",()=>setMapStyle("roads"));
- el("mapDark").addEventListener("click",()=>setMapStyle("dark"));
+ const choose=style=>{state.mapChoiceMade=true;setMapStyle(style)};
+ el("mapBrand").addEventListener("click",()=>choose("brand"));
+ el("mapRoads").addEventListener("click",()=>choose("roads"));
+ el("mapDark").addEventListener("click",()=>choose("dark"));
  L.control.zoom({position:"bottomright"}).addTo(state.map);
  state.markers=L.markerClusterGroup
    ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:46,chunkedLoading:true})
@@ -98,6 +129,7 @@ function initializeMap(){
  el("cancelPick").addEventListener("click",()=>{
    state.pick=false;el("mapPicking").hidden=true;openModal("siteModal");
  });
+ void installBrandBasemap();
 }
 function zoomAll(defaultOnly=false){
  if(!state.map)return;
