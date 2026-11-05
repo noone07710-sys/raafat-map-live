@@ -533,7 +533,7 @@ function render(){
  const sites=filteredSites();
  el("allCount").textContent=state.sites.length;
  el("availableCount").textContent=state.sites.filter(s=>s.status==="available").length;
- el("cityCount").textContent=new Set(state.sites.map(s=>s.city)).size;
+ el("cityCount").textContent=Object.values(REGIONS).flat().length;
  el("showingCount").textContent=sites.length+" قطعة";
  el("mapCount").textContent=sites.length;
  el("listing").innerHTML=sites.length ? sites.map(s=>
