@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#062727">
   <meta name="description" content="شركة رأفت للدعاية والإعلان والتجارة العامة — شبكة المواقع الإعلانية في العراق">
   <title>شركة رأفت | شبكة المواقع الإعلانية</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23003f3e'/%3E%3Cpath d='m32 10 23 42H9L32 10Z' fill='none' stroke='%23f4951a' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="https://ccsmartclinic.wordpress.com/wp-content/uploads/2026/11/e85b3bef-3d06-423e-a284-c3d8681964bf.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
  <div class="app-shell">
   <header class="header">
     <div class="identity">
-      <div class="logo" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 48 48"><path d="M24 5 44 41H4L24 5Z" fill="none" stroke="#f4951a" stroke-width="2.8"/><path d="M24 15 35 35H13L24 15Z" fill="#f4951a"/><path d="m24 22 6 11H18l6-11Z" fill="#093330"/></svg></div>
+      <div class="logo"><img src="https://ccsmartclinic.wordpress.com/wp-content/uploads/2026/11/e85b3bef-3d06-423e-a284-c3d8681964bf.png" alt="شعار شركة رأفت للدعاية والإعلان" referrerpolicy="no-referrer"></div>
       <div><div class="brand">رأفت<span>.</span> <em>OUTDOOR</em></div><div class="brand-caption">شركة رأفت للدعاية والإعلان والتجارة العامة</div></div>
     </div>
     <div class="header-center"><span class="live-dot"></span> شبكة المواقع الإعلانية <span class="header-english">/ OUTDOOR NETWORK</span></div>
@@ -37,8 +37,9 @@
   <main class="main-layout">
     <aside class="panel browse">
       <div class="eyebrow">RAAFAT / DISCOVER</div>
-      <h1>موقعك القادم<br><span>يصنع الفرق.</span></h1>
-      <p class="intro">استكشف مواقع الإعلانات الخارجية، اختر مدينتك، وشاهد تفاصيل كل موقع على الخريطة.</p>
+      <div class="service-chip">شبكتنا الإعلانية • صلاح الدين وكركوك</div>
+      <h1>مساحتك الإعلانية<br><span>بالمكان الصحيح.</span></h1>
+      <p class="intro">كل لوحة إلها موقع وقصة. اكتشف مواقعنا على الخريطة، وقارن بين القياسات وأنواع الإعلانات، ثم اختر المساحة الأنسب لحملتك.</p>
       <div class="alert" id="systemAlert" hidden role="status"></div>
       <div class="stats" aria-label="إحصائيات المواقع">
         <div class="stat"><strong id="allCount">—</strong><span>إجمالي القطع</span></div>
@@ -47,15 +48,20 @@
       </div>
       <label class="input-label" for="search">ابحث عن موقع</label>
       <input class="input" id="search" autocomplete="off" placeholder="رقم القطعة أو المنطقة أو الشارع...">
-      <label class="input-label" for="cityFilter">المدينة</label>
+      <label class="input-label" for="governorateFilter">المحافظة</label>
+      <select class="input" id="governorateFilter"><option value="">جميع المحافظات</option><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select>
+      <label class="input-label" for="cityFilter">المدينة / القضاء</label>
       <select class="input" id="cityFilter"><option value="">جميع المدن</option></select>
       <label class="input-label" for="statusFilter">حالة القطعة</label>
       <select class="input" id="statusFilter">
         <option value="">جميع الحالات</option><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option>
       </select>
       <label class="input-label" for="typeFilter">نوع الإعلان</label>
-      <select class="input" id="typeFilter"><option value="">جميع الأنواع</option><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="other">أخرى</option></select>
-      <div class="list-heading"><strong>القطع المعروضة</strong><span id="showingCount">—</span></div>
+      <select class="input" id="typeFilter"><option value="">جميع الأنواع</option><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="building">على بناية / واجهة مبنى</option><option value="sidewalk">لوحة رصيف</option><option value="other">أخرى</option></select>
+      <label class="input-label" for="sizeFilter">القياس (متر)</label>
+      <select class="input" id="sizeFilter"><option value="">جميع القياسات</option></select>
+      <button class="clear-filters" type="button" id="clearFilters">↻ مسح الفلاتر وعرض الكل</button>
+      <div class="list-heading"><strong>المساحات المعروضة</strong><span id="showingCount">—</span></div>
       <div id="listing" class="listing" aria-live="polite"><div class="empty">جاري تحميل المواقع...</div></div>
     </aside>
     <section class="map-area" aria-label="خريطة القطع الإعلانية">
@@ -95,15 +101,21 @@
     <div class="form-grid">
       <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
       <div><label for="fName">اسم الموقع *</label><input class="input" id="fName" required maxlength="140" placeholder="شارع رئيسي — تقاطع..."></div>
-      <div><label for="fCity">المدينة *</label><input class="input" id="fCity" list="cities" required maxlength="80" placeholder="تكريت"><datalist id="cities"><option value="تكريت"><option value="كركوك"><option value="سامراء"><option value="بيجي"><option value="الشرقاط"><option value="بلد"></datalist></div>
-      <div><label for="fArea">المنطقة / الشارع</label><input class="input" id="fArea" maxlength="160" placeholder="اسم المنطقة"></div>
-      <div><label for="fType">نوع الإعلان</label><select class="input" id="fType"><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="other">أخرى</option></select></div>
+      <div><label for="fGovernorate">المحافظة *</label><select class="input" id="fGovernorate" required><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></div>
+      <div><label for="fCity">المدينة / القضاء *</label><select class="input" id="fCity" required></select></div>
+      <div><label for="fArea">المنطقة / الحي</label><input class="input" id="fArea" maxlength="160" placeholder="اسم المنطقة أو الحي"></div>
+      <div><label for="fStreet">الشارع</label><input class="input" id="fStreet" maxlength="200" placeholder="اسم الشارع"></div>
+      <div><label for="fLandmark">أقرب معلم معروف</label><input class="input" id="fLandmark" maxlength="200" placeholder="قرب تقاطع / مستشفى / جسر"></div>
+      <div><label for="fType">نوع الإعلان</label><select class="input" id="fType"><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="building">إعلان على بناية</option><option value="sidewalk">لوحة رصيف</option><option value="other">أخرى</option></select></div>
       <div><label for="fStatus">الحالة</label><select class="input" id="fStatus"><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option></select></div>
       <div><label for="fWidth">العرض (متر) *</label><input class="input" id="fWidth" type="number" required min=".01" max="1000" step=".01"></div>
       <div><label for="fHeight">الارتفاع (متر) *</label><input class="input" id="fHeight" type="number" required min=".01" max="1000" step=".01"></div>
       <div><label for="fFaces">الأوجه</label><input class="input" id="fFaces" type="number" value="1" min="1" max="8"></div>
       <div><label for="fLighting">الإنارة</label><select class="input" id="fLighting"><option value="false">غير مضاءة</option><option value="true">مضاءة</option></select></div>
+      <div><label for="fFacing">اتجاه مواجهة الإعلان</label><input class="input" id="fFacing" maxlength="140" placeholder="مثلاً: باتجاه مركز المدينة"></div>
+      <div><label for="fMaterial">نوع خامة اللوحة</label><input class="input" id="fMaterial" maxlength="140" placeholder="فينيل، فلكس، LED..."></div>
       <div class="span2"><label for="fCoords">الإحداثيات (Latitude, Longitude) *</label><input class="input coordinate" id="fCoords" dir="ltr" placeholder="34.60, 43.68" required><div class="coordinate-buttons"><button class="btn btn-ghost" id="pickMap" type="button">⌖ تحديد على الخريطة</button><button class="btn btn-ghost" id="getGPS" type="button">◎ موقعي الحالي GPS</button></div><div class="hint small-hint">يمكن لصق إحداثيات Google Maps. GPS يحتاج HTTPS وموافقة الموقع.</div></div>
+      <div class="span2 section-caption">معلومات إضافية تظهر للزبون ضمن تفاصيل الموقع</div>
       <div class="span2"><label for="fDescription">تفاصيل إضافية</label><textarea class="input" id="fDescription" maxlength="2000" rows="3"></textarea></div>
       <div class="span2"><label for="fPhotos">صور القطعة (حتى 5 ميغابايت للصورة)</label><input class="input" id="fPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple><div id="photoInfo" class="hint small-hint">بعد الحفظ تُرفع الصور إلى التخزين الخاص بالشركة.</div></div>
       <div class="span2 publish-line"><label class="check-line"><input type="checkbox" id="fPublished"> <strong>نشر القطعة للزبائن</strong></label><span>بدون تحديد الخيار ستبقى القطعة داخل لوحة الإدارة فقط.</span></div>
