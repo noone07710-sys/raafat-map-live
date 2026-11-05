@@ -20,3 +20,78 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
 @media(max-width:1240px){.main-layout{grid-template-columns:305px minmax(280px,1fr)}.details{position:absolute;z-index:500;left:10px;top:98px;bottom:12px;width:310px;box-shadow:var(--shadow);border-radius:14px;border:1px solid #395853}.header-center{display:none}}
 @media(max-width:850px){body{overflow:auto}.app-shell{min-height:100dvh;height:auto}.header{padding:10px 13px;min-height:75px;flex-basis:auto}.brand{font-size:22px}.brand-caption{font-size:8px;white-space:normal;max-width:220px}.logo{width:39px;height:39px}.header-actions{gap:5px}.header-actions .btn{font-size:10px;padding:8px}.main-layout{display:flex;flex-direction:column}.map-area{order:1;height:48dvh;min-height:290px}.browse{order:2;border-left:0;overflow:visible;padding:20px 16px}.details{order:3;position:static;width:100%;box-shadow:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:21px 16px;min-height:170px}.listing{grid-template-columns:repeat(2,minmax(0,1fr))}.detail-photo{height:260px}.mobile-footer{display:block;text-align:center;padding:12px;color:#6e9086;font-size:10px}}
 @media(max-width:580px){.brand{font-size:19px}.brand em{display:none}.header-actions .btn{font-size:9.5px;padding:8px}.header{gap:6px}.identity{gap:6px}.brand-caption{font-size:7.5px;max-width:155px}.logo{width:35px;height:35px}.map-area{height:42dvh}.browse h1{font-size:22px}.listing{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.span2{grid-column:span 1}.modal{padding:18px}.detail-photo{height:195px}}
+
+
+/* Raafat catalog v2 — regional navigation, complete specifications and media */
+.logo{
+  width:64px;height:56px;background:#fff;border:1px solid #ffffff45;
+  border-radius:12px;box-shadow:0 8px 24px #0004;
+  padding:5px;overflow:hidden;flex:none
+}
+.logo img{width:100%;height:100%;object-fit:contain;display:block}
+.identity{gap:13px}
+.brand{font-weight:700;letter-spacing:-.45px}
+.brand-caption{color:#a8ccc0}
+.header{box-shadow:0 12px 34px #0013124d}
+.browse{background:linear-gradient(165deg,#103538 0%,#092629 44%,#071e20 100%)}
+.service-chip{display:inline-flex;align-items:center;gap:7px;border:1px solid #b78c494d;border-radius:50px;color:#ffcf8c;background:#f4951a12;padding:7px 12px;font-size:10px;margin:14px 0 5px;font-weight:600}
+.service-chip:before{content:"";display:block;width:7px;height:7px;border-radius:100%;background:#f4951a}
+.browse h1{font-size:27px;line-height:1.48;letter-spacing:-.5px}
+.browse h1 span{color:#ffb453}
+.intro{line-height:2.05;margin-bottom:18px}
+.stats{margin-top:17px;margin-bottom:19px}
+.stat{background:linear-gradient(155deg,#174142,#0c3034);border:1px solid #ffffff15}
+.stat strong{font-size:26px}
+.input-label{color:#d6e6df;font-size:11px}
+.input{transition:border-color .16s,background .16s,box-shadow .16s}
+.input:focus{background:#09282b;box-shadow:0 0 0 3px #f4951a1a}
+.clear-filters{width:100%;padding:10px;background:transparent;border:1px dashed #67817c;
+ color:#f8bd76;font-size:11px;font-weight:700;border-radius:9px;margin-top:16px;transition:background .15s}
+.clear-filters:hover{background:#f4951a12}
+.location-card{transition:transform .16s,border-color .16s,background .16s,box-shadow .16s}
+.location-card:hover{transform:translateY(-2px);box-shadow:0 12px 24px #0003}
+.location-card.active{box-shadow:0 0 0 1px #f4951a55,0 12px 25px #0002}
+.map-chip{background:#092a2de9;border-color:#69948780}
+.details{background:linear-gradient(180deg,#0b2d30,#081f23)}
+.details-pill{display:flex;justify-content:space-between;gap:10px;font-size:10px;
+ color:#e6bd83;background:#f4951a13;border:1px solid #f4951a2e;border-radius:9px;
+ padding:9px 12px;margin-bottom:12px}
+.detail-photo{height:210px;box-shadow:inset 0 2px 18px #0003}
+.detail-photo a{display:block;width:100%;height:100%}
+.detail-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-gallery{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:10px 1px 7px;scrollbar-width:thin;scrollbar-color:#607672 transparent}
+.photo-thumb{width:72px;height:56px;flex:0 0 72px;border:2px solid #45635f;border-radius:8px;background:#164446;
+ overflow:hidden;padding:0;transition:border-color .15s,transform .15s}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb.active,.photo-thumb:hover{border-color:#f4951a}
+.photo-thumb:hover{transform:translateY(-2px)}
+.detail-name{font-size:20px;line-height:1.6;margin:15px 0 4px}
+.detail-location{color:#b4d0c5;line-height:1.7;font-size:11px}
+.detail-status{display:flex;gap:8px;align-items:center}
+.spec-heading{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;color:#f5d1a6;margin:18px 0 9px}
+.spec-heading:after{content:"";height:1px;background:#f4951a2b;flex:1}
+.detail-table{margin:6px 0 18px;border-color:#ffffff18}
+.detail-line{background:#12353a;line-height:1.6;padding:11px 12px}
+.detail-line:nth-child(2n){background:#102f33}
+.detail-line strong{max-width:61%;line-height:1.65;word-break:break-word;font-weight:600}
+.detail-description{background:#12363a;padding:13px;border-radius:11px;border:1px solid #ffffff14}
+.detail-tip{font-size:10px;color:#93aca4;line-height:1.85;margin-top:12px}
+.detail-actions .btn{display:flex;justify-content:center;align-items:center;text-align:center;min-height:42px;font-size:11px}
+.photo-management{margin-top:14px;border-top:1px solid #ffffff16;padding-top:6px}
+.photo-management .btn{margin:4px;padding:7px 10px;font-size:10px;color:#ffbdb5}
+.section-caption{color:#f5d1a6;font-weight:700;font-size:11px;margin:18px 0 5px;padding-bottom:10px;border-bottom:1px solid #ffffff17}
+.modal .form-grid .input{min-height:44px}
+.modal.wide{max-width:760px}
+@media(max-width:850px){
+  .details{position:static;box-shadow:none}
+  .logo{width:55px;height:49px;padding:3px}
+  .browse h1{font-size:24px}
+  .details-pill{margin-top:1px}
+}
+@media(max-width:580px){
+  .logo{width:45px;height:43px;border-radius:9px}
+  .brand{font-size:18px}
+  .brand-caption{font-size:7px}
+  .header-actions .btn{font-size:10px}
+  .detail-photo{height:220px}
+}
