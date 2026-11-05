@@ -47,9 +47,9 @@ function initializeMap(){
  if(!window.L){ alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت."); return; }
  const L=window.L;
  state.map=L.map("map",{zoomControl:false, preferCanvas:true}).setView([34.61,43.68],9);
- L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+encodeURIComponent(String(config.cartoApiKey || "")),{
    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-   subdomains:"abcd",maxZoom:19
+   subdomains:"abcd",maxZoom:20
  }).addTo(state.map);
  L.control.zoom({position:"bottomright"}).addTo(state.map);
  state.markers=L.markerClusterGroup
