@@ -74,7 +74,7 @@ async function enableArabicMapLabels(){
      clearTimeout(timer);
      resolve(success);
    };
-   const timer=setTimeout(()=>done(false),10000);
+   const timer=setTimeout(()=>done(false),5000);
    try{
      const attempt=gl.setRTLTextPlugin(url,err=>done(!err),false);
      if(attempt&&typeof attempt.then==="function"){
@@ -170,7 +170,8 @@ function addPersistentCityLabels(){
 async function installRaafatPremiumMap(){
  if(!state.map||!window.maplibregl||typeof window.L.maplibreGL!=="function"
     ||(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported())){
-   console.warn("Vector WebGL unavailable; using the dark branded fallback map.");
+   console.warn("Vector WebGL unavailable; using the branded raster fallback.");
+   revealFallbackIfReady();
    return;
  }
  try{
@@ -192,6 +193,7 @@ async function installRaafatPremiumMap(){
      clearTimeout(timeout);
      if(state.map?.hasLayer(layer))state.map.removeLayer(layer);
      console.warn("Raafat vector tiles unavailable; fallback remains active.");
+     revealFallbackIfReady();
    };
    const timeout=setTimeout(fallback,18000);
    renderer.on("error",event=>{
@@ -206,15 +208,17 @@ async function installRaafatPremiumMap(){
      if(!state.map)return;
      if(state.basemap&&state.map.hasLayer(state.basemap))state.map.removeLayer(state.basemap);
      state.basemap=layer;
+     finishMapReveal();
    };
    renderer.once("load",onReady);
    if(renderer.loaded())onReady();
  }catch(err){
    console.warn("Cannot initialize the premium Raafat map:",err);
+   revealFallbackIfReady();
  }
 }
 function initializeMap(){
- if(!window.L){alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت.");return;}
+ if(!window.L){alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت.");finishMapReveal();return;}
  const L=window.L;
  state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22})
    .setView(CITY_CENTERS["تكريت"],11);
@@ -225,11 +229,12 @@ function initializeMap(){
    subdomains:"abcd",maxNativeZoom:19,maxZoom:22,keepBuffer:3,
    className:"raafat-fallback-tile"
  });
+ fallback.on("load",()=>{state.fallbackTilesLoaded=true;if(state.showFallback)finishMapReveal();});
  fallback.addTo(state.map);
  state.basemap=fallback;
  L.control.zoom({position:"bottomright"}).addTo(state.map);
  state.markers=L.markerClusterGroup
-   ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:46,chunkedLoading:true})
+   ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:42,chunkedLoading:true,disableClusteringAtZoom:16})
    : L.layerGroup();
  state.map.addLayer(state.markers);
  addPersistentCityLabels();
@@ -242,6 +247,9 @@ function initializeMap(){
    toast("تم تحديد الإحداثيات؛ راجعها قبل الحفظ.");
  });
  el("mapHome").addEventListener("click",()=>zoomAll(true));
+ el("mapSiteDetails").addEventListener("click",()=>{
+   el("siteDetails").scrollIntoView({behavior:"smooth",block:"nearest"});
+ });
  el("cancelPick").addEventListener("click",()=>{
    state.pick=false;el("mapPicking").hidden=true;openModal("siteModal");
  });
