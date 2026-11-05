@@ -3,7 +3,7 @@ import { fetchRaafatMapStyle } from "./brand-map.js";
 
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
 const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
-const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم"],"كركوك":["كركوك"]});
+const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد"],"كركوك":["كركوك"]});
 
 const CITY_CENTERS = Object.freeze({
   "تكريت":[34.6158,43.6786],
@@ -12,6 +12,7 @@ const CITY_CENTERS = Object.freeze({
   "سامراء":[34.1959,43.8857],
   "الشرقاط":[35.5172,43.2281],
   "العلم":[34.709,43.6951],
+  "بلد":[34.01485,44.14574],
   "كركوك":[35.4719,44.3954]
 });
 const sizeKey = s => Number(s.width_m)+"x"+Number(s.height_m);
@@ -30,7 +31,8 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
  markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
- basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false
+ basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false,
+ locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null
 };
 let toastTimeout;
 
@@ -220,6 +222,114 @@ async function installRaafatPremiumMap(){
    revealFallbackIfReady();
  }
 }
+/**
+ * Visitor live position stays in browser memory only: it is never written to
+ * Supabase, the URL, or any external application.
+ * Tracking starts exclusively after a visitor presses "موقعي الحالي".
+ */
+function updateLiveLocationUI(message=""){
+ const tracking=state.locationWatchId!==null;
+ const follow=tracking&&state.followLocation;
+ const button=el("locateMe");
+ button.classList.toggle("is-tracking",tracking);
+ button.classList.toggle("is-following",follow);
+ button.setAttribute("aria-pressed",String(tracking));
+ button.title=tracking?(follow?"تتبع موقعي بشكل مباشر":"إعادة توسيط الخريطة على موقعي"):"عرض موقعي على الخريطة";
+ el("locationButtonText").textContent=tracking?(follow?"جارٍ تتبع موقعي":"توسيط موقعي"):"موقعي الحالي";
+ el("stopLocation").hidden=!tracking;
+ const status=el("locationStatus");
+ status.textContent=message;
+ status.hidden=!message;
+}
+function stopLiveLocationTracking(){
+ state.locationGeneration++;
+ if(state.locationWatchId!==null && navigator.geolocation){
+   navigator.geolocation.clearWatch(state.locationWatchId);
+ }
+ state.locationWatchId=null;
+ state.followLocation=false;
+ state.lastLocation=null;
+ if(state.map){
+   if(state.gpsMarker)state.map.removeLayer(state.gpsMarker);
+   if(state.gpsAccuracy)state.map.removeLayer(state.gpsAccuracy);
+ }
+ state.gpsMarker=null;
+ state.gpsAccuracy=null;
+ updateLiveLocationUI("");
+}
+function startLiveLocationTracking(){
+ if(!state.map){toast("الخريطة غير متاحة حالياً.");return;}
+ if(!window.isSecureContext || !navigator.geolocation){
+   toast("تحديد الموقع يحتاج متصفحاً يدعم GPS واتصال HTTPS.");
+   return;
+ }
+ if(state.locationWatchId!==null){
+   state.followLocation=true;
+   if(state.lastLocation)state.map.flyTo(state.lastLocation,Math.max(16,state.map.getZoom()),{animate:true,duration:.6});
+   updateLiveLocationUI(state.lastLocation?"تحديث الموقع مباشر":"جاري تحديد الموقع…");
+   return;
+ }
+ state.followLocation=true;
+ const generation=++state.locationGeneration;
+ const pane=state.map.getPane("raafatGps")||state.map.createPane("raafatGps");
+ pane.style.zIndex="625";
+ updateLiveLocationUI("جاري طلب إذن الموقع…");
+ const onPosition=position=>{
+   if(generation!==state.locationGeneration||!state.map)return;
+   const coords=position.coords;
+   const lat=Number(coords.latitude),lng=Number(coords.longitude);
+   if(!validCoords(lat,lng))return;
+   const point=[lat,lng];
+   const firstFix=!state.gpsMarker;
+   const accuracy=Number.isFinite(coords.accuracy)?Math.max(5,coords.accuracy):100;
+   if(firstFix){
+     state.gpsAccuracy=window.L.circle(point,{
+       radius:Math.min(accuracy,15000),color:"#69d8ff",weight:1,
+       opacity:.65,fillColor:"#69d8ff",fillOpacity:.10,
+       interactive:false,pane:"raafatGps"
+     }).addTo(state.map);
+     state.gpsMarker=window.L.marker(point,{
+       pane:"raafatGps",interactive:false,keyboard:false,
+       icon:window.L.divIcon({
+         className:"raafat-gps-icon",
+         html:'<div class="raafat-gps-point"><span></span></div>',
+         iconSize:[32,32],iconAnchor:[16,16]
+       })
+     }).addTo(state.map);
+   }else{
+     state.gpsMarker.setLatLng(point);
+     state.gpsAccuracy.setLatLng(point).setRadius(Math.min(accuracy,15000));
+   }
+   state.lastLocation=point;
+   if(state.followLocation){
+     if(firstFix){
+       state.map.flyTo(point,Math.max(16,state.map.getZoom()),{animate:true,duration:.65});
+     }else if(state.map.distance(state.map.getCenter(),point)>25){
+       state.map.panTo(point,{animate:true,duration:.35});
+     }
+   }
+   const formatted=accuracy>=1000?"±"+(accuracy/1000).toFixed(1)+" كم":"±"+Math.round(accuracy)+" م";
+   updateLiveLocationUI("موقع مباشر • الدقة "+formatted);
+ };
+ const onError=error=>{
+   if(generation!==state.locationGeneration)return;
+   const message=error.code===1?
+      "السماح بالموقع مرفوض. فعّله من إعدادات المتصفح.":
+      error.code===2?"تعذّر تحديد الموقع. تأكد من تشغيل GPS.":"ننتظر إشارة الموقع من الجهاز…";
+   if(error.code===1)stopLiveLocationTracking();
+   updateLiveLocationUI(message);
+ };
+ try{
+   state.locationWatchId=navigator.geolocation.watchPosition(onPosition,onError,{
+     enableHighAccuracy:true,maximumAge:1000,timeout:20000
+   });
+   updateLiveLocationUI("بانتظار إشارة الموقع…");
+ }catch(error){
+   stopLiveLocationTracking();
+   toast("تعذّر بدء تحديد الموقع من المتصفح.");
+ }
+}
+
 function initializeMap(){
  if(!window.L){alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت.");finishMapReveal();return;}
  const L=window.L;
@@ -250,6 +360,18 @@ function initializeMap(){
    toast("تم تحديد الإحداثيات؛ راجعها قبل الحفظ.");
  });
  el("mapHome").addEventListener("click",()=>zoomAll(true));
+ // Consent is requested only by the location button, never during page load.
+ window.L.DomEvent.disableClickPropagation(el("liveLocationControl"));
+ window.L.DomEvent.disableScrollPropagation(el("liveLocationControl"));
+ el("locateMe").addEventListener("click",startLiveLocationTracking);
+ el("stopLocation").addEventListener("click",stopLiveLocationTracking);
+ state.map.on("dragstart",()=>{
+   if(state.locationWatchId!==null){
+     state.followLocation=false;
+     updateLiveLocationUI("الموقع مستمر • اضغط لتوسيط الخريطة");
+   }
+ });
+ window.addEventListener("pagehide",stopLiveLocationTracking,{once:true});
  el("mapSiteDetails").addEventListener("click",()=>{
    el("siteDetails").scrollIntoView({behavior:"smooth",block:"nearest"});
  });
@@ -388,6 +510,10 @@ function selectSite(id){
  const site=state.sites.find(s=>s.id===id);
  if(!site)return;
  if(state.selected!==id)state.galleryIndex=0;
+ if(state.locationWatchId!==null){
+   state.followLocation=false;
+   updateLiveLocationUI("الموقع مستمر • اضغط لتوسيط الخريطة");
+ }
  state.selected=id;render();
  if(!state.staff)history.replaceState(null,"","#site="+encodeURIComponent(id));
  if(state.map){state.map.setView([site.latitude,site.longitude],Math.max(14,state.map.getZoom()),{animate:true})}
