@@ -857,3 +857,19 @@ body.no-map-glow .site-pin,body.no-map-glow .raafat-region-orbit{animation:none!
   .admin-dashboard-content{padding-bottom:max(20px,env(safe-area-inset-bottom))}
   .map-area::after{animation:none}
 }
+
+
+/* Preserve the exact native OpenStreetMap Standard colors and POI/road labels. */
+body.osm-standard-map .map-area::after{display:none!important}
+body.osm-standard-map .osm-standard-tile{filter:none!important;opacity:1!important}
+body.osm-standard-map .map-area,
+body.osm-standard-map .leaflet-container{background:#e9e7e1}
+body.osm-standard-map .map-chip{
+  background:rgba(7,46,43,.93);
+  border-color:rgba(249,181,103,.34);
+}
+body.osm-standard-map .leaflet-control-attribution{
+  background:rgba(255,255,255,.93)!important;
+  color:#285148!important;
+}
+body.osm-standard-map .leaflet-control-attribution a{color:#005c70!important}
