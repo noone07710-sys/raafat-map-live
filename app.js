@@ -132,6 +132,13 @@ function directionsToSite(site){
  * moves the root icon with CSS or when the zoom changes. Only rings animate.
  * Label collision may hide a card, but never moves/removes the geographic dot.
  */
+/**
+ * Interactive VIP district names with collision-free callouts.
+ * Every marker is geographically anchored to its real city coordinate.
+ * If two city names would overlap at a distant zoom, we move only the
+ * decorative name card and draw a hairline back to the stationary gold dot.
+ * We NEVER hide a name merely because of label collision.
+ */
 function addPersistentCityLabels(){
  if(!state.map||state.cityLabels)return;
  const L=window.L;
@@ -147,15 +154,13 @@ function addPersistentCityLabels(){
    const html='<div class="vip-district-beacon" style="--vip-delay:'+((i%5)*.46).toFixed(2)+'s">'+
      '<span class="vip-beacon-wave wave-one" aria-hidden="true"></span>'+
      '<span class="vip-beacon-wave wave-two" aria-hidden="true"></span>'+
+     '<span class="vip-beacon-link" aria-hidden="true"></span>'+
      '<span class="vip-beacon-point" aria-hidden="true"><i></i></span>'+
-     '<span class="vip-beacon-stem" aria-hidden="true"></span>'+
      '<span class="vip-beacon-label" lang="ar" dir="rtl">'+
        '<strong>'+escapeHtml(city)+'</strong>'+
        '<small>'+escapeHtml(governorate)+'</small>'+
      '</span></div>';
-   // The exact geographic coordinate is at the CENTER of the VIP name.
-   // At low zoom, an offset label represents kilometres of apparent drift.
-   // Keep the name and its gold halo centered on the same Leaflet anchor.
+   // The gold anchor stays at [lat,lng]. The inner label alone may be offset.
    const icon=L.divIcon({
      className:"vip-district-marker",
      html,iconSize:[144,76],iconAnchor:[72,38]
@@ -179,45 +184,73 @@ function addPersistentCityLabels(){
  });
  const update=()=>{
    if(!state.map)return;
-   const bounds=map.getBounds().pad(.07);
+   const size=map.getSize();
    const focusedSite=state.sites.find(site=>site.id===state.selected);
    const selectedCity=el("cityFilter").value;
    const focus=focusedSite&&CITY_CENTERS[focusedSite.city]?focusedSite.city:
      CITY_CENTERS[selectedCity]?selectedCity:null;
-   // Stable, fixed priority order; labels do not alternate based on
-   // distance from the moving viewport centre.
-   const ordered=[...cities].sort((a,b)=>
-     Number(b[0]===focus)-Number(a[0]===focus)
-   );
-   const occupied=[];
-   const shown=new Set();
-   const zoom=map.getZoom();
-   const minX=zoom<10?126:137;
-   const minY=zoom<10?78:90;
-   for(const [city,coords] of ordered){
-     if(!bounds.contains(coords))continue;
-     const point=map.latLngToContainerPoint(coords);
-     const collides=occupied.some(other=>
-       Math.abs(other.x-point.x)<minX && Math.abs(other.y-point.y)<minY
-     );
-     if(!collides || city===focus){
-       shown.add(city);
-       occupied.push({x:point.x,y:point.y});
+   const entries=[...beacons].map(([city,data],index)=>({
+     city,index,...data,screen:map.latLngToContainerPoint(data.coords)
+   }));
+   // Deterministic placement order: focused name first, then the city list.
+   entries.sort((a,b)=>Number(b.city===focus)-Number(a.city===focus)||a.index-b.index);
+   const placed=[];
+   const margin=9;
+   const candidates=[[0,0]];
+   // Search outward only when cards genuinely overlap. The dot never moves.
+   for(const radius of [66,102,138,176,215,260]){
+     for(let step=0;step<12;step++){
+       const angle=(-90+step*30)*Math.PI/180;
+       candidates.push([Math.round(Math.cos(angle)*radius),Math.round(Math.sin(angle)*radius)]);
      }
    }
-   for(const [city,{marker}] of beacons){
+   for(const {city,marker,screen} of entries){
      const dom=marker.getElement();
      if(!dom)continue;
-     const showLabel=shown.has(city);
-     dom.classList.toggle("vip-label-muted",!showLabel);
+     const label=dom.querySelector(".vip-beacon-label");
+     if(!label)continue;
+     // A district outside the visible map remains in the Leaflet layer;
+     // there is no reason to place its callout over unrelated visible places.
+     const onScreen=screen.x>=-16&&screen.x<=size.x+16&&
+                    screen.y>=-16&&screen.y<=size.y+16;
+     const width=Math.max(108,Math.ceil(label.offsetWidth||116));
+     const height=Math.max(49,Math.ceil(label.offsetHeight||52));
+     let best=null;
+     if(onScreen){
+       for(const [dx,dy] of candidates){
+         const x=screen.x+dx,y=screen.y+dy;
+         const rect={left:x-width/2-margin,right:x+width/2+margin,
+           top:y-height/2-margin,bottom:y+height/2+margin};
+         const outside=Math.max(0,12-rect.left)+Math.max(0,rect.right-(size.x-12))+
+           Math.max(0,12-rect.top)+Math.max(0,rect.bottom-(size.y-12));
+         let overlap=0;
+         for(const p of placed){
+           const w=Math.max(0,Math.min(rect.right,p.right)-Math.max(rect.left,p.left));
+           const h=Math.max(0,Math.min(rect.bottom,p.bottom)-Math.max(rect.top,p.top));
+           overlap+=w*h;
+         }
+         // Strongly avoid collisions / clipping, then prefer shorter links.
+         const dist=Math.hypot(dx,dy);
+         const score=overlap*32+outside*240+dist;
+         if(!best||score<best.score)best={dx,dy,rect,score,overlap,outside};
+         if(overlap===0&&outside===0&&dist===0)break;
+       }
+     }
+     const dx=best?.dx||0,dy=best?.dy||0;
+     if(best)placed.push(best.rect);
+     dom.classList.remove("vip-label-muted");
      dom.classList.toggle("vip-district-active",city===focus);
+     dom.classList.toggle("vip-card-linked",Math.hypot(dx,dy)>14);
+     dom.style.setProperty("--vip-card-x",dx+"px");
+     dom.style.setProperty("--vip-card-y",dy+"px");
+     dom.style.setProperty("--vip-link-length",Math.hypot(dx,dy).toFixed(1)+"px");
+     dom.style.setProperty("--vip-link-angle",Math.atan2(dy,dx)*180/Math.PI+"deg");
      dom.setAttribute("aria-label",city+"، "+(REGIONS["كركوك"].includes(city)?"كركوك":"صلاح الدين"));
    }
    const heading=el("mapRegionLabel");
    if(heading){
-     const city=focus||null;
-     heading.textContent=city||"";
-     heading.hidden=!city;
+     heading.textContent=focus||"";
+     heading.hidden=!focus;
    }
  };
  state.cityLabels=group;
