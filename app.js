@@ -30,7 +30,7 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
  markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
- layers: null, basemap: null, mapChoiceMade: false
+ basemap: null, cityLabels: null
 };
 let toastTimeout;
 
@@ -55,35 +55,106 @@ function getCoords(str){
  const lat=Number(match[1]),lng=Number(match[2]);
  return validCoords(lat,lng) ? {latitude:lat,longitude:lng}:null;
 }
-function setMapStyle(style){
- if(!state.map||!state.layers||!state.layers[style])return false;
- if(state.basemap===state.layers[style])return true;
- // Keep existing markers and GPS input handlers on the Leaflet map.
- if(state.basemap)state.map.removeLayer(state.basemap);
- state.basemap=state.layers[style];
- state.basemap.addTo(state.map);
- for(const [id,value] of [["mapBrand","brand"],["mapRoads","roads"],["mapDark","dark"]]){
-   const btn=el(id);
-   btn.classList.toggle("active",value===style);
-   btn.setAttribute("aria-pressed",String(value===style));
- }
- return true;
+/**
+ * Configure RTL shaping before the vector style loads. This bundled MapLibre
+ * 2.x build requires the shaping plugin; without it Arabic glyphs become split.
+ */
+async function enableArabicMapLabels(){
+ const gl=window.maplibregl;
+ if(!gl||typeof gl.setRTLTextPlugin!=="function")return false;
+ const status=gl.getRTLTextPluginStatus?.();
+ if(status==="loaded")return true;
+ if(status==="error")return false;
+ const url="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.js";
+ return new Promise(resolve=>{
+   let settled=false;
+   const done=success=>{
+     if(settled)return;
+     settled=true;
+     clearTimeout(timer);
+     resolve(success);
+   };
+   const timer=setTimeout(()=>done(false),10000);
+   try{
+     const attempt=gl.setRTLTextPlugin(url,err=>done(!err),false);
+     if(attempt&&typeof attempt.then==="function"){
+       attempt.then(()=>done(true),()=>done(false));
+     }
+   }catch(error){
+     console.warn("Arabic map text plugin failed:",error);
+     done(false);
+   }
+ });
 }
-async function installBrandBasemap(){
- // The styled vector map requires both WebGL and the Leaflet/MapLibre adapter.
- if(!window.maplibregl || typeof window.L.maplibreGL!=="function"){
-   console.warn("MapLibre renderer not loaded. Using readable CARTO raster fallback.");
+function addPersistentCityLabels(){
+ if(!state.map||state.cityLabels)return;
+ const L=window.L;
+ const pane=state.map.createPane("raafatCities");
+ pane.style.zIndex="435";
+ pane.style.pointerEvents="none";
+ const labels=L.layerGroup().addTo(state.map);
+ for(const [city,coords] of Object.entries(CITY_CENTERS)){
+   const marker=L.marker(coords,{
+     pane:"raafatCities",interactive:false,
+     icon:L.divIcon({
+       className:"raafat-city-icon",
+       html:'<span class="raafat-city-name" lang="ar" dir="rtl">'+escapeHtml(city)+'</span>',
+       iconSize:[0,0],iconAnchor:[0,0]
+     })
+   });
+   labels.addLayer(marker);
+ }
+ state.cityLabels=labels;
+ const update=()=>{
+   state.map.getContainer().classList.toggle("raafat-city-zoom",
+     state.map.getZoom()>=10);
+ };
+ state.map.on("zoomend",update);
+ update();
+}
+async function installRaafatPremiumMap(){
+ if(!state.map||!window.maplibregl||typeof window.L.maplibreGL!=="function"
+    ||(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported())){
+   console.warn("Vector WebGL unavailable; using the dark branded fallback map.");
    return;
  }
  try{
-   const style=await fetchRaafatMapStyle(config.cartoApiKey);
+   const arabicEnabled=await enableArabicMapLabels();
+   if(!arabicEnabled)console.warn("RTL plugin unavailable. Fallback Latin labels and persistent Arabic city labels are enabled.");
+   const style=await fetchRaafatMapStyle(config.cartoApiKey,{arabicEnabled});
    if(!state.map)return;
-   const layer=window.L.maplibreGL({style,interactive:false});
-   state.layers.brand=layer;
-   el("mapBrand").disabled=false;
-   if(!state.mapChoiceMade)setMapStyle("brand");
+   const layer=window.L.maplibreGL({style,interactive:false,padding:.12});
+   layer.addTo(state.map);
+   const renderer=layer.getMaplibreMap?.();
+   if(!renderer){
+     state.map.removeLayer(layer);
+     throw new Error("No MapLibre renderer instance");
+   }
+   let ready=false;
+   const fallback=()=>{
+     if(ready)return;
+     ready=true;
+     clearTimeout(timeout);
+     if(state.map?.hasLayer(layer))state.map.removeLayer(layer);
+     console.warn("Raafat vector tiles unavailable; fallback remains active.");
+   };
+   const timeout=setTimeout(fallback,18000);
+   renderer.on("error",event=>{
+     console.warn("Raafat vector renderer:",event.error||event);
+     if(!renderer.loaded())fallback();
+   });
+   const onReady=()=>{
+     if(ready)return;
+     ready=true;
+     clearTimeout(timeout);
+     if(!state.map)return;
+     if(state.basemap&&state.map.hasLayer(state.basemap))state.map.removeLayer(state.basemap);
+     state.basemap=layer;
+   };
+   renderer.once("load",onReady);
+   if(renderer.loaded())onReady();
  }catch(err){
-   console.warn("Custom Raafat basemap unavailable; retaining raster tiles:",err);
+   console.warn("Cannot initialize the premium Raafat map:",err);
  }
 }
 function initializeMap(){
@@ -92,32 +163,21 @@ function initializeMap(){
  state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22})
    .setView(CITY_CENTERS["تكريت"],11);
  const key=encodeURIComponent(String(config.cartoApiKey||""));
- const common={
+ const fallback=L.tileLayer(
+   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+key,{
    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-   subdomains:"abcd",
-   // CARTO serves raster zooms to 20. Upscale the last reliable native zoom
-   // rather than requesting missing tiles and showing empty/white squares.
-   maxNativeZoom:19,
-   maxZoom:22,
-   keepBuffer:3,
-   errorTileUrl:""
- };
- state.layers={
-   roads:L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key="+key,common),
-   dark:L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+key,common),
-   brand:null
- };
- setMapStyle("roads");
- const choose=style=>{state.mapChoiceMade=true;setMapStyle(style)};
- el("mapBrand").addEventListener("click",()=>choose("brand"));
- el("mapRoads").addEventListener("click",()=>choose("roads"));
- el("mapDark").addEventListener("click",()=>choose("dark"));
+   subdomains:"abcd",maxNativeZoom:19,maxZoom:22,keepBuffer:3,
+   className:"raafat-fallback-tile"
+ });
+ fallback.addTo(state.map);
+ state.basemap=fallback;
  L.control.zoom({position:"bottomright"}).addTo(state.map);
  state.markers=L.markerClusterGroup
    ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:46,chunkedLoading:true})
    : L.layerGroup();
  state.map.addLayer(state.markers);
- state.map.on("click", event=>{
+ addPersistentCityLabels();
+ state.map.on("click",event=>{
    if(!state.pick)return;
    const {lat,lng}=event.latlng;
    el("fCoords").value=lat.toFixed(7)+", "+lng.toFixed(7);
@@ -129,8 +189,9 @@ function initializeMap(){
  el("cancelPick").addEventListener("click",()=>{
    state.pick=false;el("mapPicking").hidden=true;openModal("siteModal");
  });
- void installBrandBasemap();
+ void installRaafatPremiumMap();
 }
+
 function zoomAll(defaultOnly=false){
  if(!state.map)return;
  const visible=filteredSites();
