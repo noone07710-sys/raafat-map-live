@@ -153,11 +153,12 @@ function addPersistentCityLabels(){
        '<strong>'+escapeHtml(city)+'</strong>'+
        '<small>'+escapeHtml(governorate)+'</small>'+
      '</span></div>';
-   // The dot centre inside the 144x100 icon is x=72,y=78.
-   // This is an actual Leaflet iconAnchor, not a visual CSS offset.
+   // The exact geographic coordinate is at the CENTER of the VIP name.
+   // At low zoom, an offset label represents kilometres of apparent drift.
+   // Keep the name and its gold halo centered on the same Leaflet anchor.
    const icon=L.divIcon({
      className:"vip-district-marker",
-     html,iconSize:[144,100],iconAnchor:[72,78]
+     html,iconSize:[144,76],iconAnchor:[72,38]
    });
    const marker=L.marker(coords,{
      icon,pane:"raafatCities",interactive:true,keyboard:true,
