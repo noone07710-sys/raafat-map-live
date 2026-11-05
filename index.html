@@ -71,6 +71,14 @@
         <div class="map-reveal-brand">جاري تحميل الخريطة…</div>
       </div>
       <div class="map-chip"><span class="live-dot"></span><span>المواقع الإعلانية</span><strong id="mapCount">0</strong><span class="map-region-label" id="mapRegionLabel" hidden></span></div>
+      <div class="live-location-control" id="liveLocationControl" role="group" aria-label="تحديد موقعك الحالي">
+        <button class="live-location-button" id="locateMe" type="button" title="عرض موقعي على الخريطة">
+          <span class="live-location-symbol" aria-hidden="true">◎</span>
+          <span id="locationButtonText">موقعي الحالي</span>
+        </button>
+        <button class="live-location-stop" id="stopLocation" type="button" hidden>إيقاف</button>
+        <span class="live-location-status" id="locationStatus" aria-live="polite" hidden></span>
+      </div>
       
       <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="الرجوع للخريطة العامة" title="الرجوع للخريطة العامة">⌖</button>
