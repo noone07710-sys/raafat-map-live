@@ -118,7 +118,28 @@ function renderFilters(){
    dims.map(([key,s])=>'<option value="'+escapeHtml(key)+'">'+format(s.width_m)+' × '+format(s.height_m)+' م</option>').join("");
  el("sizeFilter").value=dims.some(([key])=>key===selectedSize)?selectedSize:"";
 }
+function renderCityChips(){
+ const active=el("cityFilter").value;
+ const parts=[];
+ for(const [gov,cities] of Object.entries(REGIONS)){
+   for(const city of cities){
+     const count=state.sites.filter(s=>s.governorate===gov&&s.city===city).length;
+     parts.push('<button class="city-chip '+(active===city?'active':'')+'" type="button" data-city="'+escapeHtml(city)+'" data-governorate="'+escapeHtml(gov)+'" title="'+escapeHtml(gov)+'">'+
+       '<span>'+escapeHtml(city)+'</span><b>'+count+'</b></button>');
+   }
+ }
+ el("cityChips").innerHTML=parts.join("");
+ el("cityChips").querySelectorAll("[data-city]").forEach(btn=>btn.addEventListener("click",()=>{
+   const wasActive=el("cityFilter").value===btn.dataset.city;
+   el("governorateFilter").value=wasActive?"":btn.dataset.governorate;
+   renderCityOptions();
+   el("cityFilter").value=wasActive?"":btn.dataset.city;
+   render();
+   zoomAll();
+ }));
+}
 function render(){
+ renderCityChips();
  const sites=filteredSites();
  el("allCount").textContent=state.sites.length;
  el("availableCount").textContent=state.sites.filter(s=>s.status==="available").length;
