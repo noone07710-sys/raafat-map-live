@@ -792,6 +792,25 @@ async function signIn(event){
  }
  finally{button.disabled=false}
 }
+async function requestAdminPasswordReset(){
+ if(!db){toast("الخدمة غير متاحة حالياً.");return;}
+ const email=el("email").value.trim();
+ if(!email||!el("email").checkValidity()){
+   toast("أدخل البريد الإلكتروني أولاً.");return;
+ }
+ const btn=el("requestPasswordReset");
+ btn.disabled=true;
+ try{
+   const {error}=await db.auth.resetPasswordForEmail(email,{
+     redirectTo:window.location.origin+window.location.pathname
+   });
+   if(error)throw error;
+   toast("إذا كان البريد مسجلاً، ستصلك رسالة لاستعادة كلمة المرور.");
+ }catch(err){
+   toast("تعذّر إرسال الرسالة. راجع إعدادات بريد Supabase (SMTP).");
+   console.warn("Recovery email request failed:",err.message);
+ }finally{btn.disabled=false;}
+}
 async function changeAdminPassword(event){
  event.preventDefault();
  if(!db||!state.staff){toast("هذه الخدمة متاحة للإدارة فقط.");return;}
@@ -833,6 +852,7 @@ function events(){
  el("loginForm").addEventListener("submit",signIn);
  el("changePasswordButton").addEventListener("click",()=>{if(state.staff)openModal("passwordModal")});
  el("changePasswordForm").addEventListener("submit",changeAdminPassword);
+ el("requestPasswordReset").addEventListener("click",()=>void requestAdminPasswordReset());
  el("pickMap").addEventListener("click",()=>{
    if(!state.map){toast("الخريطة غير متاحة.");return;}
    state.pick=true;
@@ -859,6 +879,22 @@ function events(){
  });
 }
 async function main(){
+ // Listen without blocking the auth callback; Supabase handles recovery tokens.
+ if(db){
+   db.auth.onAuthStateChange((event)=>{
+     if(event==="PASSWORD_RECOVERY"){
+       setTimeout(async()=>{
+         await authCheck();
+         if(state.staff){
+           closeModal("loginModal");
+           openModal("passwordModal");
+         }else{
+           toast("رابط الاستعادة لا يخص حساب إدارة معتمداً.");
+         }
+       },0);
+     }
+   });
+ }
  initializeMap();events();
  if(!db){
   alertBanner("النظام لم يُربط بعد بقاعدة Supabase. يجب إعداد مشروع الشركة وملف config.js قبل نشره للزبائن.");
