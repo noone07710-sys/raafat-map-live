@@ -64,6 +64,10 @@
     <section class="map-area" aria-label="خريطة القطع الإعلانية">
       <div id="map" class="map"></div>
       <div class="map-chip"><span class="live-dot"></span><span>الخريطة</span><strong id="mapCount">0</strong></div>
+      <div class="map-style-switch" role="group" aria-label="نوع الخريطة">
+        <button type="button" class="map-style-btn active" id="mapRoads" aria-pressed="true" title="إظهار أسماء الشوارع">الشوارع</button>
+        <button type="button" class="map-style-btn" id="mapDark" aria-pressed="false" title="الخريطة الغامقة">داكنة</button>
+      </div>
       <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="الرجوع للخريطة العامة" title="الرجوع للخريطة العامة">⌖</button>
     </section>
