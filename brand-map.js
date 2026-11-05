@@ -1,122 +1,104 @@
 /**
- * RA'AFAT / SIGNATURE MAP
- * OpenFreeMap vector basemap with CARTO backup and RA'AFAT colors.
- * This contains only public design data. The CARTO key is provided by config.js.
+ * Raafat Signature: deep emerald, warm labels and softly illuminated roads.
+ *
+ * Styling is paint-only. We intentionally keep ALL upstream OpenFreeMap/CARTO
+ * text fields, glyphs, POI icons, filters, layer ordering, min/max zoom and
+ * label collision rules unchanged, so the brand theme does not hide places.
  */
-const C = Object.freeze({
-  background:"#071F24", terrain:"#0D3435", district:"#123E3C",
-  park:"#115044", water:"#082D37", waterEdge:"#286F78",
-  building:"#1B4944", buildingOutline:"#2B5B55",
-  roadMajor:"#EBFFF7", roadSecondary:"#C7E9E0", roadLocal:"#91C7BA",
-  casing:"#174C4C", glow:"#D4FFF6",
-  highway:"#FFE0B2", edge:"#609589",
-  name:"#F8AF60", nameStrong:"#FFCA84",
-  halo:"#071E21"
+const C=Object.freeze({
+  backdrop:"#092E2C",
+  land:"#10433C",
+  landMuted:"#0F3A35",
+  neighborhoods:"#164940",
+  park:"#1B5946",
+  forest:"#1C604D",
+  water:"#0B3747",
+  waterOutline:"#286F7B",
+  buildings:"#245348",
+  buildingEdge:"#3B6A5B",
+  road:"#D8F4E9",
+  secondaryRoad:"#CAE9DB",
+  highway:"#FFF1CF",
+  roadCasing:"#23594E",
+  boundaries:"#608C7B",
+  generic:"#3B7568",
+  label:"#FFBC76",
+  landmark:"#FBE2BC",
+  halo:"#0A2F2D"
 });
-const zoom=(levels)=>["interpolate",["linear"],["zoom"],...levels.flat()];
-const roadWidth=(major)=>major
- ? zoom([[7,.6],[10,1.3],[13,2.4],[15,3.6],[18,6.2],[22,9]])
- : zoom([[7,.1],[10,.45],[13,.8],[15,1.6],[18,2.9],[22,5.3]]);
-const glowWidth=(major)=>major
- ? zoom([[7,1.8],[10,3.4],[13,6],[15,8],[18,12.5],[22,17]])
- : zoom([[7,.4],[10,1.1],[13,2.2],[15,3.9],[18,6],[22,10]]);
+const width=(major)=>[
+  "interpolate",["linear"],["zoom"],
+  9,major?1.2:.6,
+  12,major?2.2:1.4,
+  15,major?4.7:2.4,
+  18,major?8:4.3,
+  21,major?12:7.5
+];
+function colorize(layer,all){
+ const next={...layer,paint:{...(layer.paint||{})}};
+ const paint=next.paint;
+ const source=String(layer["source-layer"]||"").toLowerCase();
+ const id=String(layer.id||"").toLowerCase();
+ const scope=source+" "+id;
 
-function addPremiumLayer(original, layers, arabicEnabled){
-  const layer={...original,layout:{...(original.layout||{})},paint:{...(original.paint||{})}};
-  const type=layer.type;
-  const source=String(layer["source-layer"]||"").toLowerCase();
-  const id=String(layer.id||"").toLowerCase();
-  const paint=layer.paint;
-  if(type==="background"){
-    paint["background-color"]=C.background;
-    paint["background-opacity"]=1;
-  }else if(type==="fill"){
-    const water=/water|ocean/.test(source+" "+id);
-    const park=/park|landcover|grass|forest|wood/.test(source+" "+id);
-    const building=/building/.test(source+" "+id);
-    const residential=/residential/.test(id);
-    paint["fill-color"]=water?C.water:park?C.park:building?C.building:residential?C.district:C.terrain;
-    paint["fill-opacity"]=water?1:building?.85:park?.68:residential?.55:.53;
-    if(building){paint["fill-outline-color"]=C.buildingOutline}
-    if("fill-pattern" in paint)delete paint["fill-pattern"];
-  }else if(type==="fill-extrusion"){
-    paint["fill-extrusion-color"]=C.building;
-    paint["fill-extrusion-opacity"]=.6;
-  }else if(type==="line"){
-    const isRoad=/^(transportation|roads|road)$/.test(source)&&!/rail|ferry/.test(id);
-    const highway=/motorway|trunk|primary|highway/.test(id);
-    const major=highway||/secondary|road_pri|road_mot/.test(id);
-    const casing=/casing|case|outline|hatch/.test(id);
-    const water=/waterway|water/.test(source);
-    if(isRoad){
-      // Soft luminous underlay, ahead of the sharp road centreline.
-      if(!casing){
-        layers.push({...layer,id:"raafat-ambient-"+layer.id,
-          paint:{...paint,"line-color":major?C.glow:C.roadSecondary,
-            "line-width":glowWidth(major),"line-opacity":major?.2:.085,
-            "line-blur":major?3.9:2.3},
-          layout:{...layer.layout}});
-      }
-      paint["line-color"]=casing?C.casing:highway?C.highway:major?C.roadMajor:C.roadLocal;
-      paint["line-opacity"]=casing?.62:major?.93:.68;
-      paint["line-width"]=casing?glowWidth(major):roadWidth(major);
-      delete paint["line-dasharray"];
-      paint["line-blur"]=casing?.45:.18;
-    }else if(water){
-      paint["line-color"]=C.waterEdge;
-      paint["line-opacity"]=.74;
-      paint["line-width"]=zoom([[7,.5],[12,1.1],[16,2.8],[20,5]]);
-    }else{
-      paint["line-color"]=C.edge;
-      paint["line-opacity"]=.34;
-      paint["line-width"]=.8;
-    }
-  }else if(type==="symbol"){
-    if(layer.layout["text-field"]!==undefined){
-      const road=/^(transportation_name|road_labels|roads_labels)$/.test(source)||/road[-_]label/.test(id);
-      const place=/^(place|places)$/.test(source);
-      const majorPlace=place && /city|capital|state/.test(id);
-      const poi=/^(poi|pois|point_of_interest)$/.test(source)||/poi|landmark|shop|amenity/.test(id);
-      // MapLibre <6.9 needs an RTL shaping plugin. Avoid scrambled Arabic on
-      // browsers that cannot load it; our persistent city labels still use Arabic DOM text.
-      layer.layout["text-field"]=arabicEnabled
-        ? ["coalesce",["get","name_ar"],["get","name:ar"],["get","name"],["get","name_en"]]
-        : ["coalesce",["get","name_en"],["get","name:en"],["get","name"]];
-      layer.layout["text-letter-spacing"]=0;
-      layer.layout["text-padding"]=road?1.5:3;
-      if(road){
-        layer.maxzoom=24;
-        layer.layout["symbol-spacing"]=225;
-        layer.minzoom=Math.max(Number(layer.minzoom)||0,13);
-        layer.layout["text-max-angle"]=25;
-        layer.layout["text-size"]=zoom([[10,10],[13,11],[15,12.5],[18,13.4],[22,15]]);
-        layer.layout["text-allow-overlap"]=false;
-        layer.layout["text-ignore-placement"]=false;
-      }else if(place){
-        // Critical place markers are stabilized separately with HTML/Leaflet labels.
-        layer.layout["text-size"]=zoom([[5,10],[10,12],[13,13],[17,15],[22,16]]);
-        if(majorPlace){layer.maxzoom=24;layer.layout["text-optional"]=true;}
-      }else if(poi){
-        // Keep real nearby shops, clinics, schools and landmarks legible.
-        layer.minzoom=Math.max(13,Math.min(Number(layer.minzoom)||14.5,14.5));
-        layer.maxzoom=24;
-        layer.layout["text-size"]=zoom([[12,10],[14,11],[16,12.5],[18,13.5],[22,15]]);
-        layer.layout["text-max-width"]=10;
-        layer.layout["text-padding"]=4;
-        layer.layout["text-allow-overlap"]=false;
-        layer.layout["text-ignore-placement"]=false;
-        layer.layout["text-optional"]=true;
-      }
-      paint["text-color"]=majorPlace?C.nameStrong:road?C.name:poi?"#F2D5B2":C.name;
-      paint["text-halo-color"]=C.halo;
-      paint["text-halo-width"]=majorPlace?2.1:road?1.6:1.45;
-      paint["text-halo-blur"]=majorPlace?.8:.55;
-      paint["text-opacity"]=poi?.94:road?.86:1;
-      if("icon-opacity" in paint){paint["icon-opacity"]=poi?.75:.75;}
-    }
-  }
-  layers.push(layer);
+ if(layer.type==="background"){
+   paint["background-color"]=C.backdrop;
+ }else if(layer.type==="fill"){
+   if(!("fill-pattern" in paint)){
+     let color=C.land;
+     if(/water|ocean|lake/.test(scope))color=C.water;
+     else if(/forest|wood|tree/.test(scope))color=C.forest;
+     else if(/park|grass|garden|nature/.test(scope))color=C.park;
+     else if(/building/.test(scope))color=C.buildings;
+     else if(/residential|landuse|industrial|commercial/.test(scope))color=C.neighborhoods;
+     else if(/landcover|land/.test(scope))color=C.landMuted;
+     paint["fill-color"]=color;
+   }
+   if(/building/.test(scope) && "fill-outline-color" in paint){
+     paint["fill-outline-color"]=C.buildingEdge;
+   }
+ }else if(layer.type==="fill-extrusion"){
+   paint["fill-extrusion-color"]=C.buildings;
+ }else if(layer.type==="line"){
+   const road=/^(transportation|roads|road)$/.test(source)&&!/rail|ferry/.test(id);
+   if(road){
+     const casing=/casing|case|outline/.test(id);
+     const major=/motorway|trunk|primary|highway|main/.test(id);
+     if(!casing && !("line-dasharray" in paint)){
+       // Low-opacity luminous road underlay; original road stays crisp on top.
+       all.push({...next,id:"raafat-glow-"+layer.id,paint:{
+         ...paint,
+         "line-color":major?"#EDFFF6":"#C2F4DC",
+         "line-opacity":major?.2:.12,
+         "line-width":width(major),
+         "line-blur":major?2.8:2.1
+       }});
+     }
+     paint["line-color"]=casing?C.roadCasing:major?C.highway:
+       /secondary|tertiary/.test(id)?C.secondaryRoad:C.road;
+     // Keep original widths and visibility thresholds wherever possible.
+     paint["line-opacity"]=casing?.72:.94;
+   }else if(/waterway|stream|river/.test(scope)){
+     paint["line-color"]=C.waterOutline;
+   }else if(/boundary|admin/.test(scope)){
+     paint["line-color"]=C.boundaries;
+   }else if("line-color" in paint){
+     paint["line-color"]=C.generic;
+   }
+ }else if(layer.type==="symbol" && layer.layout?.["text-field"]!==undefined){
+   // Crucial: no text-field replacement or zoom limits. Preserve all names,
+   // including Arabic businesses, street labels, landmarks and city names.
+   const road=/road|transportation_name|street/.test(scope);
+   const place=/place|city|town|capital|state|village/.test(scope);
+   const poi=/poi|shop|landmark|amenity|business/.test(scope);
+   paint["text-color"]=poi?C.landmark:place?"#FFCA88":road?"#F7D3A0":C.label;
+   paint["text-halo-color"]=C.halo;
+   paint["text-halo-width"]=place?1.75:1.35;
+   paint["text-halo-blur"]=.35;
+ }
+ all.push(next);
 }
+
 export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
   // OpenFreeMap has weekly OpenStreetMap-based updates and supports free
   // commercial use without API keys or billing. CARTO remains a fallback.
@@ -161,38 +143,9 @@ export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
     }
   }
   const layers=[];
-  for(const layer of raw.layers)addPremiumLayer(layer,layers,arabicEnabled);
-  // Highlight verified OSM landmarks even when the supplied CARTO style hides POI names.
-  // The source may use the legacy 'poi' schema or current Protomaps 'pois' schema.
-  const sourceLayers=new Set(raw.layers.map(layer=>layer["source-layer"]).filter(Boolean));
-  const vector=Object.entries(raw.sources).find(([,src])=>src.type==="vector");
-  const modern=vector && /\/v2\//.test(String(vector[1].url||""));
-  const poiLayer=sourceLayers.has("pois")?"pois":sourceLayers.has("poi")?"poi":modern?"pois":null;
-  if(vector&&poiLayer){
-    const name=arabicEnabled
-      ? ["coalesce",["get","name:ar"],["get","name_ar"],["get","name"],["get","name:en"]]
-      : ["coalesce",["get","name:en"],["get","name_en"],["get","name"]];
-    const textFont=raw.layers.find(layer=>layer.type==="symbol"&&layer.layout?.["text-font"])?.layout?.["text-font"]||
-      ["Open Sans Regular"];
-    layers.push({
-      id:"raafat-recognizable-landmarks",type:"symbol",
-      source:vector[0],"source-layer":poiLayer,minzoom:12.5,maxzoom:24,
-      filter:["all",["has","name"],
-        ["match",["get","kind"],
-          ["hospital","clinic","school","university","college","supermarket",
-           "marketplace","police","townhall","bank","fuel","hotel","station",
-           "mosque","place_of_worship","pharmacy","bus_station"],true,false]],
-      layout:{"text-field":name,"text-font":textFont,
-        "text-size":zoom([[12,10],[14,11],[17,12],[20,13]]),
-        "text-max-width":10,"text-padding":6,
-        "text-allow-overlap":false,"text-ignore-placement":false,
-        "text-optional":true,"symbol-placement":"point"},
-      paint:{"text-color":"#FFD399","text-opacity":.96,
-        "text-halo-color":C.halo,"text-halo-width":1.65,"text-halo-blur":.45}
-    });
-  }
+  for(const layer of raw.layers)colorize(layer,layers);
   raw.layers=layers;
-  raw.name="RAAFAT Signature • Emerald Nocturne";
+  raw.name="Raafat Signature — Emerald Edition";
   raw.metadata={...(raw.metadata||{}),"raafat:palette":"emerald-amber-luminous","raafat:source":provider};
   return raw;
 }
