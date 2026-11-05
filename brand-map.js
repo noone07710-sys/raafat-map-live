@@ -86,7 +86,8 @@ function addPremiumLayer(original, layers, arabicEnabled){
       layer.layout["text-padding"]=road?1.5:3;
       if(road){
         layer.maxzoom=24;
-        layer.layout["symbol-spacing"]=170;
+        layer.layout["symbol-spacing"]=225;
+        layer.minzoom=Math.max(Number(layer.minzoom)||0,13);
         layer.layout["text-max-angle"]=25;
         layer.layout["text-size"]=zoom([[10,10],[13,11],[15,12.5],[18,13.4],[22,15]]);
         layer.layout["text-allow-overlap"]=false;
@@ -96,14 +97,16 @@ function addPremiumLayer(original, layers, arabicEnabled){
         layer.layout["text-size"]=zoom([[5,10],[10,12],[13,13],[17,15],[22,16]]);
         if(majorPlace){layer.maxzoom=24;layer.layout["text-optional"]=true;}
       }else if(poi){
+        // Hide small business/place labels until a visitor zooms into a street.
+        layer.minzoom=Math.max(Number(layer.minzoom)||0,16);
         layer.layout["text-size"]=zoom([[12,8],[15,10],[18,11],[22,12]]);
       }
       paint["text-color"]=majorPlace?C.nameStrong:road?C.name:poi?"#E8AB74":C.name;
       paint["text-halo-color"]=C.halo;
       paint["text-halo-width"]=majorPlace?2.1:road?1.6:1.45;
       paint["text-halo-blur"]=majorPlace?.8:.55;
-      paint["text-opacity"]=poi?.82:1;
-      if("icon-opacity" in paint){paint["icon-opacity"]=poi?.55:.75;}
+      paint["text-opacity"]=poi?.56:road?.86:1;
+      if("icon-opacity" in paint){paint["icon-opacity"]=poi?.38:.75;}
     }
   }
   layers.push(layer);
