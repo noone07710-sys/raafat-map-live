@@ -32,7 +32,8 @@
     <nav class="header-actions" aria-label="الإجراءات">
       <span class="admin-tag" id="staffTag" hidden>إدارة</span>
       <button class="btn btn-primary" id="newSite" hidden>+ إضافة موقع</button>
-      <button class="btn btn-ghost" id="loginButton">دخول الإدارة</button>
+      <button class="btn btn-ghost" id="loginButton" hidden>دخول الإدارة</button>
+      <button class="btn btn-ghost" id="changePasswordButton" type="button" hidden>تغيير كلمة المرور</button>
       <button class="btn btn-ghost" id="logoutButton" hidden>خروج</button>
     </nav>
   </header>
@@ -100,14 +101,26 @@
 
  <div class="modal-backdrop" id="loginModal" hidden>
   <div class="modal small" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-   <div class="modal-head"><div><div class="eyebrow">STAFF PORTAL</div><h2 id="loginTitle">دخول الموظفين</h2></div><button type="button" class="x" data-close="loginModal" aria-label="إغلاق">×</button></div>
+   <div class="modal-head"><div><h2 id="loginTitle">تسجيل دخول الإدارة</h2></div><button type="button" class="x" data-close="loginModal" aria-label="إغلاق">×</button></div>
    <p class="hint">الدخول مخصص للموظفين المعتمدين في قاعدة بيانات الشركة.</p>
    <form id="loginForm">
      <label for="email">البريد الإلكتروني</label><input class="input" id="email" type="email" autocomplete="username" required>
      <label for="password">كلمة المرور</label><input class="input" id="password" type="password" autocomplete="current-password" required minlength="6">
      <button class="btn btn-primary full-button" type="submit">دخول آمن</button>
-     <button class="btn btn-ghost full-button" type="button" id="registerAdmin">إنشاء حساب الإدارة لأول مرة</button>
-     <p class="hint">لإنشاء الحساب أول مرة: أدخل بريدك وكلمة مرور قوية (12 حرفاً على الأقل) واضغط «إنشاء». سيوصلك رابط تأكيد إلى بريدك. لا تشارك كلمة المرور مع أحد.</p>
+     <p class="hint">الدخول متاح فقط للحسابات المعتمدة من الشركة.</p>
+   </form>
+  </div>
+ </div>
+
+ <div class="modal-backdrop" id="passwordModal" hidden>
+  <div class="modal small" role="dialog" aria-modal="true" aria-labelledby="passwordTitle">
+   <div class="modal-head"><h2 id="passwordTitle">تغيير كلمة المرور</h2><button type="button" class="x" data-close="passwordModal" aria-label="إغلاق">×</button></div>
+   <form id="changePasswordForm">
+     <label for="newAdminPassword">كلمة المرور الجديدة</label>
+     <input class="input" id="newAdminPassword" type="password" required minlength="14" autocomplete="new-password">
+     <label for="confirmAdminPassword">تأكيد كلمة المرور</label>
+     <input class="input" id="confirmAdminPassword" type="password" required minlength="14" autocomplete="new-password">
+     <button class="btn btn-primary full-button" type="submit">حفظ كلمة المرور</button>
    </form>
   </div>
  </div>
