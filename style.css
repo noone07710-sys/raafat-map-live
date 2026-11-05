@@ -1345,3 +1345,38 @@ body.osm-standard-map .leaflet-tile{filter:none!important;opacity:1!important}
 @media(hover:hover){
   .leaflet-marker-icon:hover .site-pin{filter:brightness(1.12)}
 }
+
+
+
+/* Raafat Signature map — restored emerald canvas, legible native labels */
+body.raafat-signature-map .map-area,
+body.raafat-signature-map .leaflet-container,
+body.raafat-signature-map .leaflet-maplibre-gl-layer,
+body.raafat-signature-map .maplibregl-canvas-container{
+  background:#092e2c!important;
+}
+body.raafat-signature-map .map-area::after{
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse 30% 37% at 13% 18%,rgba(41,174,140,.11),transparent 83%),
+    radial-gradient(ellipse 25% 35% at 91% 85%,rgba(244,149,26,.065),transparent 82%);
+  mix-blend-mode:screen;
+  opacity:.45;
+}
+body.raafat-signature-map .map-chip{
+  background:rgba(5,45,42,.93);
+  border-color:rgba(194,237,211,.3);
+  box-shadow:0 9px 26px rgba(0,21,20,.31);
+}
+body.raafat-signature-map .leaflet-control-attribution{
+  background:rgba(7,39,38,.88)!important;
+  color:#d8f0e3!important;
+}
+body.raafat-signature-map .leaflet-control-attribution a{color:#ffc482!important}
+body.raafat-signature-map .osm-standard-tile{
+  /* Fallback uses original OSM coloring, so every label remains readable. */
+  filter:none!important;opacity:1!important;
+}
+@media(prefers-reduced-motion:reduce){
+  body.raafat-signature-map .map-area::after{animation:none!important}
+}
