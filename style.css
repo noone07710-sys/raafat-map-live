@@ -1399,7 +1399,7 @@ body.raafat-signature-map .osm-standard-tile{
   position:relative;
   width:144px;
   height:100px;
-  transform:translate(-50%,-78px);
+  transform:none;
   pointer-events:auto;
   isolation:isolate;
   font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
@@ -1490,7 +1490,7 @@ body.raafat-signature-map .osm-standard-tile{
 .vip-district-marker.vip-district-active .vip-beacon-label{
   border-color:#ffdb9f;
   box-shadow:0 12px 30px rgba(0,18,21,.55),0 0 27px rgba(244,149,26,.3);
-  transform:translateX(-50%) translateY(-3px);
+  transform:translateX(-50%);
 }
 .vip-district-marker.vip-district-active .vip-beacon-point{
   background:#ffe6b1;
@@ -1498,10 +1498,6 @@ body.raafat-signature-map .osm-standard-tile{
 }
 .vip-district-marker:focus-visible .vip-beacon-label{
   outline:2px solid #ffd49a;outline-offset:3px;
-}
-.vip-map-close .vip-district-beacon{
-  transform:translate(-50%,-70px) scale(.88);
-  transform-origin:center bottom;
 }
 @keyframes raafat-vip-wave{
   0%{transform:translate(-50%,-50%) scale(.58);opacity:.88}
@@ -1513,10 +1509,10 @@ body.raafat-signature-map .osm-standard-tile{
   74%{transform:translateX(-140%)}
 }
 @media(max-width:620px){
-  .vip-district-beacon{width:118px;height:96px;transform:translate(-50%,-75px)}
-  .vip-beacon-point{top:68px}
-  .vip-beacon-wave{top:76px}
-  .vip-beacon-stem{top:48px}
+  .vip-district-beacon{width:144px;height:100px;transform:none}
+  .vip-beacon-point{top:70px}
+  .vip-beacon-wave{top:78px}
+  .vip-beacon-stem{top:50px}
   .vip-beacon-label{min-width:91px;max-width:117px;min-height:50px;padding:5px 11px}
   .vip-beacon-label strong{font-size:12px}
   .vip-beacon-label small{font-size:8.5px}
@@ -1525,4 +1521,33 @@ body.raafat-signature-map .osm-standard-tile{
   .vip-beacon-wave,.vip-beacon-label::after{animation:none!important}
   .vip-beacon-wave{opacity:.3;transform:translate(-50%,-50%) scale(1)}
   .vip-beacon-label{transition:none!important}
+}
+
+/* Geographic locking: never transform or resize the fixed Leaflet icon box.
+   The 144x100 wrapper matches iconSize and [72,78] matches the golden-dot centre. */
+.vip-district-marker{
+  width:144px!important;
+  height:100px!important;
+  margin-left:-72px!important;
+  margin-top:-78px!important;
+}
+.vip-district-marker .vip-district-beacon{
+  width:144px!important;
+  height:100px!important;
+  transform:none!important;
+  transform-origin:initial!important;
+}
+.vip-district-marker.vip-label-muted .vip-beacon-label,
+.vip-district-marker.vip-label-muted .vip-beacon-stem{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.vip-district-marker.vip-label-muted .vip-beacon-wave{
+  opacity:.5;
+}
+@media(max-width:620px){
+  .vip-district-marker .vip-district-beacon{
+    width:144px!important;height:100px!important;
+  }
 }
