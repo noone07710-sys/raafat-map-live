@@ -6,25 +6,25 @@
  * label collision rules unchanged, so the brand theme does not hide places.
  */
 const C=Object.freeze({
-  backdrop:"#092E2C",
-  land:"#10433C",
-  landMuted:"#0F3A35",
-  neighborhoods:"#164940",
-  park:"#1B5946",
-  forest:"#1C604D",
-  water:"#0B3747",
-  waterOutline:"#286F7B",
-  buildings:"#245348",
-  buildingEdge:"#3B6A5B",
-  road:"#D8F4E9",
-  secondaryRoad:"#CAE9DB",
-  highway:"#FFF1CF",
-  roadCasing:"#23594E",
-  boundaries:"#608C7B",
-  generic:"#3B7568",
-  label:"#FFBC76",
-  landmark:"#FBE2BC",
-  halo:"#0A2F2D"
+  backdrop:"#071F27",
+  land:"#0D3736",
+  landMuted:"#123E3B",
+  neighborhoods:"#195046",
+  park:"#205E48",
+  forest:"#145741",
+  water:"#0A3547",
+  waterOutline:"#377C82",
+  buildings:"#27584D",
+  buildingEdge:"#4A8070",
+  road:"#E7FFF5",
+  secondaryRoad:"#C6EBDD",
+  highway:"#FFE8B9",
+  roadCasing:"#295E52",
+  boundaries:"#669785",
+  generic:"#43796F",
+  label:"#FFCD8D",
+  landmark:"#FFE8BF",
+  halo:"#071F27"
 });
 const width=(major)=>[
   "interpolate",["linear"],["zoom"],
@@ -69,7 +69,7 @@ function colorize(layer,all){
        all.push({...next,id:"raafat-glow-"+layer.id,paint:{
          ...paint,
          "line-color":major?"#EDFFF6":"#C2F4DC",
-         "line-opacity":major?.2:.12,
+         "line-opacity":major?.24:.10,
          "line-width":width(major),
          "line-blur":major?2.8:2.1
        }});
@@ -145,7 +145,7 @@ export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
   const layers=[];
   for(const layer of raw.layers)colorize(layer,layers);
   raw.layers=layers;
-  raw.name="Raafat Signature — Emerald Edition";
+  raw.name="Raafat Signature — Emerald Royale VIP";
   raw.metadata={...(raw.metadata||{}),"raafat:palette":"emerald-amber-luminous","raafat:source":provider};
   return raw;
 }
