@@ -37,7 +37,8 @@ const state = {
  markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
  basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false,
  locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null,
- staffRole:null,siteSettings:null,googleActive:false
+ staffRole:null,siteSettings:null,googleActive:false,
+ vipDirectLink:null,vipDirectLinkEnabled:false
 };
 let toastTimeout;
 let adminDashboard=null;
@@ -374,6 +375,8 @@ function stopLiveLocationTracking(){
  state.locationWatchId=null;
  state.followLocation=false;
  state.lastLocation=null;
+ state.vipDirectLinkEnabled=false;
+ updateVipDirectLink();
  if(state.map){
    if(state.gpsMarker)state.map.removeLayer(state.gpsMarker);
    if(state.gpsAccuracy)state.map.removeLayer(state.gpsAccuracy);
@@ -426,6 +429,7 @@ function startLiveLocationTracking(){
      state.gpsAccuracy.setLatLng(point).setRadius(Math.min(accuracy,15000));
    }
    state.lastLocation=point;
+   updateVipDirectLink();
    if(state.followLocation){
      if(firstFix){
        state.map.flyTo(point,Math.max(16,state.map.getZoom()),{animate:true,duration:.65});
@@ -675,10 +679,37 @@ function renderMarkers(sites){
    state.markerById.set(s.id,marker);
  }
 }
+/**
+ * Optional visual connection only — a straight line, NEVER road routing.
+ * Only shows after the visitor has explicitly enabled browser location.
+ * GPS coordinates are used in memory, not persisted or shared.
+ */
+function updateVipDirectLink(){
+ if(!state.map)return;
+ const site=state.sites.find(s=>s.id===state.selected);
+ if(!state.vipDirectLinkEnabled||!site||!state.lastLocation){
+   if(state.vipDirectLink){
+     state.map.removeLayer(state.vipDirectLink);
+     state.vipDirectLink=null;
+   }
+   return;
+ }
+ const points=[state.lastLocation,[Number(site.latitude),Number(site.longitude)]];
+ if(!points[1].every(Number.isFinite))return;
+ if(state.vipDirectLink){
+   state.vipDirectLink.setLatLngs(points);
+ }else{
+   state.vipDirectLink=window.L.polyline(points,{
+     color:"#ffc27e",opacity:.88,weight:3,
+     dashArray:"8,13",interactive:false,className:"vip-straight-connection"
+   }).addTo(state.map);
+ }
+}
+
 function updateMapSiteCTA(){
  const card=el("mapSiteCTA");
  const site=state.sites.find(s=>s.id===state.selected);
- if(!site){card.hidden=true;return;}
+ if(!site){card.hidden=true;updateVipDirectLink();return;}
  const link=directionsToSite(site);
  if(!link){card.hidden=true;return;}
  const label=el("mapSiteStatus");
@@ -688,11 +719,16 @@ function updateMapSiteCTA(){
  el("mapSiteDirections").href=link;
  el("mapSiteDirections").setAttribute("aria-label","الاتجاهات إلى "+site.name);
  card.hidden=false;
+ updateVipDirectLink();
 }
 function selectSite(id){
  const site=state.sites.find(s=>s.id===id);
  if(!site)return;
- if(state.selected!==id)state.galleryIndex=0;
+ if(state.selected!==id){
+   state.galleryIndex=0;
+   state.vipDirectLinkEnabled=false;
+   updateVipDirectLink();
+ }
  if(state.locationWatchId!==null){
    state.followLocation=false;
    updateLiveLocationUI("الموقع مستمر • اضغط لتوسيط الخريطة");
@@ -767,11 +803,24 @@ async function renderDetail(){
    '<div class="detail-actions"><a class="btn btn-primary" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="بدء الملاحة إلى القطعة المحددة">↗ اتجه إلى القطعة</a>'+
    (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
    '<button type="button" class="btn btn-ghost" id="copyInquiry">نسخ بيانات للاستفسار</button>')+
-   '<button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button></div>'+
+   '<button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button>'+
+   '<button type="button" class="btn btn-ghost vip-direct-route-button" id="vipDirectRoute" title="خط مستقيم تقريبي وليس مسار قيادة">◌ خط مباشر من موقعي (ليس مساراً)</button></div>'+
    ''+
    (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
    (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"");
  el("siteDetails").innerHTML=html;
+ el("vipDirectRoute")?.addEventListener("click",()=>{
+   if(!state.lastLocation){
+     toast("لازم تضغط «موقعي الحالي» وتسمح للموقع أولاً. هذا خط مستقيم توضيحي وليس مسار قيادة.");
+     return;
+   }
+   state.vipDirectLinkEnabled=!state.vipDirectLinkEnabled;
+   updateVipDirectLink();
+   el("vipDirectRoute").textContent=state.vipDirectLinkEnabled?"× إخفاء الخط المباشر":"◌ خط مباشر من موقعي (ليس مساراً)";
+   if(state.vipDirectLinkEnabled){
+     toast("ظهر خط مستقيم تقريبي؛ استخدم زر الاتجاهات لمسار القيادة الحقيقي.");
+   }
+ });
  el("copySiteLink")?.addEventListener("click",async()=>{
    const url=location.origin+location.pathname+"#site="+encodeURIComponent(site.id);
    try{
