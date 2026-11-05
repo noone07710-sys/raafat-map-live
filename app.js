@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 import { fetchRaafatMapStyle } from "./brand-map.js";
+import { createGoogleMapLayer } from "./google-basemap.js";
 import { createAdminDashboard } from "./admin-dashboard.js";
 // The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
@@ -36,7 +37,7 @@ const state = {
  markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
  basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false,
  locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null,
- staffRole:null,siteSettings:null
+ staffRole:null,siteSettings:null,googleActive:false
 };
 let toastTimeout;
 let adminDashboard=null;
@@ -141,6 +142,7 @@ function addPersistentCityLabels(){
  }
  const update=()=>{
    if(!state.map)return;
+   if(state.googleActive){labels.clearLayers();state.cityBeacon=null;return;}
    const center=state.map.getCenter();
    const zoom=state.map.getZoom();
    const filteredCity=el("cityFilter").value;
@@ -177,6 +179,44 @@ function addPersistentCityLabels(){
  state.map.on("moveend zoomend",update);
  update();
 }
+async function installGoogleBasemap(){
+ // Kept behind a configured browser key so we never incur Google charges
+ // before the owner finishes quotas, billing and key restrictions.
+ try{
+   const layer=await createGoogleMapLayer(String(config.googleMapsApiKey||"").trim());
+   if(!state.map)return;
+   const map=state.map;
+   let completed=false;
+   const timeout=window.setTimeout(()=>complete(false),14000);
+   function complete(success){
+     if(completed)return;
+     completed=true;clearTimeout(timeout);
+     if(!success){
+       if(map.hasLayer(layer))map.removeLayer(layer);
+       console.warn("Google basemap unavailable; restoring the existing Raafat map.");
+       void installRaafatPremiumMap();
+       return;
+     }
+     if(!map.hasLayer(layer))return;
+     if(state.basemap&&map.hasLayer(state.basemap))map.removeLayer(state.basemap);
+     state.basemap=layer;
+     state.googleActive=true;
+     map.setMaxZoom(21);
+     if(map.getZoom()>21)map.setZoom(21);
+     state.cityLabels?.clearLayers();
+     state.cityBeacon=null;
+     document.body.classList.add("google-map-active");
+     finishMapReveal();
+   }
+   layer.once("load",()=>complete(true));
+   layer.once("tileerror",()=>console.warn("Google tiles are still loading."));
+   layer.addTo(map);
+ }catch(error){
+   console.warn("Google Maps could not be started:",error);
+   void installRaafatPremiumMap();
+ }
+}
+
 async function installRaafatPremiumMap(){
  if(!state.map||!window.maplibregl||typeof window.L.maplibreGL!=="function"
     ||(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported())){
@@ -383,7 +423,11 @@ function initializeMap(){
  el("cancelPick").addEventListener("click",()=>{
    state.pick=false;el("mapPicking").hidden=true;openModal("siteModal");
  });
- void installRaafatPremiumMap();
+ if(String(config.googleMapsApiKey||"").trim()){
+   void installGoogleBasemap();
+ }else{
+   void installRaafatPremiumMap();
+ }
 }
 
 function zoomAll(defaultOnly=false){
