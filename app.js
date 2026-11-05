@@ -516,6 +516,18 @@ function renderCityChips(){
    zoomAll();
  }));
 }
+function initializeCatalogLayout(){
+ const filters=el("advancedFilters");
+ if(!filters)return;
+ const mobile=window.matchMedia("(max-width: 850px)");
+ filters.open=!mobile.matches;
+ const handleChange=event=>{filters.open=!event.matches;};
+ if(typeof mobile.addEventListener==="function"){
+   mobile.addEventListener("change",handleChange);
+ }else if(typeof mobile.addListener==="function"){
+   mobile.addListener(handleChange);
+ }
+}
 function render(){
  renderCityChips();
  const sites=filteredSites();
@@ -531,7 +543,14 @@ function render(){
    '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
   '</button>'
  ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'غيّر الفلاتر لعرض قطع أخرى.')+'</div>';
- el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>selectSite(button.dataset.site)));
+ el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>{
+   selectSite(button.dataset.site);
+   // On a phone, show the actual site specifications instead of leaving
+   // the visitor at the list after they select an advertising site.
+   if(window.matchMedia("(max-width: 850px)").matches){
+     window.setTimeout(()=>el("siteDetails").scrollIntoView({behavior:"smooth",block:"start"}),120);
+   }
+ }));
  renderMarkers(sites);
  if(state.selected && !sites.some(s=>s.id===state.selected))state.selected=null;
  updateMapSiteCTA();
@@ -981,6 +1000,7 @@ async function main(){
    });
  }
  adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,loadSites,selectSite,applySettings:applySiteSettings});
+ initializeCatalogLayout();
  initializeMap();events();
  window.addEventListener("orientationchange",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),250));
  window.addEventListener("resize",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),100));
