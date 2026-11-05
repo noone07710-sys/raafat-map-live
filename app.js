@@ -152,7 +152,7 @@ function render(){
    '<small>'+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
    '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
   '</button>'
- ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'يمكن تغيير خيارات البحث أو العودة لاحقاً.')+'</div>';
+ ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'غيّر الفلاتر لعرض قطع أخرى.')+'</div>';
  el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>selectSite(button.dataset.site)));
  renderMarkers(sites);
  if(state.selected && !sites.some(s=>s.id===state.selected))state.selected=null;
@@ -194,7 +194,7 @@ async function renderDetail(){
  const requestId=state.selected;
  const site=state.sites.find(s=>s.id===requestId);
  if(!site){
-   el("siteDetails").innerHTML='<div class="empty detail-empty"><span class="empty-icon">⌖</span>حدد أي قطعة من الخريطة أو القائمة لتظهر تفاصيلها الدقيقة وصورها وقياساتها هنا.</div>';
+   el("siteDetails").innerHTML='<div class="empty detail-empty"><span class="empty-icon">⌖</span>اختر قطعة لعرض تفاصيلها.</div>';
    return;
  }
  const phone=String(config.whatsappNumber||"").replace(/\D/g,"");
@@ -207,7 +207,7 @@ async function renderDetail(){
  state.galleryIndex=Math.min(state.galleryIndex,Math.max(0,photosAvailable.length-1));
  const mainImage=photosAvailable.length?
     '<a href="'+escapeHtml(photosAvailable[state.galleryIndex])+'" target="_blank" rel="noopener noreferrer" title="فتح الصورة بالحجم الكامل"><img src="'+escapeHtml(photosAvailable[state.galleryIndex])+'" alt="صورة اللوحة الإعلانية '+escapeHtml(site.code)+'" loading="lazy"></a>':
-    '<div class="detail-placeholder"><b>R.</b>الصورة الحقيقية للموقع تضاف من لوحة الإدارة</div>';
+    '<div class="detail-placeholder"><b>R.</b>لا تتوفر صورة لهذه القطعة</div>';
  const thumbnails=photosAvailable.length>1?
    '<div class="photo-gallery">'+photosAvailable.map((u,i)=>
       '<button class="photo-thumb '+(state.galleryIndex===i?'active':'')+'" type="button" data-photo-index="'+i+'" aria-label="عرض صورة رقم '+(i+1)+'"><img src="'+escapeHtml(u)+'" loading="lazy" alt="صورة '+(i+1)+'"></button>'
@@ -234,7 +234,7 @@ async function renderDetail(){
    '<div class="detail-actions"><a class="btn btn-ghost" href="'+mapUrl+'" target="_blank" rel="noopener noreferrer">⌖ الاتجاهات على الخريطة</a>'+
    (whatsapp?'<a class="btn btn-primary" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
    '<button type="button" class="btn btn-primary" id="copyInquiry">نسخ بيانات للاستفسار</button>')+'</div>'+
-   '<p class="detail-tip">يمكنك مشاركة رقم القطعة وموقعها مع فريق المبيعات للاستفسار عن التوفر والأسعار.</p>'+
+   ''+
    (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
    (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"");
  el("siteDetails").innerHTML=html;
