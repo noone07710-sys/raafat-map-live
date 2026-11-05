@@ -380,16 +380,29 @@ function initializeMap(){
  const L=window.L;
  state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22})
    .setView(CITY_CENTERS["تكريت"],11);
- const key=encodeURIComponent(String(config.cartoApiKey||""));
- const fallback=L.tileLayer(
-   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+key,{
-   attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>',
-   subdomains:"abcd",maxNativeZoom:19,maxZoom:22,keepBuffer:3,
-   className:"raafat-fallback-tile"
+ // Show the same detailed standard cartography visitors see on OpenStreetMap.
+ // Keep labels and POIs intact; do not rewrite vector symbol layers.
+ const osm=window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
+   attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+   maxNativeZoom:19,
+   maxZoom:22,
+   minZoom:2,
+   keepBuffer:2,
+   updateWhenIdle:true,
+   className:"osm-standard-tile"
  });
- fallback.on("load",()=>{state.fallbackTilesLoaded=true;if(state.showFallback)finishMapReveal();});
- fallback.addTo(state.map);
- state.basemap=fallback;
+ osm.on("load",()=>{
+   state.fallbackTilesLoaded=true;
+   finishMapReveal();
+ });
+ osm.on("tileerror",event=>{
+   console.warn("Standard OSM tiles unavailable:",event);
+ });
+ osm.addTo(state.map);
+ state.basemap=osm;
+ document.body.classList.add("osm-standard-map");
+ // Never leave a visitor behind a loading screen if the tile provider stalls.
+ window.setTimeout(finishMapReveal,9000);
  L.control.zoom({position:"bottomright"}).addTo(state.map);
  state.markers=L.markerClusterGroup
    ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:42,chunkedLoading:true,disableClusteringAtZoom:16})
@@ -423,11 +436,7 @@ function initializeMap(){
  el("cancelPick").addEventListener("click",()=>{
    state.pick=false;el("mapPicking").hidden=true;openModal("siteModal");
  });
- if(String(config.googleMapsApiKey||"").trim()){
-   void installGoogleBasemap();
- }else{
-   void installRaafatPremiumMap();
- }
+ // Standard OSM raster tiles are the only active map layer.
 }
 
 function zoomAll(defaultOnly=false){
