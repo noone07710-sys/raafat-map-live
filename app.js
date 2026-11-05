@@ -12,7 +12,7 @@ const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","�
 const CITY_CENTERS = Object.freeze({
   "تكريت":[34.6158,43.6786],
   "بيجي":[34.92915,43.48878],
-  "الدور":[34.45835,43.7958],
+  "الدور":[34.4560,43.7934],
   "سامراء":[34.1959,43.8857],
   "الشرقاط":[35.5172,43.2281],
   "العلم":[34.709,43.6951],
@@ -126,6 +126,12 @@ function directionsToSite(site){
  * Every beacon has an Arabic HTML label (no broken vector glyphs) and only
  * visible, non-overlapping markers are mounted at each zoom.
  */
+/**
+ * Fixed-coordinate VIP district markers.
+ * Leaflet anchors each golden dot directly at the city coordinates. Nothing
+ * moves the root icon with CSS or when the zoom changes. Only rings animate.
+ * Label collision may hide a card, but never moves/removes the geographic dot.
+ */
 function addPersistentCityLabels(){
  if(!state.map||state.cityLabels)return;
  const L=window.L;
@@ -147,9 +153,11 @@ function addPersistentCityLabels(){
        '<strong>'+escapeHtml(city)+'</strong>'+
        '<small>'+escapeHtml(governorate)+'</small>'+
      '</span></div>';
+   // The dot centre inside the 144x100 icon is x=72,y=78.
+   // This is an actual Leaflet iconAnchor, not a visual CSS offset.
    const icon=L.divIcon({
      className:"vip-district-marker",
-     html,iconSize:[1,1],iconAnchor:[0,0]
+     html,iconSize:[144,100],iconAnchor:[72,78]
    });
    const marker=L.marker(coords,{
      icon,pane:"raafatCities",interactive:true,keyboard:true,
@@ -161,63 +169,55 @@ function addPersistentCityLabels(){
      el("governorateFilter").value=governorate;
      renderCityOptions();
      el("cityFilter").value=city;
-     if(state.selected)state.selected=null;
+     state.selected=null;
      render();
      zoomAll();
    });
+   group.addLayer(marker);
    beacons.set(city,{marker,coords,governorate});
  });
  const update=()=>{
    if(!state.map)return;
-   const zoom=map.getZoom();
    const bounds=map.getBounds().pad(.07);
-   const filtered=el("cityFilter").value;
-   const selected=state.sites.find(site=>site.id===state.selected);
-   const focus=selected&&CITY_CENTERS[selected.city]?selected.city:
-      CITY_CENTERS[filtered]?filtered:null;
-   const province=el("governorateFilter").value;
-   const middle=map.getSize().divideBy(2);
-   // Keep the pins separate from the actual billboard locations and road names.
-   const ranked=[];
-   for(const [city,{coords,governorate}] of beacons){
-     if(province&&governorate!==province&&city!==focus)continue;
-     if(!bounds.contains(coords))continue;
-     const screen=map.latLngToContainerPoint(coords);
-     const isFocus=city===focus;
-     const distance=screen.distanceTo(middle);
-     ranked.push({city,screen,distance,isFocus});
-   }
-   ranked.sort((a,b)=>Number(b.isFocus)-Number(a.isFocus)||a.distance-b.distance);
-   const visible=new Set();
+   const focusedSite=state.sites.find(site=>site.id===state.selected);
+   const selectedCity=el("cityFilter").value;
+   const focus=focusedSite&&CITY_CENTERS[focusedSite.city]?focusedSite.city:
+     CITY_CENTERS[selectedCity]?selectedCity:null;
+   // Stable, fixed priority order; labels do not alternate based on
+   // distance from the moving viewport centre.
+   const ordered=[...cities].sort((a,b)=>
+     Number(b[0]===focus)-Number(a[0]===focus)
+   );
    const occupied=[];
-   const limit=zoom>=14?1:zoom>=11?4:8;
-   const safeWidth=zoom>=12?120:94;
-   const safeHeight=zoom>=12?83:65;
-   for(const entry of ranked){
-     if(visible.size>=limit)break;
-     if(zoom>=14&&!entry.isFocus&&visible.size)continue;
-     // At deep street zoom, keep only the focused district, if any.
-     if(zoom>=15&&!entry.isFocus)continue;
-     if(!entry.isFocus && occupied.some(p=>
-       Math.abs(p.x-entry.screen.x)<safeWidth &&
-       Math.abs(p.y-entry.screen.y)<safeHeight
-     ))continue;
-     visible.add(entry.city);
-     occupied.push({x:entry.screen.x,y:entry.screen.y});
+   const shown=new Set();
+   const zoom=map.getZoom();
+   const minX=zoom<10?126:137;
+   const minY=zoom<10?78:90;
+   for(const [city,coords] of ordered){
+     if(!bounds.contains(coords))continue;
+     const point=map.latLngToContainerPoint(coords);
+     const collides=occupied.some(other=>
+       Math.abs(other.x-point.x)<minX && Math.abs(other.y-point.y)<minY
+     );
+     if(!collides || city===focus){
+       shown.add(city);
+       occupied.push({x:point.x,y:point.y});
+     }
    }
    for(const [city,{marker}] of beacons){
-     const show=visible.has(city);
-     if(show&&!group.hasLayer(marker))group.addLayer(marker);
-     else if(!show&&group.hasLayer(marker))group.removeLayer(marker);
-     marker.getElement()?.classList.toggle("vip-district-active",city===focus);
+     const dom=marker.getElement();
+     if(!dom)continue;
+     const showLabel=shown.has(city);
+     dom.classList.toggle("vip-label-muted",!showLabel);
+     dom.classList.toggle("vip-district-active",city===focus);
+     dom.setAttribute("aria-label",city+"، "+(REGIONS["كركوك"].includes(city)?"كركوك":"صلاح الدين"));
    }
    const heading=el("mapRegionLabel");
    if(heading){
-     const city=focus||(ranked.length===1?ranked[0].city:null);
+     const city=focus||null;
      heading.textContent=city||"";
      heading.hidden=!city;
    }
-   map.getContainer().classList.toggle("vip-map-close",zoom>=13);
  };
  state.cityLabels=group;
  state.updateCityFocus=update;
