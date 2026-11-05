@@ -1,102 +1,78 @@
 /**
- * Raafat Signature: deep emerald, warm labels and softly illuminated roads.
- *
- * Styling is paint-only. We intentionally keep ALL upstream OpenFreeMap/CARTO
- * text fields, glyphs, POI icons, filters, layer ordering, min/max zoom and
- * label collision rules unchanged, so the brand theme does not hide places.
+ * RAAFAT Calm Gray Map — a quiet, low-contrast daytime vector basemap.
+ * Do not change upstream OpenStreetMap place/road data, label text expressions,
+ * symbol spacing, zoom ranges or visibility. Only repaint visible layers.
  */
 const C=Object.freeze({
-  backdrop:"#071F27",
-  land:"#0D3736",
-  landMuted:"#123E3B",
-  neighborhoods:"#195046",
-  park:"#205E48",
-  forest:"#145741",
-  water:"#0A3547",
-  waterOutline:"#377C82",
-  buildings:"#27584D",
-  buildingEdge:"#4A8070",
-  road:"#E7FFF5",
-  secondaryRoad:"#C6EBDD",
-  highway:"#FFE8B9",
-  roadCasing:"#295E52",
-  boundaries:"#669785",
-  generic:"#43796F",
-  label:"#FFCD8D",
-  landmark:"#FFE8BF",
-  halo:"#071F27"
+  background:"#edf0f1",
+  land:"#edf0f1",
+  landMuted:"#e9eded",
+  district:"#e8eceb",
+  park:"#dfeae2",
+  forest:"#d4e5db",
+  water:"#d5e6ea",
+  waterEdge:"#afcdd2",
+  building:"#dce2e2",
+  buildingOutline:"#cbd4d3",
+  road:"#ffffff",
+  secondaryRoad:"#fafbfa",
+  highway:"#f6f0e3",
+  casing:"#d2d9d8",
+  boundary:"#a9b9b8",
+  neutral:"#b9c7c5",
+  name:"#42575b",
+  nameStrong:"#27474a",
+  roadName:"#5a686a",
+  poi:"#596d68",
+  halo:"#f6f8f7"
 });
-const width=(major)=>[
-  "interpolate",["linear"],["zoom"],
-  9,major?1.2:.6,
-  12,major?2.2:1.4,
-  15,major?4.7:2.4,
-  18,major?8:4.3,
-  21,major?12:7.5
-];
-function colorize(layer,all){
+function colorize(layer,output){
  const next={...layer,paint:{...(layer.paint||{})}};
  const paint=next.paint;
  const source=String(layer["source-layer"]||"").toLowerCase();
  const id=String(layer.id||"").toLowerCase();
- const scope=source+" "+id;
-
+ const key=source+" "+id;
  if(layer.type==="background"){
-   paint["background-color"]=C.backdrop;
+   paint["background-color"]=C.background;
  }else if(layer.type==="fill"){
    if(!("fill-pattern" in paint)){
      let color=C.land;
-     if(/water|ocean|lake/.test(scope))color=C.water;
-     else if(/forest|wood|tree/.test(scope))color=C.forest;
-     else if(/park|grass|garden|nature/.test(scope))color=C.park;
-     else if(/building/.test(scope))color=C.buildings;
-     else if(/residential|landuse|industrial|commercial/.test(scope))color=C.neighborhoods;
-     else if(/landcover|land/.test(scope))color=C.landMuted;
+     if(/water|ocean|lake/.test(key))color=C.water;
+     else if(/forest|wood/.test(key))color=C.forest;
+     else if(/park|grass|garden|nature/.test(key))color=C.park;
+     else if(/building/.test(key))color=C.building;
+     else if(/residential|industrial|commercial/.test(key))color=C.district;
+     else if(/landcover|landuse/.test(key))color=C.landMuted;
      paint["fill-color"]=color;
    }
-   if(/building/.test(scope) && "fill-outline-color" in paint){
-     paint["fill-outline-color"]=C.buildingEdge;
-   }
+   if(/building/.test(key)&&"fill-outline-color" in paint)
+     paint["fill-outline-color"]=C.buildingOutline;
  }else if(layer.type==="fill-extrusion"){
-   paint["fill-extrusion-color"]=C.buildings;
+   paint["fill-extrusion-color"]=C.building;
  }else if(layer.type==="line"){
    const road=/^(transportation|roads|road)$/.test(source)&&!/rail|ferry/.test(id);
    if(road){
      const casing=/casing|case|outline/.test(id);
      const major=/motorway|trunk|primary|highway|main/.test(id);
-     if(!casing && !("line-dasharray" in paint)){
-       // Low-opacity luminous road underlay; original road stays crisp on top.
-       all.push({...next,id:"raafat-glow-"+layer.id,paint:{
-         ...paint,
-         "line-color":major?"#EDFFF6":"#C2F4DC",
-         "line-opacity":major?.24:.10,
-         "line-width":width(major),
-         "line-blur":major?2.8:2.1
-       }});
-     }
-     paint["line-color"]=casing?C.roadCasing:major?C.highway:
+     paint["line-color"]=casing?C.casing:major?C.highway:
        /secondary|tertiary/.test(id)?C.secondaryRoad:C.road;
-     // Keep original widths and visibility thresholds wherever possible.
-     paint["line-opacity"]=casing?.72:.94;
-   }else if(/waterway|stream|river/.test(scope)){
-     paint["line-color"]=C.waterOutline;
-   }else if(/boundary|admin/.test(scope)){
-     paint["line-color"]=C.boundaries;
+   }else if(/waterway|river|stream/.test(key)){
+     paint["line-color"]=C.waterEdge;
+   }else if(/boundary|admin/.test(key)){
+     paint["line-color"]=C.boundary;
    }else if("line-color" in paint){
-     paint["line-color"]=C.generic;
+     paint["line-color"]=C.neutral;
    }
- }else if(layer.type==="symbol" && layer.layout?.["text-field"]!==undefined){
-   // Crucial: no text-field replacement or zoom limits. Preserve all names,
-   // including Arabic businesses, street labels, landmarks and city names.
-   const road=/road|transportation_name|street/.test(scope);
-   const place=/place|city|town|capital|state|village/.test(scope);
-   const poi=/poi|shop|landmark|amenity|business/.test(scope);
-   paint["text-color"]=poi?C.landmark:place?"#FFCA88":road?"#F7D3A0":C.label;
+ }else if(layer.type==="symbol"&&layer.layout?.["text-field"]!==undefined){
+   const road=/road|transportation_name|street/.test(key);
+   const place=/place|city|town|capital|state|village/.test(key);
+   const poi=/poi|shop|landmark|amenity|business/.test(key);
+   paint["text-color"]=place?C.nameStrong:road?C.roadName:poi?C.poi:C.name;
    paint["text-halo-color"]=C.halo;
-   paint["text-halo-width"]=place?1.75:1.35;
-   paint["text-halo-blur"]=.35;
+   paint["text-halo-width"]=place?1.55:1.25;
+   paint["text-halo-blur"]=.12;
  }
- all.push(next);
+ output.push(next);
 }
 
 export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
@@ -145,7 +121,7 @@ export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
   const layers=[];
   for(const layer of raw.layers)colorize(layer,layers);
   raw.layers=layers;
-  raw.name="Raafat Signature — Emerald Royale VIP";
-  raw.metadata={...(raw.metadata||{}),"raafat:palette":"emerald-amber-luminous","raafat:source":provider};
+  raw.name="Raafat Calm Gray";
+  raw.metadata={...(raw.metadata||{}),"raafat:palette":"calm-gray-daylight","raafat:source":provider};
   return raw;
 }
