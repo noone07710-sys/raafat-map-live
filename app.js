@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 import { fetchRaafatMapStyle } from "./brand-map.js";
+// The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
+const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
 const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
@@ -610,7 +612,8 @@ async function removePhoto(site,photoId){
 function refreshAdmin(){
  el("staffTag").hidden=!state.staff;
  el("newSite").hidden=!state.staff;
- el("loginButton").hidden=state.staff;
+ el("loginButton").hidden=state.staff||!ADMIN_ENTRY;
+ el("changePasswordButton").hidden=!state.staff;
  el("logoutButton").hidden=!state.user;
 }
 async function authCheck(){
@@ -783,37 +786,29 @@ async function signIn(event){
   closeModal("loginModal");
   await loadSites();
   toast("مرحباً بك في لوحة إدارة شركة رأفت.");
- }catch(error){toast(error.message||"تعذر تسجيل الدخول.")}
+ }catch(error){
+  const wrong=/invalid login credentials|invalid_credentials/i.test(String(error.message||""));
+  toast(wrong?"البريد الإلكتروني أو كلمة المرور غير صحيحين.":error.message||"تعذر تسجيل الدخول.");
+ }
  finally{button.disabled=false}
 }
-async function registerFirstAdmin(){
- if(!db){toast("اتصال Supabase غير مهيأ.");return;}
- const email=el("email").value.trim(), password=el("password").value;
- if(!email || !el("email").checkValidity()){toast("أدخل البريد الإلكتروني بصورة صحيحة.");return;}
- if(password.length<12){toast("اختَر كلمة مرور لا تقل عن 12 حرفاً.");return;}
- const button=el("registerAdmin");
+async function changeAdminPassword(event){
+ event.preventDefault();
+ if(!db||!state.staff){toast("هذه الخدمة متاحة للإدارة فقط.");return;}
+ const pw=el("newAdminPassword").value;
+ const confirm=el("confirmAdminPassword").value;
+ if(pw.length<14){toast("اختَر كلمة مرور من 14 حرفاً على الأقل.");return;}
+ if(pw!==confirm){toast("تأكيد كلمة المرور غير مطابق.");return;}
+ const button=el("changePasswordForm").querySelector('button[type="submit"]');
  button.disabled=true;
  try{
-   const redirectTo=window.location.origin+window.location.pathname;
-   const {data,error}=await db.auth.signUp({
-     email,
-     password,
-     options: { emailRedirectTo:redirectTo }
-   });
+   const {error}=await db.auth.updateUser({password:pw});
    if(error)throw error;
-   el("password").value="";
-   if(data.session){
-     // A pre-confirmed signup must not acquire admin privileges automatically.
-     // The database bootstrap grants it only on a verified-email transition.
-     await db.auth.signOut();
-     toast("تم إنشاء الحساب، لكن يجب التأكد من إعداد تأكيد البريد في Supabase قبل منح صلاحيات الإدارة.");
-   }else{
-     toast("إذا كان البريد مؤهلاً، ستصلك رسالة تفعيل. افتح الرابط من بريدك، ثم سجّل دخولك.");
-   }
- }catch(error){
-   console.error("First admin signup failed:",error.message);
-   toast("تعذر إنشاء الحساب: "+(error.message||"تحقق من بريدك وإعدادات Supabase."));
- }finally{button.disabled=false}
+   el("changePasswordForm").reset();
+   closeModal("passwordModal");
+   toast("تم تغيير كلمة المرور بنجاح.");
+ }catch(error){toast("تعذر تغيير كلمة المرور: "+(error.message||"حاول مجدداً."));}
+ finally{button.disabled=false;}
 }
 async function signOut(){
  if(!db)return;
@@ -836,7 +831,8 @@ function events(){
  el("logoutButton").addEventListener("click",()=>void signOut());
  el("siteForm").addEventListener("submit",saveSite);
  el("loginForm").addEventListener("submit",signIn);
- el("registerAdmin").addEventListener("click",()=>void registerFirstAdmin());
+ el("changePasswordButton").addEventListener("click",()=>{if(state.staff)openModal("passwordModal")});
+ el("changePasswordForm").addEventListener("submit",changeAdminPassword);
  el("pickMap").addEventListener("click",()=>{
    if(!state.map){toast("الخريطة غير متاحة.");return;}
    state.pick=true;
@@ -859,7 +855,7 @@ function events(){
  });
  document.addEventListener("keydown",e=>{
    if(e.key==="Escape"){state.pick=false;el("mapPicking").hidden=true;
-   for(const id of ["loginModal","siteModal"])closeModal(id)}
+   for(const id of ["loginModal","siteModal","passwordModal"])closeModal(id)}
  });
 }
 async function main(){
@@ -871,6 +867,7 @@ async function main(){
   return;
  }
  await authCheck();
+ if(ADMIN_ENTRY&&!state.staff)openModal("loginModal");
  await loadSites();
 }
 void main();
