@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#062727">
   <meta name="description" content="شركة رأفت للدعاية والإعلان والتجارة العامة — شبكة المواقع الإعلانية في العراق">
   <title>شركة رأفت | شبكة المواقع الإعلانية</title>
-  <link rel="icon" type="image/png" href="https://ccsmartclinic.wordpress.com/wp-content/uploads/2026/11/e85b3bef-3d06-423e-a284-c3d8681964bf.png">
+  <link rel="icon" type="image/svg+xml" href="./assets/raafat-logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,24 +23,20 @@
  <div class="app-shell">
   <header class="header">
     <div class="identity">
-      <div class="logo"><img src="https://ccsmartclinic.wordpress.com/wp-content/uploads/2026/11/e85b3bef-3d06-423e-a284-c3d8681964bf.png" alt="شعار شركة رأفت للدعاية والإعلان" referrerpolicy="no-referrer"></div>
-      <div><div class="brand">رأفت<span>.</span> <em>OUTDOOR</em></div><div class="brand-caption">شركة رأفت للدعاية والإعلان والتجارة العامة</div></div>
+      <div class="logo"><img src="./assets/raafat-logo.svg" alt="شعار شركة رأفت" width="70" height="62"></div>
+      <div class="brand-text"><div class="brand">شركة <span>رأفت</span></div><div class="brand-caption">للدعاية والإعلان والتجارة العامة</div></div>
     </div>
-    <div class="header-center"><span class="live-dot"></span> شبكة المواقع الإعلانية <span class="header-english">/ OUTDOOR NETWORK</span></div>
     <nav class="header-actions" aria-label="الإجراءات">
       <span class="admin-tag" id="staffTag" hidden>إدارة</span>
       <button class="btn btn-primary" id="newSite" hidden>+ إضافة موقع</button>
-      <button class="btn btn-ghost" id="loginButton">دخول الموظفين</button>
+      <button class="btn btn-ghost" id="loginButton">دخول الإدارة</button>
       <button class="btn btn-ghost" id="logoutButton" hidden>خروج</button>
     </nav>
   </header>
   <main class="main-layout">
     <aside class="panel browse">
-      <div class="eyebrow">RAAFAT / DISCOVER</div>
-      <div class="service-chip">شبكتنا الإعلانية • صلاح الدين وكركوك</div>
-      <h1>مساحتك الإعلانية<br><span>بالمكان الصحيح.</span></h1>
-      <p class="intro">كل لوحة إلها موقع وقصة. اكتشف مواقعنا على الخريطة، وقارن بين القياسات وأنواع الإعلانات، ثم اختر المساحة الأنسب لحملتك.</p>
-      <div class="coverage-box"><div class="coverage-head"><span>مناطق تغطيتنا</span><span>اختر المدينة مباشرة</span></div><div class="city-chips" id="cityChips"></div></div>
+      <h1 class="catalog-title">المواقع الإعلانية</h1>
+      <div class="coverage-box"><div class="coverage-head"><span>المدن</span></div><div class="city-chips" id="cityChips"></div></div>
       <div class="alert" id="systemAlert" hidden role="status"></div>
       <div class="stats" aria-label="إحصائيات المواقع">
         <div class="stat"><strong id="allCount">—</strong><span>إجمالي القطع</span></div>
@@ -67,14 +63,13 @@
     </aside>
     <section class="map-area" aria-label="خريطة القطع الإعلانية">
       <div id="map" class="map"></div>
-      <div class="map-chip"><span class="live-dot"></span><span>الخريطة التفاعلية</span><strong id="mapCount">0</strong></div>
+      <div class="map-chip"><span class="live-dot"></span><span>الخريطة</span><strong id="mapCount">0</strong></div>
       <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="الرجوع للخريطة العامة" title="الرجوع للخريطة العامة">⌖</button>
     </section>
     <aside class="panel details">
-      <div class="detail-kicker">SITE OVERVIEW</div>
-      <h2>تفاصيل المساحة</h2>
-      <div id="siteDetails" class="details-content"><div class="empty detail-empty"><span class="empty-icon">⌖</span>اختر موقعاً من الخريطة أو القائمة لعرض بياناته.</div></div>
+      <h2>تفاصيل القطعة</h2>
+      <div id="siteDetails" class="details-content"><div class="empty detail-empty"><span class="empty-icon">⌖</span>اختر قطعة لعرض تفاصيلها.</div></div>
     </aside>
   </main>
   <footer class="mobile-footer">شركة رأفت للدعاية والإعلان والتجارة العامة • جميع الحقوق محفوظة</footer>
