@@ -140,8 +140,9 @@ async function installRaafatPremiumMap(){
    };
    const timeout=setTimeout(fallback,18000);
    renderer.on("error",event=>{
+     // A single missing POI glyph or a transient tile error must not
+     // disable the entire branded map. The startup timeout handles failures.
      console.warn("Raafat vector renderer:",event.error||event);
-     if(!renderer.loaded())fallback();
    });
    const onReady=()=>{
      if(ready)return;
