@@ -5,6 +5,6 @@ window.RAAFAT_CONFIG = {
   cartoApiKey: "cb1_52lc_1_85459d16b83e37256e59cc25",
   // Add only a Google Maps JavaScript browser key restricted to this website.
   // Leave blank until Google Cloud billing, referrers and usage quotas are set.
-  googleMapsApiKey: "",
+  googleMapsApiKey: "AIzaSyC_-tDHdyFFUlGrFn2PKiUZIDEVu0bI7Ro",
   whatsappNumber: ""
 };
