@@ -1669,3 +1669,372 @@ body.raafat-signature-map .osm-standard-tile{
 @media(prefers-reduced-motion:reduce){
   .vip-district-marker .vip-beacon-label{transition:none!important}
 }
+
+
+
+/* ======================================================================
+   RAAFAT SIGNATURE / VIP EXTREME 2026
+   Visual layer only: map coordinates, OSM labels and business data untouched.
+   ====================================================================== */
+:root{
+  --vip-emerald:#063d38;
+  --vip-emerald-2:#0b5148;
+  --vip-glass:rgba(5,44,41,.89);
+  --vip-gold:#f4a14a;
+  --vip-warm:#ffda9c;
+  --vip-text:#f6fff8;
+  --vip-hairline:rgba(199,229,208,.21);
+  --vip-elevated:0 15px 38px rgba(1,24,23,.34),inset 0 1px rgba(250,255,242,.08);
+}
+.map-area.raafat-vip-active,.raafat-premium-map{isolation:isolate}
+body.raafat-signature-map .map-area{
+  background:radial-gradient(ellipse 85% 80% at 42% 48%,#134b41 0%,#082d30 67%,#051f27 100%)!important;
+}
+body.raafat-signature-map .map-area::after{
+  opacity:.48;
+  background:
+   radial-gradient(ellipse 43% 30% at 7% 13%,rgba(57,206,155,.12),transparent 78%),
+   radial-gradient(ellipse 34% 45% at 95% 82%,rgba(244,149,26,.085),transparent 82%);
+}
+body.raafat-signature-map.no-map-glow .map-area::after{display:none!important}
+/* Discreet floating network masthead — never changes the underlying map. */
+.vip-topline{
+  position:absolute;top:15px;left:50%;z-index:452;
+  transform:translateX(-50%);
+  display:flex;align-items:center;gap:10px;
+  min-width:246px;max-width:min(350px,48%);
+  height:51px;padding:6px 13px;
+  border:1px solid rgba(247,206,144,.3);
+  border-radius:14px;
+  background:linear-gradient(115deg,rgba(6,53,49,.94),rgba(4,34,35,.95));
+  color:#f3fff7;
+  box-shadow:0 12px 34px rgba(0,19,20,.34),inset 0 1px rgba(255,255,255,.09);
+  backdrop-filter:blur(14px);
+  pointer-events:none;direction:ltr;
+}
+.vip-topline::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;
+  border-top:1px solid rgba(255,192,114,.14);
+  pointer-events:none;
+}
+.vip-topline-monogram{
+  position:relative;flex:none;display:grid;place-items:center;
+  width:33px;height:33px;border-radius:10px;
+  font:700 22px/1 Georgia,serif;letter-spacing:-2px;
+  color:#ffe5bf;
+  background:linear-gradient(135deg,#205f4c,#0b413b);
+  border:1px solid rgba(255,202,128,.4);
+  box-shadow:0 0 20px rgba(232,168,80,.13);
+}
+.vip-topline-monogram span{font-size:12px;color:#f4a14a;margin-left:1px}
+.vip-topline-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0;gap:3px}
+.vip-topline-name small{
+  font:700 9px/1.2 Arial,sans-serif;letter-spacing:1.45px;
+  color:#e6b877;white-space:nowrap
+}
+.vip-topline-name strong{
+  font-size:11px;font-weight:700;line-height:1.3;white-space:nowrap
+}
+.vip-topline-status{
+  margin-inline-start:auto;display:flex;align-items:center;gap:5px;
+  color:#a4d6bc;font-size:9px;white-space:nowrap
+}
+.vip-topline-status i{
+  display:inline-block;width:6px;height:6px;
+  background:#5ee5ad;border-radius:50%;
+  box-shadow:0 0 0 3px rgba(94,229,173,.13),0 0 10px #5ee5ad;
+  animation:raafat-vip-indicator 2.7s ease-in-out infinite
+}
+/* Premium utility shelf. Does not interfere with map dragging. */
+.vip-map-actions{
+  position:absolute;left:15px;bottom:84px;z-index:562;
+  display:flex;align-items:center;gap:7px;
+  max-width:calc(100% - 30px);
+  direction:rtl;isolation:isolate
+}
+.vip-tool-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:40px;padding:8px 12px;
+  border:1px solid rgba(190,221,200,.42);
+  border-radius:11px;
+  background:rgba(6,51,45,.93);
+  color:#f7fff8;font-size:10px;font-weight:700;
+  box-shadow:0 7px 22px rgba(0,25,24,.28),inset 0 1px rgba(255,255,255,.07);
+  backdrop-filter:blur(14px);
+  transition:background .17s,border-color .17s,box-shadow .17s,transform .17s;
+  white-space:nowrap
+}
+.vip-tool-button span{font:700 17px/1 Arial,sans-serif;color:#ffd595}
+.vip-tool-button:hover,.vip-tool-button[aria-expanded="true"]{
+  border-color:rgba(255,204,137,.73);background:rgba(18,83,68,.98);
+  box-shadow:0 7px 24px rgba(0,25,24,.31),0 0 15px rgba(244,149,26,.10)
+}
+.vip-tool-button:active{transform:translateY(1px)}
+.vip-legend{
+  position:absolute;bottom:calc(100% + 10px);left:0;
+  z-index:5;width:222px;max-width:calc(100vw - 28px);
+  padding:14px;
+  background:linear-gradient(155deg,rgba(8,63,55,.98),rgba(3,34,38,.98));
+  color:#f0fff7;
+  border:1px solid rgba(244,188,111,.43);border-radius:14px;
+  box-shadow:0 20px 45px rgba(0,16,18,.49),inset 0 1px rgba(255,255,255,.07);
+  backdrop-filter:blur(18px);direction:rtl;
+  animation:vip-legend-enter .2s ease-out both
+}
+.vip-legend[hidden]{display:none!important}
+.vip-legend>strong{display:block;font-size:12px;color:#ffe0ad;margin-bottom:11px}
+.vip-legend>div{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:11px}
+.vip-legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+.vip-legend-dot.available{background:#30c891}
+.vip-legend-dot.reserved{background:#f4a14a}
+.vip-legend-dot.booked{background:#73b7e9}
+.vip-legend-dot.maintenance{background:#df8986}
+.vip-legend>small{display:block;margin-top:12px;padding-top:10px;border-top:1px solid rgba(172,222,192,.17);color:#a9cfc0;font-size:9px;line-height:1.85}
+/* A premium billboard location pin: geometric diamond plus animated selected ring. */
+.raafat-premium-site-icon{border:0!important;background:transparent!important;overflow:visible!important}
+.raafat-premium-site-icon .site-pin{
+  position:relative;width:29px;height:29px;
+  border:2px solid rgba(247,255,244,.9);
+  border-radius:11px 11px 11px 3px;
+  background:linear-gradient(145deg,#65e0b2,#189e75);
+  box-shadow:0 5px 15px rgba(3,26,25,.51),0 0 0 3px rgba(27,166,119,.13)!important;
+  transform:rotate(-45deg);
+  transition:filter .2s,box-shadow .2s,background .2s
+}
+.raafat-premium-site-icon .site-pin.reserved{background:linear-gradient(140deg,#ffd18a,#e68a28)}
+.raafat-premium-site-icon .site-pin.booked{background:linear-gradient(140deg,#afd9ff,#4d8fc8)}
+.raafat-premium-site-icon .site-pin.maintenance{background:linear-gradient(140deg,#ffb5a7,#cc656b)}
+.raafat-premium-site-icon .site-pin span{
+  width:8px;height:8px;display:block;position:absolute;top:9px;left:9px;
+  background:#10413b;border-radius:50%;
+  transform:none;box-shadow:0 0 0 2px rgba(251,255,250,.41)
+}
+.raafat-premium-site-icon .site-pin .vip-pin-aura{
+  position:absolute;pointer-events:none;
+  width:52px;height:52px;left:50%;top:50%;
+  border-radius:50%;border:2px solid rgba(255,215,148,.74);
+  background:radial-gradient(circle,rgba(252,178,86,.18),transparent 66%);
+  box-shadow:0 0 22px rgba(255,177,71,.28);
+  transform:translate(-50%,-50%) rotate(45deg) scale(.55);
+  opacity:0
+}
+.raafat-premium-site-icon .site-pin.selected{
+  border-color:#fff3c6;
+  box-shadow:0 0 0 5px rgba(244,149,26,.30),0 0 25px rgba(244,149,26,.55),0 7px 22px rgba(2,22,22,.51)!important;
+  z-index:8
+}
+.raafat-premium-site-icon .site-pin.selected .vip-pin-aura{
+  opacity:1;animation:vip-pin-spotlight 2.5s ease-out infinite
+}
+.raafat-premium-site-icon:hover .site-pin{filter:brightness(1.17)}
+.leaflet-marker-icon.raafat-premium-site-icon:focus-visible{
+  outline:2px solid #ffd594;outline-offset:6px;border-radius:6px
+}
+/* Marker clusters should complement the individual status pins. */
+.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{
+  background:rgba(255,188,90,.20)!important;
+  box-shadow:0 0 18px rgba(244,149,26,.22)
+}
+.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{
+  background:linear-gradient(145deg,#ffca7e,#d98b37)!important;
+  color:#07332d!important;font-weight:700!important;
+  border:1px solid rgba(255,255,255,.43)
+}
+/* Refine VIP geographical district cards while preserving their JS-computed
+   connection lines and the exact fixed Leaflet GPS anchors. */
+.vip-district-marker .vip-beacon-label{
+  background:linear-gradient(150deg,rgba(17,85,67,.98),rgba(5,40,41,.98))!important;
+  border-color:rgba(255,203,131,.8)!important;
+  box-shadow:0 13px 28px rgba(0,19,19,.48),0 0 19px rgba(244,149,26,.19),inset 0 1px rgba(255,232,201,.11)!important;
+}
+.vip-district-marker.vip-district-active .vip-beacon-label{
+  border-color:#ffe4a8!important;
+  box-shadow:0 14px 35px rgba(0,20,18,.55),0 0 28px rgba(244,149,26,.3)!important
+}
+.vip-district-marker .vip-beacon-label strong{color:#ffdfa7}
+.vip-district-marker .vip-beacon-label small{color:#beded0}
+.vip-district-marker .vip-beacon-point{
+  box-shadow:0 0 0 5px rgba(244,149,26,.14),0 0 20px rgba(255,184,75,.63),0 0 42px rgba(244,149,26,.13)
+}
+.vip-district-marker .vip-beacon-link{background:linear-gradient(90deg,#ffd79d,#f3a95b)!important}
+/* Responsive user controls: the map remains draggable and readable. */
+.map-chip{border-radius:12px;background:rgba(5,46,43,.94);border-color:rgba(173,223,192,.36);box-shadow:var(--vip-elevated)}
+.live-location-button,.live-location-stop{
+  border-radius:11px;
+  border:1px solid rgba(182,225,203,.44);
+  box-shadow:0 9px 23px rgba(0,25,22,.27),inset 0 1px rgba(255,255,255,.075)
+}
+.live-location-button:hover,.map-home:hover{border-color:#f4b768}
+.map-home{border-radius:12px;box-shadow:var(--vip-elevated);background:linear-gradient(135deg,#135b4b,#063c3c)}
+.leaflet-control-zoom{
+  box-shadow:0 8px 25px rgba(0,20,20,.32)!important;
+  border-radius:12px!important;overflow:hidden
+}
+.leaflet-control-zoom a{
+  background:#0b493e!important;
+  color:#fff0d3!important;font-weight:700!important
+}
+.leaflet-control-zoom a:hover{background:#176757!important}
+.map-site-cta{
+  background:linear-gradient(130deg,rgba(11,72,59,.98),rgba(4,37,39,.98));
+  border:1px solid rgba(244,199,136,.47);
+  border-radius:15px;
+  box-shadow:0 16px 36px rgba(0,24,22,.44),0 0 22px rgba(243,163,74,.08)
+}
+.map-site-eyebrow{display:flex;align-items:center;gap:8px;color:#ffc789}
+.vip-site-state{
+  display:inline-flex;padding:3px 7px;border-radius:20px;
+  color:#88e9b7;background:rgba(46,161,105,.2);
+  font:700 10px/1.5 "IBM Plex Sans Arabic",sans-serif
+}
+.vip-site-state.reserved{color:#ffe0ad;background:rgba(203,126,22,.22)}
+.vip-site-state.booked{color:#bfe2ff;background:rgba(78,142,209,.22)}
+.vip-site-state.maintenance{color:#ffb4ab;background:rgba(205,85,81,.2)}
+/* Feature-rich detail card with condensed specification strip */
+.details{background:linear-gradient(164deg,#0c3632,#092d2d 70%,#072627)}
+.details::before{
+  content:"";position:sticky;top:-26px;display:block;height:2px;
+  background:linear-gradient(90deg,transparent,#ffbf73,transparent);
+  opacity:.52;pointer-events:none
+}
+.vip-detail-facts{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;margin:12px 0 13px
+}
+.vip-detail-facts>div{
+  min-width:0;min-height:67px;
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  gap:5px;padding:10px 9px;
+  background:linear-gradient(138deg,rgba(34,95,74,.65),rgba(10,53,49,.72));
+  border:1px solid rgba(174,223,188,.18);border-radius:12px
+}
+.vip-detail-facts small{font-size:9px;color:#aed6c1}
+.vip-detail-facts strong{
+  font-size:11px;color:#ffdaa1;font-weight:700;
+  overflow-wrap:anywhere;line-height:1.55
+}
+.detail-photo{
+  border-color:rgba(244,194,120,.44);
+  box-shadow:0 10px 27px rgba(0,20,21,.25),0 0 19px rgba(244,149,26,.055);
+  border-radius:16px
+}
+.detail-name{color:#f7fcf8;font-weight:700}
+.detail-table{border-color:rgba(175,224,190,.23);box-shadow:inset 0 1px rgba(255,255,255,.025)}
+.detail-line:nth-child(odd){background:rgba(13,66,53,.63)}
+.detail-line:nth-child(even){background:rgba(11,51,47,.75)}
+.detail-actions{gap:8px}
+.detail-actions .btn{min-height:44px}
+.detail-actions .vip-copy-link{
+  flex:1 1 100%;color:#f8d39b;
+  border:1px solid rgba(244,178,88,.35);
+  background:rgba(244,149,26,.07)
+}
+.detail-actions .vip-copy-link:hover{background:rgba(244,149,26,.13)}
+/* Cinematic yet fast loading: no blocking auto-advancing slideshow. */
+.map-reveal{
+  background:
+    radial-gradient(circle at 50% 48%,rgba(32,118,88,.37),transparent 55%),
+    radial-gradient(ellipse at bottom,rgba(244,149,26,.09),transparent 50%),
+    linear-gradient(135deg,#052629,#0b4a40,#06292c);
+  color:#eafff1;
+  overflow:hidden
+}
+.map-reveal::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 85px,rgba(209,255,233,.022) 86px 87px);
+  opacity:.55
+}
+.map-reveal::after{
+  content:"";position:absolute;left:50%;top:50%;
+  width:min(66vw,350px);height:min(66vw,350px);border-radius:50%;
+  border:1px solid rgba(243,183,103,.12);
+  transform:translate(-50%,-50%);pointer-events:none;
+  box-shadow:0 0 90px rgba(244,149,26,.07)
+}
+.map-loading-spinner{
+  border-color:rgba(255,229,190,.18)!important;
+  border-top-color:#f4a14a!important;
+  box-shadow:0 0 25px rgba(244,149,26,.15)
+}
+.map-reveal-brand{position:relative;z-index:2;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+.map-reveal-brand strong{
+  font:700 clamp(15px,2vw,23px)/1.5 Arial,sans-serif;
+  letter-spacing:2.8px;color:#ffe0ae
+}
+.map-reveal-brand span{font-size:12px;color:#bddacd;letter-spacing:.15px}
+/* Executive finishing for filter panel, admin dashboard & dialogs */
+.coverage-box,.filter-disclosure,.location-card,.stat,.admin-widget,.admin-overview-stat{
+  backdrop-filter:blur(6px)
+}
+.admin-dashboard-header{
+  background:linear-gradient(100deg,rgba(14,76,62,.93),rgba(6,39,40,.98));
+  border-bottom:1px solid rgba(246,195,124,.21)
+}
+.admin-dashboard-mark{
+  background:linear-gradient(145deg,#225c4c,#0a3d3b)!important;
+  color:#ffe4b9!important;border:1px solid rgba(244,174,98,.51);
+  box-shadow:0 0 23px rgba(244,149,26,.12)
+}
+.admin-dashboard-tabs button.active{
+  color:#ffd79d!important;border-bottom-color:#f4a14a!important;
+  background:rgba(244,149,26,.055)
+}
+.admin-widget{border-color:rgba(178,227,199,.2)}
+.modal{border-color:rgba(245,186,110,.26)}
+@keyframes raafat-vip-indicator{
+  0%,100%{opacity:1;box-shadow:0 0 0 3px rgba(94,229,173,.13),0 0 9px #5ee5ad}
+  50%{opacity:.65;box-shadow:0 0 0 5px rgba(94,229,173,.08),0 0 16px #5ee5ad}
+}
+@keyframes vip-pin-spotlight{
+  0%{transform:translate(-50%,-50%) rotate(45deg) scale(.55);opacity:.8}
+  68%{opacity:.42}
+  100%{transform:translate(-50%,-50%) rotate(45deg) scale(1.43);opacity:0}
+}
+@keyframes vip-legend-enter{
+  from{opacity:0;transform:translateY(7px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:1380px){.vip-topline-status{display:none}.vip-topline{min-width:225px}}
+@media(max-width:1190px){
+ .vip-topline{min-width:246px;max-width:40%}
+ .vip-topline-status{display:flex}
+}
+@media(max-width:850px){
+ .vip-topline{
+   top:12px;left:50%;transform:translateX(-50%);
+   height:42px;min-width:0;width:max-content;max-width:45%;padding:5px 9px;gap:7px
+ }
+ .vip-topline-monogram{width:27px;height:27px;font-size:17px;border-radius:8px}
+ .vip-topline-monogram span{font-size:9px}
+ .vip-topline-name small{font-size:8px;letter-spacing:.7px}
+ .vip-topline-name strong{font-size:9px}
+ .vip-topline-status{display:none}
+ .vip-map-actions{bottom:76px;left:11px;gap:6px}
+ .vip-tool-button{padding:8px 10px;min-height:38px}
+}
+@media(max-width:620px){
+ .vip-topline{display:none}
+ .vip-map-actions{left:10px;bottom:77px;gap:5px}
+ .vip-tool-button{min-height:36px;padding:7px 9px;font-size:9px}
+ .vip-tool-button span{font-size:15px}
+ .vip-legend{width:210px;padding:12px}
+ .vip-legend>strong{font-size:11px}
+ .map-area:has(.map-site-cta:not([hidden])) .vip-map-actions{bottom:120px}
+ .vip-detail-facts{gap:6px;margin:10px 0}
+ .vip-detail-facts>div{min-height:65px;padding:8px 7px}
+ .vip-detail-facts strong{font-size:10px}
+ .map-reveal-brand strong{font-size:17px;letter-spacing:1.7px}
+ .map-reveal-brand span{font-size:10px}
+}
+@media(max-width:380px){
+ .vip-map-actions{flex-direction:column;align-items:flex-start}
+ .vip-tool-button{min-width:106px}
+ .vip-legend{left:0}
+}
+@media(prefers-reduced-motion:reduce){
+ .vip-topline-status i,.raafat-premium-site-icon .site-pin.selected .vip-pin-aura{
+   animation:none!important
+ }
+ .vip-legend{animation:none!important}
+ .vip-tool-button,.raafat-premium-site-icon .site-pin{transition:none!important}
+}
