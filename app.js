@@ -134,32 +134,35 @@ function addPersistentCityLabels(){
  }
  const update=()=>{
    if(!state.map)return;
+   const center=state.map.getCenter();
+   const zoom=state.map.getZoom();
    const filteredCity=el("cityFilter").value;
    const site=state.sites.find(x=>x.id===state.selected);
    const candidate=(site&&CITY_CENTERS[site.city]?site.city:null)||
-     (CITY_CENTERS[filteredCity]?filteredCity:null);
-   let city=candidate;
-   if(!city){
-     // For an unfiltered map show only the closest relevant city at overview zoom.
-     if(state.map.getZoom()>=13){
-       city=null;
-     }else{
-       const center=state.map.getCenter();
-       const inGov=el("governorateFilter").value;
-       let best=Infinity;
-       for(const [name,coords] of Object.entries(CITY_CENTERS)){
-         if(inGov && !(REGIONS[inGov]||[]).includes(name))continue;
-         const distance=state.map.distance(center,coords);
-         if(distance<best){best=distance;city=name;}
-       }
-       if(best>60000)city=null;
-     }
+      (CITY_CENTERS[filteredCity]?filteredCity:null);
+   const province=el("governorateFilter").value;
+   let city=null;
+   let nearest=null,best=Infinity;
+   for(const [name,coords] of Object.entries(CITY_CENTERS)){
+     if(province && !(REGIONS[province]||[]).includes(name) && name!==candidate)continue;
+     const distance=state.map.distance(center,coords);
+     if(distance<best){best=distance;nearest=name;}
    }
-   if(city && !state.map.getBounds().pad(.18).contains(CITY_CENTERS[city]))city=null;
-   if(city!==state.cityBeacon){
+   const maxDistance=zoom>=14?27000:zoom>=12?49000:75000;
+   if(candidate&&state.map.distance(center,CITY_CENTERS[candidate])<maxDistance)city=candidate;
+   else if(best<maxDistance)city=nearest;
+   // The compact map heading preserves the city context while zooming in.
+   const heading=el("mapRegionLabel");
+   heading.textContent=city||"";
+   heading.hidden=!city;
+   // At street level the text pill moves to the map heading, keeping roads clear.
+   const showBeacon=city&&zoom>=9&&zoom<15
+      &&state.map.getBounds().pad(.18).contains(CITY_CENTERS[city]);
+   const displayCity=showBeacon?city:null;
+   if(displayCity!==state.cityBeacon){
      labels.clearLayers();
-     if(city)labels.addLayer(markers.get(city));
-     state.cityBeacon=city;
+     if(displayCity)labels.addLayer(markers.get(displayCity));
+     state.cityBeacon=displayCity;
    }
  };
  state.cityLabels=labels;
