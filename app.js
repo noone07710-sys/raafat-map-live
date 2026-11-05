@@ -754,6 +754,41 @@ async function photoUrl(path){
  state.photoUrls.set(path,{url:data.signedUrl,expires:Date.now()+50*60*1000});
  return data.signedUrl;
 }
+/**
+ * Lightweight regional overview using the city-coordinate orientation.
+ * This is an abstract location diagram, not a second basemap or route.
+ * It never contacts a map provider or shares GPS with a server.
+ */
+function vipOverviewRadar(site){
+ const places=Object.entries(CITY_CENTERS);
+ const lats=places.map(([,p])=>p[0]);
+ const lons=places.map(([,p])=>p[1]);
+ const minLat=Math.min(...lats)-.12,maxLat=Math.max(...lats)+.12;
+ const minLon=Math.min(...lons)-.12,maxLon=Math.max(...lons)+.12;
+ const position=(lat,lon)=>{
+   const x=Math.max(5,Math.min(95,((lon-minLon)/(maxLon-minLon))*82+9));
+   const y=Math.max(6,Math.min(94,((maxLat-lat)/(maxLat-minLat))*80+10));
+   return [x.toFixed(2),y.toFixed(2)];
+ };
+ const markers=places.map(([city,coords])=>{
+   const [x,y]=position(coords[0],coords[1]);
+   return '<span class="vip-overview-dot '+(site.city===city?"is-city":"")+
+     '" title="'+escapeHtml(city)+'" style="left:'+x+'%;top:'+y+'%"></span>';
+ }).join("");
+ const lat=Number(site.latitude),lon=Number(site.longitude);
+ const [sx,sy]=Number.isFinite(lat)&&Number.isFinite(lon)?
+   position(lat,lon):position(...(CITY_CENTERS[site.city]||CITY_CENTERS["تكريت"]));
+ return '<section class="vip-overview-card" aria-label="مخطط تقريبي لموقع اللوحة ضمن شبكة المدن">'+
+   '<div class="vip-overview-heading"><div><small>RAAFAT REGIONAL RADAR</small>'+
+   '<strong>موقع القطعة ضمن شبكة المدن</strong></div>'+
+   '<span>عرض تقريبي</span></div>'+
+   '<div class="vip-overview-grid" role="img" aria-label="المواقع النسبية لمراكز المدن وموقع القطعة المحددة">'+
+   '<div class="vip-overview-sweep" aria-hidden="true"></div>'+markers+
+   '<span class="vip-overview-site" style="left:'+sx+'%;top:'+sy+'%" aria-hidden="true"></span>'+
+   '</div><div class="vip-overview-foot"><span><i></i> موقع القطعة</span>'+
+   '<span>مراكز المدن • ٨ مواقع</span></div></section>';
+}
+
 async function renderDetail(){
  const requestId=state.selected;
  const site=state.sites.find(s=>s.id===requestId);
@@ -793,7 +828,7 @@ async function renderDetail(){
      '<div><small>القياس</small><strong>'+format(site.width_m)+' × '+format(site.height_m)+' م</strong></div>'+
      '<div><small>نوع الإعلان</small><strong>'+escapeHtml(types[site.type]||site.type)+'</strong></div>'+
      '<div><small>عدد الأوجه</small><strong>'+escapeHtml(site.faces||1)+'</strong></div>'+
-   '</div>'+
+   '</div>'+vipOverviewRadar(site)+
    '<h3 class="detail-name">'+escapeHtml(site.name)+'</h3>'+
    '<div class="detail-location">⌖ '+escapeHtml(site.governorate||"صلاح الدين")+' / '+escapeHtml(site.city)+(site.area?' / '+escapeHtml(site.area):"")+'</div>'+
    '<div class="detail-status">'+badge(site)+(site.published?'':' <span class="draft">• غير منشور</span>')+'</div>'+
