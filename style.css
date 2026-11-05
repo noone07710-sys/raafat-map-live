@@ -2366,3 +2366,8 @@ body .map-area .map-reveal.is-ready{
   body .map-area .vip-district-marker .vip-beacon-wave{animation:none!important}
   body .map-area .map-reveal.is-ready{transition:none!important}
 }
+
+
+/* Hidden overlays and stop control must respect their HTML hidden state. */
+body .map-area .map-reveal[hidden]{display:none!important}
+body .map-area .live-location-control .live-location-stop[hidden]{display:none!important}
