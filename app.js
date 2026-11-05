@@ -120,65 +120,111 @@ function directionsToSite(site){
  * Only one curated regional beacon appears within the viewport at a time.
  * It is a location highlight, not an administrative-boundary polygon.
  */
+/**
+ * Premium interactive district beacons over the map.
+ * Uses the real city centers as navigation anchors, not invented billboard pins.
+ * Every beacon has an Arabic HTML label (no broken vector glyphs) and only
+ * visible, non-overlapping markers are mounted at each zoom.
+ */
 function addPersistentCityLabels(){
  if(!state.map||state.cityLabels)return;
  const L=window.L;
- const pane=state.map.createPane("raafatCities");
- pane.style.zIndex="435";
- pane.style.pointerEvents="none";
- const labels=L.layerGroup().addTo(state.map);
- const markers=new Map();
- for(const [city,coords] of Object.entries(CITY_CENTERS)){
-   const gov=REGIONS["كركوك"].includes(city)?"كركوك":"صلاح الدين";
+ const map=state.map;
+ const pane=map.createPane("raafatCities");
+ pane.style.zIndex="455";
+ pane.style.pointerEvents="auto";
+ const group=L.layerGroup().addTo(map);
+ const beacons=new Map();
+ const cities=Object.entries(CITY_CENTERS);
+ cities.forEach(([city,coords],i)=>{
+   const governorate=REGIONS["كركوك"].includes(city)?"كركوك":"صلاح الدين";
+   const html='<div class="vip-district-beacon" style="--vip-delay:'+((i%5)*.46).toFixed(2)+'s">'+
+     '<span class="vip-beacon-wave wave-one" aria-hidden="true"></span>'+
+     '<span class="vip-beacon-wave wave-two" aria-hidden="true"></span>'+
+     '<span class="vip-beacon-point" aria-hidden="true"><i></i></span>'+
+     '<span class="vip-beacon-stem" aria-hidden="true"></span>'+
+     '<span class="vip-beacon-label" lang="ar" dir="rtl">'+
+       '<strong>'+escapeHtml(city)+'</strong>'+
+       '<small>'+escapeHtml(governorate)+'</small>'+
+     '</span></div>';
    const icon=L.divIcon({
-     className:"raafat-city-icon",
-     html:'<div class="raafat-region-beacon"><span class="raafat-region-orbit"></span>'+
-       '<span class="raafat-region-core"></span><div class="raafat-region-copy">'+
-       '<strong lang="ar" dir="rtl">'+escapeHtml(city)+'</strong>'+
-       '<small lang="ar" dir="rtl">'+escapeHtml(gov)+'</small></div></div>',
-     iconSize:[0,0],iconAnchor:[0,0]
+     className:"vip-district-marker",
+     html,iconSize:[1,1],iconAnchor:[0,0]
    });
-   markers.set(city,L.marker(coords,{pane:"raafatCities",interactive:false,icon}));
- }
+   const marker=L.marker(coords,{
+     icon,pane:"raafatCities",interactive:true,keyboard:true,
+     title:"عرض المواقع الإعلانية في "+city,
+     riseOnHover:true,riseOffset:200
+   });
+   marker.on("click",()=>{
+     if(state.pick)return;
+     el("governorateFilter").value=governorate;
+     renderCityOptions();
+     el("cityFilter").value=city;
+     if(state.selected)state.selected=null;
+     render();
+     zoomAll();
+   });
+   beacons.set(city,{marker,coords,governorate});
+ });
  const update=()=>{
    if(!state.map)return;
-   if(state.googleActive){labels.clearLayers();state.cityBeacon=null;return;}
-   const center=state.map.getCenter();
-   const zoom=state.map.getZoom();
-   const filteredCity=el("cityFilter").value;
-   const site=state.sites.find(x=>x.id===state.selected);
-   const candidate=(site&&CITY_CENTERS[site.city]?site.city:null)||
-      (CITY_CENTERS[filteredCity]?filteredCity:null);
+   const zoom=map.getZoom();
+   const bounds=map.getBounds().pad(.07);
+   const filtered=el("cityFilter").value;
+   const selected=state.sites.find(site=>site.id===state.selected);
+   const focus=selected&&CITY_CENTERS[selected.city]?selected.city:
+      CITY_CENTERS[filtered]?filtered:null;
    const province=el("governorateFilter").value;
-   let city=null;
-   let nearest=null,best=Infinity;
-   for(const [name,coords] of Object.entries(CITY_CENTERS)){
-     if(province && !(REGIONS[province]||[]).includes(name) && name!==candidate)continue;
-     const distance=state.map.distance(center,coords);
-     if(distance<best){best=distance;nearest=name;}
+   const middle=map.getSize().divideBy(2);
+   // Keep the pins separate from the actual billboard locations and road names.
+   const ranked=[];
+   for(const [city,{coords,governorate}] of beacons){
+     if(province&&governorate!==province&&city!==focus)continue;
+     if(!bounds.contains(coords))continue;
+     const screen=map.latLngToContainerPoint(coords);
+     const isFocus=city===focus;
+     const distance=screen.distanceTo(middle);
+     ranked.push({city,screen,distance,isFocus});
    }
-   const maxDistance=zoom>=14?27000:zoom>=12?49000:75000;
-   if(candidate&&state.map.distance(center,CITY_CENTERS[candidate])<maxDistance)city=candidate;
-   else if(best<maxDistance)city=nearest;
-   // The compact map heading preserves the city context while zooming in.
+   ranked.sort((a,b)=>Number(b.isFocus)-Number(a.isFocus)||a.distance-b.distance);
+   const visible=new Set();
+   const occupied=[];
+   const limit=zoom>=14?1:zoom>=11?4:8;
+   const safeWidth=zoom>=12?120:94;
+   const safeHeight=zoom>=12?83:65;
+   for(const entry of ranked){
+     if(visible.size>=limit)break;
+     if(zoom>=14&&!entry.isFocus&&visible.size)continue;
+     // At deep street zoom, keep only the focused district, if any.
+     if(zoom>=15&&!entry.isFocus)continue;
+     if(!entry.isFocus && occupied.some(p=>
+       Math.abs(p.x-entry.screen.x)<safeWidth &&
+       Math.abs(p.y-entry.screen.y)<safeHeight
+     ))continue;
+     visible.add(entry.city);
+     occupied.push({x:entry.screen.x,y:entry.screen.y});
+   }
+   for(const [city,{marker}] of beacons){
+     const show=visible.has(city);
+     if(show&&!group.hasLayer(marker))group.addLayer(marker);
+     else if(!show&&group.hasLayer(marker))group.removeLayer(marker);
+     marker.getElement()?.classList.toggle("vip-district-active",city===focus);
+   }
    const heading=el("mapRegionLabel");
-   heading.textContent=city||"";
-   heading.hidden=!city;
-   // At street level the text pill moves to the map heading, keeping roads clear.
-   const showBeacon=city&&zoom>=9&&zoom<15
-      &&state.map.getBounds().pad(.18).contains(CITY_CENTERS[city]);
-   const displayCity=showBeacon?city:null;
-   if(displayCity!==state.cityBeacon){
-     labels.clearLayers();
-     if(displayCity)labels.addLayer(markers.get(displayCity));
-     state.cityBeacon=displayCity;
+   if(heading){
+     const city=focus||(ranked.length===1?ranked[0].city:null);
+     heading.textContent=city||"";
+     heading.hidden=!city;
    }
+   map.getContainer().classList.toggle("vip-map-close",zoom>=13);
  };
- state.cityLabels=labels;
+ state.cityLabels=group;
  state.updateCityFocus=update;
- state.map.on("moveend zoomend",update);
+ map.on("moveend zoomend resize",update);
  update();
 }
+
 async function installGoogleBasemap(){
  // Kept behind a configured browser key so we never incur Google charges
  // before the owner finishes quotas, billing and key restrictions.
@@ -413,7 +459,7 @@ function initializeMap(){
    ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:42,chunkedLoading:true,disableClusteringAtZoom:16})
    : L.layerGroup();
  state.map.addLayer(state.markers);
- // City names are already provided by the unmodified OSM standard map.
+ addPersistentCityLabels();
  state.map.on("click",event=>{
    if(!state.pick)return;
    const {lat,lng}=event.latlng;
