@@ -660,8 +660,14 @@ function renderMarkers(sites){
  for(const s of sites){
    const L=window.L;
    const safeStatus = statuses[s.status] ? s.status : "available";
+   const highlighted=state.selected===s.id;
    const marker=L.marker([s.latitude,s.longitude],{
-     icon:L.divIcon({className:"",html:'<div class="site-pin '+safeStatus+(state.selected===s.id?" selected":"")+'"><span></span></div>',iconSize:[29,29],iconAnchor:[15,27]})
+     icon:L.divIcon({
+       className:"raafat-premium-site-icon",
+       html:'<div class="site-pin '+safeStatus+(highlighted?" selected":"")+'"><i class="vip-pin-aura" aria-hidden="true"></i><span></span></div>',
+       iconSize:[29,29],iconAnchor:[15,27]
+     }),
+     title:"لوحة "+s.code+" — "+(statuses[s.status]||"")
    });
    marker.on("click",()=>selectSite(s.id));
    marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
@@ -675,6 +681,9 @@ function updateMapSiteCTA(){
  if(!site){card.hidden=true;return;}
  const link=directionsToSite(site);
  if(!link){card.hidden=true;return;}
+ const label=el("mapSiteStatus");
+ label.textContent="• "+(statuses[site.status]||site.status);
+ label.className="vip-site-state "+(statuses[site.status]?site.status:"available");
  el("mapSiteTitle").textContent=site.code+" · "+site.name;
  el("mapSiteDirections").href=link;
  el("mapSiteDirections").setAttribute("aria-label","الاتجاهات إلى "+site.name);
@@ -690,7 +699,15 @@ function selectSite(id){
  }
  state.selected=id;render();
  if(!state.staff)history.replaceState(null,"","#site="+encodeURIComponent(id));
- if(state.map){state.map.setView([site.latitude,site.longitude],Math.max(14,state.map.getZoom()),{animate:true})}
+ if(state.map){
+   const target=[Number(site.latitude),Number(site.longitude)];
+   const zoom=Math.max(14,Math.min(17,state.map.getZoom()));
+   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+     state.map.setView(target,zoom,{animate:false});
+   }else{
+     state.map.flyTo(target,zoom,{animate:true,duration:.82,easeLinearity:.25});
+   }
+ }
 }
 async function photoUrl(path){
  if(!path||!db)return null;
@@ -736,6 +753,11 @@ async function renderDetail(){
  const html=
    '<div class="details-pill"><span>تفاصيل الموقع</span><span>'+escapeHtml(site.code)+'</span></div>'+
    '<div class="detail-photo">'+mainImage+'</div>'+thumbnails+
+   '<div class="vip-detail-facts" aria-label="معلومات القطعة المختصرة">'+
+     '<div><small>القياس</small><strong>'+format(site.width_m)+' × '+format(site.height_m)+' م</strong></div>'+
+     '<div><small>نوع الإعلان</small><strong>'+escapeHtml(types[site.type]||site.type)+'</strong></div>'+
+     '<div><small>عدد الأوجه</small><strong>'+escapeHtml(site.faces||1)+'</strong></div>'+
+   '</div>'+
    '<h3 class="detail-name">'+escapeHtml(site.name)+'</h3>'+
    '<div class="detail-location">⌖ '+escapeHtml(site.governorate||"صلاح الدين")+' / '+escapeHtml(site.city)+(site.area?' / '+escapeHtml(site.area):"")+'</div>'+
    '<div class="detail-status">'+badge(site)+(site.published?'':' <span class="draft">• غير منشور</span>')+'</div>'+
@@ -744,11 +766,22 @@ async function renderDetail(){
    (site.description?'<div class="spec-heading">وصف الموقع</div><p class="detail-description">'+escapeHtml(site.description)+'</p>':"")+
    '<div class="detail-actions"><a class="btn btn-primary" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="بدء الملاحة إلى القطعة المحددة">↗ اتجه إلى القطعة</a>'+
    (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
-   '<button type="button" class="btn btn-ghost" id="copyInquiry">نسخ بيانات للاستفسار</button>')+'</div>'+
+   '<button type="button" class="btn btn-ghost" id="copyInquiry">نسخ بيانات للاستفسار</button>')+
+   '<button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button></div>'+
    ''+
    (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
    (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"");
  el("siteDetails").innerHTML=html;
+ el("copySiteLink")?.addEventListener("click",async()=>{
+   const url=location.origin+location.pathname+"#site="+encodeURIComponent(site.id);
+   try{
+     if(!navigator.clipboard?.writeText)throw Error("clipboard unavailable");
+     await navigator.clipboard.writeText(url);
+     toast("تم نسخ رابط القطعة بنجاح.");
+   }catch(error){
+     toast("انسخ رابط القطعة من شريط العنوان بعد اختيارها.");
+   }
+ });
  el("siteDetails").querySelectorAll("[data-photo-index]").forEach(btn=>btn.addEventListener("click",()=>{
    state.galleryIndex=Number(btn.dataset.photoIndex);
    void renderDetail();
@@ -1036,6 +1069,28 @@ async function signOut(){
  refreshAdmin();await loadSites();toast("تم تسجيل الخروج.");
 }
 function events(){
+ const network=el("vipCoverage");
+ const legendButton=el("vipLegendToggle");
+ const legend=el("vipLegend");
+ network.addEventListener("click",()=>{
+   state.selected=null;
+   for(const id of ["search","governorateFilter","cityFilter","statusFilter","typeFilter","sizeFilter"]){
+     el(id).value="";
+   }
+   renderCityOptions();render();
+   if(state.map){
+     state.map.fitBounds(window.L.latLngBounds(Object.values(CITY_CENTERS)),{
+       padding:[58,74],maxZoom:9,animate:!window.matchMedia("(prefers-reduced-motion: reduce)").matches
+     });
+   }
+   legend.hidden=true;
+   legendButton.setAttribute("aria-expanded","false");
+ });
+ legendButton.addEventListener("click",()=>{
+   const open=legend.hidden;
+   legend.hidden=!open;
+   legendButton.setAttribute("aria-expanded",String(open));
+ });
  for(const filter of ["search","cityFilter","statusFilter","typeFilter","sizeFilter"]){
   el(filter).addEventListener(filter==="search"?"input":"change",()=>{render();zoomAll()});
  }
