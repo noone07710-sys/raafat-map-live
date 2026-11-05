@@ -1,6 +1,6 @@
 /**
  * RA'AFAT / SIGNATURE MAP
- * Custom CARTO vector style; graceful Arabic label handling and elegant luminous roads.
+ * OpenFreeMap vector basemap with CARTO backup and RA'AFAT colors.
  * This contains only public design data. The CARTO key is provided by config.js.
  */
 const C = Object.freeze({
@@ -117,20 +117,48 @@ function addPremiumLayer(original, layers, arabicEnabled){
   }
   layers.push(layer);
 }
-export async function fetchRaafatMapStyle(publicKey, {arabicEnabled=true}={}){
-  if(!publicKey)throw new Error("CARTO basemap key is missing");
-  const key=encodeURIComponent(String(publicKey));
-  const response=await fetch("https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json?key="+key,{
-    mode:"cors",credentials:"omit"
-  });
-  if(!response.ok)throw new Error("CARTO vector style: "+response.status);
-  const raw=await response.json();
-  if(raw.version!==8||!Array.isArray(raw.layers)||!raw.sources)throw new Error("Invalid vector style data");
-  // Preserve CARTO's current served glyph and sprite URLs and protect the tiles token.
-  for(const src of Object.values(raw.sources)){
-    if(src.type!=="vector"||typeof src.url!=="string")continue;
-    src.url=src.url.replace(/\{api_key\}/g,"?key="+key);
-    if(!/[?&]key=/.test(src.url))src.url+=(src.url.includes("?")?"&":"?")+"key="+key;
+export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
+  // OpenFreeMap has weekly OpenStreetMap-based updates and supports free
+  // commercial use without API keys or billing. CARTO remains a fallback.
+  const ofmUrl="https://tiles.openfreemap.org/styles/liberty";
+  let raw=null;
+  let provider="openfreemap";
+  try{
+    const res=await fetch(ofmUrl,{mode:"cors",credentials:"omit"});
+    if(!res.ok)throw new Error("OpenFreeMap HTTP "+res.status);
+    raw=await res.json();
+    if(raw.version!==8||!Array.isArray(raw.layers)||!raw.sources)
+      throw new Error("Invalid OpenFreeMap vector style");
+    // When style is passed as an object, normalize relative asset paths since
+    // MapLibre cannot infer the remote style base URL.
+    const absolute=url=>typeof url==="string"&&!/^(https?:|data:)/i.test(url)
+      ? new URL(url,ofmUrl+"/").href : url;
+    if(raw.glyphs)raw.glyphs=absolute(raw.glyphs);
+    if(raw.sprite){
+      if(typeof raw.sprite==="string")raw.sprite=absolute(raw.sprite);
+      else if(Array.isArray(raw.sprite))raw.sprite=raw.sprite.map(item=>({...item,url:absolute(item.url)}));
+    }
+    for(const src of Object.values(raw.sources)){
+      if(src.url)src.url=absolute(src.url);
+      if(Array.isArray(src.tiles))src.tiles=src.tiles.map(absolute);
+    }
+  }catch(failure){
+    console.warn("OpenFreeMap unavailable. Using CARTO backup:",failure);
+    provider="carto";
+    if(!publicKey)throw failure;
+    const key=encodeURIComponent(String(publicKey));
+    const response=await fetch("https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json?key="+key,{
+      mode:"cors",credentials:"omit"
+    });
+    if(!response.ok)throw new Error("CARTO backup HTTP "+response.status);
+    raw=await response.json();
+    if(raw.version!==8||!Array.isArray(raw.layers)||!raw.sources)
+      throw new Error("Invalid CARTO backup style");
+    for(const src of Object.values(raw.sources)){
+      if(src.type!=="vector"||typeof src.url!=="string")continue;
+      src.url=src.url.replace(/\{api_key\}/g,"?key="+key);
+      if(!/[?&]key=/.test(src.url))src.url+=(src.url.includes("?")?"&":"?")+"key="+key;
+    }
   }
   const layers=[];
   for(const layer of raw.layers)addPremiumLayer(layer,layers,arabicEnabled);
@@ -165,6 +193,6 @@ export async function fetchRaafatMapStyle(publicKey, {arabicEnabled=true}={}){
   }
   raw.layers=layers;
   raw.name="RAAFAT Signature • Emerald Nocturne";
-  raw.metadata={...(raw.metadata||{}),"raafat:palette":"emerald-amber-luminous"};
+  raw.metadata={...(raw.metadata||{}),"raafat:palette":"emerald-amber-luminous","raafat:source":provider};
   return raw;
 }
