@@ -140,6 +140,11 @@ function directionsToSite(site){
  * decorative name card and draw a hairline back to the stationary gold dot.
  * We NEVER hide a name merely because of label collision.
  */
+/**
+ * Accurate district badges: each badge is centered on its actual coordinates.
+ * No collision solver, no label displacements, no zoom-specific positioning.
+ * At distant zoom the badges become compact, without changing their anchor.
+ */
 function addPersistentCityLabels(){
  if(!state.map||state.cityLabels)return;
  const L=window.L;
@@ -148,28 +153,24 @@ function addPersistentCityLabels(){
  pane.style.zIndex="455";
  pane.style.pointerEvents="auto";
  const group=L.layerGroup().addTo(map);
- const beacons=new Map();
- const cities=Object.entries(CITY_CENTERS);
- cities.forEach(([city,coords],i)=>{
+ const markers=new Map();
+ Object.entries(CITY_CENTERS).forEach(([city,coords],index)=>{
    const governorate=REGIONS["كركوك"].includes(city)?"كركوك":"صلاح الدين";
-   const html='<div class="vip-district-beacon" style="--vip-delay:'+((i%5)*.46).toFixed(2)+'s">'+
+   const html='<div class="vip-district-beacon" style="--vip-delay:'+((index%5)*.46).toFixed(2)+'s">'+
      '<span class="vip-beacon-wave wave-one" aria-hidden="true"></span>'+
      '<span class="vip-beacon-wave wave-two" aria-hidden="true"></span>'+
-     '<span class="vip-beacon-link" aria-hidden="true"></span>'+
      '<span class="vip-beacon-point" aria-hidden="true"><i></i></span>'+
      '<span class="vip-beacon-label" lang="ar" dir="rtl">'+
        '<strong>'+escapeHtml(city)+'</strong>'+
        '<small>'+escapeHtml(governorate)+'</small>'+
      '</span></div>';
-   // The gold anchor stays at [lat,lng]. The inner label alone may be offset.
    const icon=L.divIcon({
-     className:"vip-district-marker",
-     html,iconSize:[144,76],iconAnchor:[72,38]
+     className:"vip-district-marker",html,
+     iconSize:[144,76],iconAnchor:[72,38]
    });
    const marker=L.marker(coords,{
      icon,pane:"raafatCities",interactive:true,keyboard:true,
-     title:"عرض المواقع الإعلانية في "+city,
-     riseOnHover:true,riseOffset:200
+     title:"عرض مواقع "+city,riseOnHover:true,riseOffset:200
    });
    marker.on("click",()=>{
      if(state.pick)return;
@@ -180,74 +181,30 @@ function addPersistentCityLabels(){
      render();
      zoomAll();
    });
-   group.addLayer(marker);
-   beacons.set(city,{marker,coords,governorate});
+   marker.addTo(group);
+   markers.set(city,marker);
  });
  const update=()=>{
    if(!state.map)return;
-   const size=map.getSize();
-   const focusedSite=state.sites.find(site=>site.id===state.selected);
-   const selectedCity=el("cityFilter").value;
-   const focus=focusedSite&&CITY_CENTERS[focusedSite.city]?focusedSite.city:
-     CITY_CENTERS[selectedCity]?selectedCity:null;
-   const entries=[...beacons].map(([city,data],index)=>({
-     city,index,...data,screen:map.latLngToContainerPoint(data.coords)
-   }));
-   // Deterministic placement order: focused name first, then the city list.
-   entries.sort((a,b)=>Number(b.city===focus)-Number(a.city===focus)||a.index-b.index);
-   const placed=[];
-   const margin=9;
-   const candidates=[[0,0]];
-   // Search outward only when cards genuinely overlap. The dot never moves.
-   for(const radius of [66,102,138,176,215,260]){
-     for(let step=0;step<12;step++){
-       const angle=(-90+step*30)*Math.PI/180;
-       candidates.push([Math.round(Math.cos(angle)*radius),Math.round(Math.sin(angle)*radius)]);
-     }
-   }
-   for(const {city,marker,screen} of entries){
+   const chosen=el("cityFilter").value;
+   const selected=state.sites.find(site=>site.id===state.selected);
+   const focus=selected&&CITY_CENTERS[selected.city]?selected.city:
+     CITY_CENTERS[chosen]?chosen:null;
+   const zoom=map.getZoom();
+   const host=map.getContainer();
+   host.classList.toggle("vip-zoom-far",zoom<=9);
+   host.classList.toggle("vip-zoom-mid",zoom>9&&zoom<=11);
+   markers.forEach((marker,city)=>{
      const dom=marker.getElement();
-     if(!dom)continue;
-     const label=dom.querySelector(".vip-beacon-label");
-     if(!label)continue;
-     // A district outside the visible map remains in the Leaflet layer;
-     // there is no reason to place its callout over unrelated visible places.
-     const onScreen=screen.x>=-16&&screen.x<=size.x+16&&
-                    screen.y>=-16&&screen.y<=size.y+16;
-     const width=Math.max(108,Math.ceil(label.offsetWidth||116));
-     const height=Math.max(49,Math.ceil(label.offsetHeight||52));
-     let best=null;
-     if(onScreen){
-       for(const [dx,dy] of candidates){
-         const x=screen.x+dx,y=screen.y+dy;
-         const rect={left:x-width/2-margin,right:x+width/2+margin,
-           top:y-height/2-margin,bottom:y+height/2+margin};
-         const outside=Math.max(0,12-rect.left)+Math.max(0,rect.right-(size.x-12))+
-           Math.max(0,12-rect.top)+Math.max(0,rect.bottom-(size.y-12));
-         let overlap=0;
-         for(const p of placed){
-           const w=Math.max(0,Math.min(rect.right,p.right)-Math.max(rect.left,p.left));
-           const h=Math.max(0,Math.min(rect.bottom,p.bottom)-Math.max(rect.top,p.top));
-           overlap+=w*h;
-         }
-         // Strongly avoid collisions / clipping, then prefer shorter links.
-         const dist=Math.hypot(dx,dy);
-         const score=overlap*32+outside*240+dist;
-         if(!best||score<best.score)best={dx,dy,rect,score,overlap,outside};
-         if(overlap===0&&outside===0&&dist===0)break;
-       }
-     }
-     const dx=best?.dx||0,dy=best?.dy||0;
-     if(best)placed.push(best.rect);
-     dom.classList.remove("vip-label-muted");
+     if(!dom)return;
      dom.classList.toggle("vip-district-active",city===focus);
-     dom.classList.toggle("vip-card-linked",Math.hypot(dx,dy)>14);
-     dom.style.setProperty("--vip-card-x",dx+"px");
-     dom.style.setProperty("--vip-card-y",dy+"px");
-     dom.style.setProperty("--vip-link-length",Math.hypot(dx,dy).toFixed(1)+"px");
-     dom.style.setProperty("--vip-link-angle",Math.atan2(dy,dx)*180/Math.PI+"deg");
-     dom.setAttribute("aria-label",city+"، "+(REGIONS["كركوك"].includes(city)?"كركوك":"صلاح الدين"));
-   }
+     dom.classList.remove("vip-label-muted","vip-card-linked");
+     // Reset any previously computed offset; every name is anchored to its city.
+     dom.style.removeProperty("--vip-card-x");
+     dom.style.removeProperty("--vip-card-y");
+     dom.style.removeProperty("--vip-link-length");
+     dom.style.removeProperty("--vip-link-angle");
+   });
    const heading=el("mapRegionLabel");
    if(heading){
      heading.textContent=focus||"";
@@ -256,7 +213,7 @@ function addPersistentCityLabels(){
  };
  state.cityLabels=group;
  state.updateCityFocus=update;
- map.on("moveend zoomend resize",update);
+ map.on("zoomend moveend resize",update);
  update();
 }
 
