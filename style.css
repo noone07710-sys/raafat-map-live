@@ -2469,3 +2469,192 @@ body.raafat-signature-map .vip-district-marker .vip-beacon-point{
 body.raafat-signature-map .vip-district-marker .vip-beacon-wave{
   border-color:rgba(218,187,141,.26)!important;
 }
+
+
+
+/* ================================================================
+   RAAFAT / GRAPHITE MAP REFINEMENT — NO WORLD-ZOOM WHITE FLASH
+   Preserve city coordinates; refine only badges, loader and admin branding.
+   ================================================================ */
+body.raafat-signature-map .map-area,
+body.raafat-signature-map .map-area .leaflet-container,
+body.raafat-signature-map .map-area .leaflet-map-pane,
+body.raafat-signature-map .map-area .leaflet-tile-pane,
+body.raafat-signature-map .map-area .leaflet-maplibre-gl-layer,
+body.raafat-signature-map .map-area .maplibregl-map,
+body.raafat-signature-map .map-area .maplibregl-canvas-container,
+body.raafat-signature-map .map-area canvas.maplibregl-canvas{
+  background-color:#363636!important;
+}
+body.raafat-signature-map .map-area::after{display:none!important}
+
+/* The ORIGINAL company logo (assets/raafat-logo.svg) is also in the
+   header, so don't substitute a monogram in the management dashboard. */
+.admin-dashboard .admin-dashboard-original-logo{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:54px!important;height:54px!important;min-width:54px;
+  padding:4px!important;border-radius:13px!important;
+  border:1px solid rgba(234,190,127,.31)!important;
+  background:rgba(255,255,255,.055)!important;
+  box-shadow:0 5px 15px rgba(0,20,20,.18)!important;
+  flex:0 0 54px!important;overflow:hidden
+}
+.admin-dashboard .admin-dashboard-original-logo img{
+  display:block;width:100%;height:100%;max-height:46px;
+  object-fit:contain;border:0;filter:none!important;opacity:1!important
+}
+
+/* Refined district name cards: quiet charcoal glass, fine warm outline,
+   strong Arabic title, and a thin top highlight. Each card is STILL precisely
+   centered on its real Leaflet coordinate; NO translate offsets on zoom. */
+body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-label,
+body.raafat-signature-map .map-area .vip-district-marker:hover .vip-beacon-label,
+body.raafat-signature-map .map-area .vip-district-marker.vip-district-active .vip-beacon-label{
+  position:absolute!important;
+  left:50%!important;top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:max-content!important;min-width:96px!important;max-width:132px!important;
+  min-height:50px!important;padding:7px 13px 8px!important;
+  display:flex!important;flex-direction:column;gap:2px!important;
+  align-items:center!important;justify-content:center!important;
+  border:1px solid rgba(210,196,178,.59)!important;
+  border-radius:13px!important;
+  background:linear-gradient(154deg,rgba(79,79,79,.98),rgba(56,56,56,.98))!important;
+  color:#fff!important;
+  box-shadow:0 9px 20px rgba(12,12,12,.26),0 0 0 1px rgba(255,255,255,.025),inset 0 1px rgba(255,255,255,.095)!important;
+  backdrop-filter:blur(8px);
+  opacity:1!important;visibility:visible!important;
+  white-space:nowrap;z-index:6;
+  transition:border-color .16s ease,box-shadow .16s ease!important;
+}
+body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-label::before{
+  content:""!important;
+  position:absolute;top:0;left:20%;right:20%;bottom:auto;
+  width:auto;height:2px;border:0;border-radius:0 0 4px 4px;
+  background:linear-gradient(90deg,transparent,rgba(234,192,134,.93),transparent);
+  pointer-events:none
+}
+body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-label strong{
+  color:#fcf9f5!important;
+  font-size:13px!important;font-weight:700!important;
+  letter-spacing:0!important;line-height:1.45!important;
+  text-shadow:none!important
+}
+body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-label small{
+  font-size:9px!important;line-height:1.5!important;
+  color:#d1d1ce!important;font-weight:500!important
+}
+body.raafat-signature-map .map-area .vip-district-marker.vip-district-active .vip-beacon-label,
+body.raafat-signature-map .map-area .vip-district-marker:hover .vip-beacon-label{
+  border-color:#e1bc87!important;
+  box-shadow:0 10px 22px rgba(10,10,10,.29),0 0 14px rgba(226,178,105,.16),inset 0 1px rgba(255,255,255,.12)!important;
+}
+body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-label::after{
+  display:none!important
+}
+/* Farther zoom: compact but fully visible badges, NEVER move their anchors. */
+body.raafat-signature-map .map-area .vip-zoom-far .vip-district-marker .vip-beacon-label{
+  min-height:30px!important;min-width:53px!important;max-width:86px!important;
+  padding:4px 8px!important;border-radius:9px!important
+}
+body.raafat-signature-map .map-area .vip-zoom-far .vip-district-marker .vip-beacon-label strong{
+  font-size:10px!important
+}
+body.raafat-signature-map .map-area .vip-zoom-far .vip-district-marker .vip-beacon-label small{
+  display:none!important
+}
+body.raafat-signature-map .map-area .vip-zoom-mid .vip-district-marker .vip-beacon-label{
+  min-width:76px!important;max-width:110px!important;min-height:40px!important;
+  padding:5px 9px!important
+}
+body.raafat-signature-map .map-area .vip-zoom-mid .vip-district-marker .vip-beacon-label strong{
+  font-size:11px!important
+}
+body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-point{
+  box-shadow:0 0 0 3px rgba(215,167,102,.13),0 0 14px rgba(210,163,94,.2)!important
+}
+body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-wave{
+  border-color:rgba(235,196,144,.3)!important;
+  animation-duration:4.2s
+}
+
+/* Simple yet alive: real company logo, gently turning fine circle and
+   discreet progress sweep. Only text reads "جاري تحميل الخريطة". */
+body.raafat-signature-map .map-area .map-reveal{
+  background:#363636!important;
+  background-image:none!important;
+  color:#e9e9e5!important;
+  box-shadow:none!important;
+}
+body.raafat-signature-map .map-area .map-reveal::before,
+body.raafat-signature-map .map-area .map-reveal::after{display:none!important}
+.raafat-loading-content{
+  position:relative;z-index:3;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:17px;
+  width:min(265px,80%);
+  animation:raafat-loading-appear .4s ease-out both
+}
+.raafat-loading-seal{
+  position:relative;display:grid;place-items:center;
+  width:99px;height:99px;border-radius:24px;
+  background:rgba(74,74,74,.79);
+  border:1px solid rgba(221,206,181,.16);
+  box-shadow:inset 0 1px rgba(255,255,255,.065),0 10px 24px rgba(0,0,0,.15)
+}
+.raafat-loading-seal img{
+  position:relative;z-index:2;
+  width:69px;height:66px;object-fit:contain;
+  filter:none!important
+}
+.raafat-loading-orbit{
+  position:absolute;inset:-8px;
+  border-radius:29px;
+  border:1px solid rgba(226,204,170,.12);
+  border-top-color:rgba(239,207,162,.85);
+  border-right-color:rgba(239,207,162,.3);
+  animation:raafat-loading-turn 3.8s linear infinite;
+  pointer-events:none
+}
+body.raafat-signature-map .map-area .map-reveal-brand{
+  display:block!important;text-align:center!important;
+  font-size:15px!important;font-weight:600!important;
+  color:#e9e9e5!important;line-height:1.7!important;
+  letter-spacing:0!important;
+  text-shadow:none!important
+}
+.raafat-loading-track{
+  display:block;position:relative;
+  width:150px;height:3px;overflow:hidden;border-radius:50px;
+  background:rgba(238,235,230,.14)
+}
+.raafat-loading-track i{
+  position:absolute;width:43%;height:100%;left:0;top:0;border-radius:50px;
+  background:linear-gradient(90deg,transparent,#dcbf96,#f1e6d7);
+  animation:raafat-loading-progress 1.7s ease-in-out infinite
+}
+@keyframes raafat-loading-turn{to{transform:rotate(360deg)}}
+@keyframes raafat-loading-progress{
+  0%{transform:translateX(-110%)}
+  100%{transform:translateX(350%)}
+}
+@keyframes raafat-loading-appear{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:620px){
+  .admin-dashboard .admin-dashboard-original-logo{
+    width:45px!important;height:45px!important;min-width:45px!important;flex-basis:45px!important
+  }
+  body.raafat-signature-map .map-area .vip-district-marker .vip-beacon-label{
+    min-width:88px!important;max-width:119px!important
+  }
+  body.raafat-signature-map .map-area .vip-zoom-far .vip-district-marker .vip-beacon-label{
+    min-width:52px!important;max-width:83px!important
+  }
+}
+@media(prefers-reduced-motion:reduce){
+ .raafat-loading-orbit,.raafat-loading-track i,
+ .raafat-loading-content{animation:none!important}
+ .raafat-loading-track i{transform:translateX(90%)}
+}
