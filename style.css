@@ -114,3 +114,97 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
 .city-chip:hover,.city-chip.active{border-color:#f4951a;background:#44321f44}
 .city-chip.active{box-shadow:inset 0 0 0 1px #f4951a55}
 .city-chip.active b{background:#f4951a;color:#0e2623}
+
+
+/* Header v3: quiet corporate navigation, integrated transparent logo */
+.header {
+  flex: 0 0 78px;
+  min-height: 78px;
+  padding-inline: clamp(18px, 2.6vw, 46px);
+  background: #062a2b;
+  border-bottom: 1px solid #31545188;
+  box-shadow: none;
+  gap: 14px;
+}
+.header-center { display: none !important; }
+.identity { display: flex; flex-direction: row; align-items: center; gap: 13px; min-width: 0; }
+.logo,
+.logo:hover {
+  display: flex; align-items: center; justify-content: center;
+  width: 66px; height: 62px;
+  flex: 0 0 66px;
+  padding: 0; margin: 0;
+  border: 0; border-radius: 0;
+  background: transparent; box-shadow: none;
+}
+.logo img {
+  display: block;
+  width: 66px; height: 62px;
+  max-height: 100%;
+  object-fit: contain;
+  mix-blend-mode: normal;
+}
+.brand-text { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.brand {
+  color: #f3f8f4; font-size: 24px; font-weight: 700;
+  letter-spacing: 0; line-height: 1.18; white-space: nowrap;
+}
+.brand span { color: #f3f8f4; }
+.brand-caption {
+  margin-top: 6px;
+  color: #a8c6bc;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+.header-actions { gap: 9px; flex: 0 0 auto; }
+.header-actions .btn-ghost {
+  background: transparent;
+  border: 1px solid #577773;
+  color: #eaf4ed;
+  border-radius: 9px;
+  min-height: 40px;
+  padding: 9px 17px;
+  font-weight: 600;
+  font-size: 12px;
+}
+.header-actions .btn-ghost:hover { background: #164144; border-color: #8aa49a; }
+.header-actions .btn-primary { min-height: 40px; }
+.admin-tag { display: none !important; }
+.browse { padding-top: 22px; }
+.catalog-title {
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 2px 0 14px;
+  color: #f7f9f6;
+}
+.coverage-box { margin: 5px 0 15px; }
+.coverage-head { margin-bottom: 10px; }
+.stats { margin-top: 12px; }
+.details h2 { margin-top: 0; margin-bottom: 15px; }
+@media (max-width: 850px) {
+  .header { min-height: 72px; flex-basis: 72px; padding-inline: 16px; }
+  .logo, .logo:hover { width: 59px; height: 56px; flex-basis: 59px; }
+  .logo img { width: 59px; height: 56px; }
+  .brand { font-size: 21px; }
+  .brand-caption { font-size: 9px; }
+}
+@media (max-width: 580px) {
+  .header { min-height: 66px; flex-basis: 66px; padding-inline: 10px; gap: 6px; }
+  .identity { gap: 5px; }
+  .logo, .logo:hover { width: 48px; height: 49px; flex-basis: 48px; }
+  .logo img { width: 48px; height: 49px; }
+  .brand { font-size: 18px; }
+  .brand-caption { max-width: 180px; white-space: normal; font-size: 8px; margin-top: 3px; }
+  .header-actions { gap: 5px; }
+  .header-actions .btn-ghost { padding: 8px 9px; font-size: 10px; min-height: 36px; }
+  .header-actions .btn-primary { padding: 8px; font-size: 10px; min-height: 36px; }
+  .catalog-title { font-size: 21px; }
+}
+@media (max-width: 380px) {
+  .brand-caption { display: none; }
+  .brand { font-size: 17px; }
+}
