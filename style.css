@@ -230,3 +230,19 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
  .map-style-switch {top:65px;left:9px;padding:3px;}
  .map-style-btn {padding:7px 10px;font-size:10px;min-height:30px;}
 }
+
+
+/* Raafat Signature vector-map controls */
+.map-area,.map,.leaflet-container{background:#003f3e}
+.map-style-switch{background:#00302fe8;border-color:#5a8278;gap:4px}
+.map-style-btn{font-size:11px;transition:background .15s,color .15s}
+.map-style-btn.active{background:#f4951a;color:#063531;box-shadow:0 2px 10px #f4951a35}
+.map-style-btn:disabled{opacity:.42;cursor:not-allowed}
+.map-style-btn:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.leaflet-maplibre-gl-layer,.maplibregl-canvas-container{background:#003f3e}
+.leaflet-control-attribution{background:#003f3ed8!important;color:#d9eee5!important}
+.leaflet-control-attribution a{color:#f6bb76!important}
+@media(max-width:580px){
+ .map-style-switch{max-width:calc(100% - 18px);gap:2px}
+ .map-style-btn{font-size:10px;padding:7px 8px}
+}
