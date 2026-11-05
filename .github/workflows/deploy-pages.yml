@@ -7,6 +7,7 @@ on:
       - 'index.html'
       - 'style.css'
       - 'app.js'
+      - 'brand-map.js'
       - 'config.js'
       - 'assets/**'
       - '*.png'
@@ -33,7 +34,7 @@ jobs:
       - name: Collect website assets
         run: |
           mkdir -p _site
-          cp index.html style.css app.js config.js _site/
+          cp index.html style.css app.js brand-map.js config.js _site/
           mkdir -p _site/assets
           cp 'e85b3bef-3d06-423e-a284-c3d8681964bf (1).png' _site/assets/raafat-logo.png
           touch _site/.nojekyll
