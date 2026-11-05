@@ -3,6 +3,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
 const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
 const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم"],"كركوك":["كركوك"]});
+
+const CITY_CENTERS = Object.freeze({
+  "تكريت":[34.6158,43.6786],
+  "بيجي":[34.92915,43.48878],
+  "الدور":[34.45835,43.7958],
+  "سامراء":[34.1959,43.8857],
+  "الشرقاط":[35.5172,43.2281],
+  "العلم":[34.709,43.6951],
+  "كركوك":[35.4719,44.3954]
+});
 const sizeKey = s => Number(s.width_m)+"x"+Number(s.height_m);
 const statuses = { available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
 const byId = id => document.getElementById(id);
@@ -18,7 +28,8 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 
 const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
- markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0
+ markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
+ layers: null, basemap: null
 };
 let toastTimeout;
 
@@ -43,14 +54,33 @@ function getCoords(str){
  const lat=Number(match[1]),lng=Number(match[2]);
  return validCoords(lat,lng) ? {latitude:lat,longitude:lng}:null;
 }
+function setMapStyle(style){
+ if(!state.map||!state.layers||!state.layers[style])return;
+ if(state.basemap)state.map.removeLayer(state.basemap);
+ state.basemap=state.layers[style];
+ state.basemap.addTo(state.map);
+ for(const [id,value] of [["mapRoads","roads"],["mapDark","dark"]]){
+   const btn=el(id);
+   btn.classList.toggle("active",value===style);
+   btn.setAttribute("aria-pressed",String(value===style));
+ }
+}
 function initializeMap(){
  if(!window.L){ alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت."); return; }
  const L=window.L;
- state.map=L.map("map",{zoomControl:false, preferCanvas:true}).setView([34.61,43.68],9);
- L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+encodeURIComponent(String(config.cartoApiKey || "")),{
+ state.map=L.map("map",{zoomControl:false, preferCanvas:true}).setView(CITY_CENTERS["تكريت"],11);
+ const key=encodeURIComponent(String(config.cartoApiKey||""));
+ const common={
    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>',
    subdomains:"abcd",maxZoom:20
- }).addTo(state.map);
+ };
+ state.layers={
+   roads:L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key="+key,common),
+   dark:L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key="+key,common)
+ };
+ setMapStyle("roads");
+ el("mapRoads").addEventListener("click",()=>setMapStyle("roads"));
+ el("mapDark").addEventListener("click",()=>setMapStyle("dark"));
  L.control.zoom({position:"bottomright"}).addTo(state.map);
  state.markers=L.markerClusterGroup
    ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:46,chunkedLoading:true})
@@ -72,10 +102,18 @@ function initializeMap(){
 function zoomAll(defaultOnly=false){
  if(!state.map)return;
  const visible=filteredSites();
- if(visible.length===0||defaultOnly&&visible.length===0){state.map.setView([34.61,43.68],9);return}
+ if(!visible.length){
+   const city=el("cityFilter").value;
+   const governorate=el("governorateFilter").value;
+   const focus=CITY_CENTERS[city]||CITY_CENTERS[governorate==="كركوك"?"كركوك":"تكريت"];
+   const zoom=city?14:governorate==="كركوك"?12:11;
+   state.map.setView(focus,zoom);
+   return;
+ }
  if(visible.length===1)state.map.setView([visible[0].latitude,visible[0].longitude],14);
- else state.map.fitBounds(window.L.latLngBounds(visible.map(s=>[s.latitude,s.longitude])),{padding:[45,45],maxZoom:13});
+ else state.map.fitBounds(window.L.latLngBounds(visible.map(s=>[s.latitude,s.longitude])),{padding:[45,45],maxZoom:14});
 }
+
 function filteredSites(){
  const query=el("search").value.trim().toLocaleLowerCase();
  const gov=el("governorateFilter").value;
