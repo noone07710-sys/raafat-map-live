@@ -1,7 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
-const types = { billboard:"بيلبورد", unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",other:"أخرى"};
+const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
+const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم"],"كركوك":["كركوك"]});
+const sizeKey = s => Number(s.width_m)+"x"+Number(s.height_m);
 const statuses = { available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
 const byId = id => document.getElementById(id);
 const el = byId;
@@ -16,7 +18,7 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 
 const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
- markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false
+ markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0
 };
 let toastTimeout;
 
@@ -76,35 +78,58 @@ function zoomAll(defaultOnly=false){
 }
 function filteredSites(){
  const query=el("search").value.trim().toLocaleLowerCase();
+ const gov=el("governorateFilter").value;
  const city=el("cityFilter").value;
  const type=el("typeFilter").value;
  const status=el("statusFilter").value;
+ const size=el("sizeFilter").value;
  return state.sites.filter(s=>
-   (!query||[s.name,s.code,s.city,s.area,s.description].some(v=>String(v||"").toLocaleLowerCase().includes(query)))
-   &&(!city||s.city===city)
-   &&(!type||s.type===type)
-   &&(!status||s.status===status)
+   (!query||[s.name,s.code,s.city,s.governorate,s.area,s.street,s.landmark,s.description].some(v=>String(v||"").toLocaleLowerCase().includes(query)))
+   && (!gov||s.governorate===gov)
+   && (!city||s.city===city)
+   && (!type||s.type===type)
+   && (!status||s.status===status)
+   && (!size||sizeKey(s)===size)
  );
 }
-function badge(s){return '<span class="status '+escapeHtml(s.status)+'">'+escapeHtml(statuses[s.status]||s.status)+'</span>'}
+function badge(s){
+ return '<span class="status '+escapeHtml(s.status)+'">'+escapeHtml(statuses[s.status]||s.status)+'</span>';
+}
+function renderCityOptions(){
+ const gov=el("governorateFilter").value;
+ const current=el("cityFilter").value;
+ const cities=gov?(REGIONS[gov]||[]):Object.values(REGIONS).flat();
+ el("cityFilter").innerHTML='<option value="">جميع المدن</option>'+
+   cities.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join("");
+ el("cityFilter").value=cities.includes(current)?current:"";
+}
+function renderAdminCities(selectedCity=""){
+ const gov=el("fGovernorate").value;
+ const cities=REGIONS[gov]||[];
+ el("fCity").innerHTML=cities.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join("");
+ el("fCity").value=cities.includes(selectedCity)?selectedCity:(cities[0]||"");
+}
 function renderFilters(){
- const selected=el("cityFilter").value;
- const cities=[...new Set(state.sites.map(s=>s.city).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));
- el("cityFilter").innerHTML='<option value="">جميع المدن</option>'+cities.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join("");
- el("cityFilter").value=cities.includes(selected)?selected:"";
+ renderCityOptions();
+ const selectedSize=el("sizeFilter").value;
+ const dims=[...new Map(state.sites.map(s=>[sizeKey(s),s])).entries()]
+   .sort((a,b)=>(Number(a[1].width_m)*Number(a[1].height_m))-(Number(b[1].width_m)*Number(b[1].height_m)));
+ el("sizeFilter").innerHTML='<option value="">جميع القياسات</option>'+
+   dims.map(([key,s])=>'<option value="'+escapeHtml(key)+'">'+format(s.width_m)+' × '+format(s.height_m)+' م</option>').join("");
+ el("sizeFilter").value=dims.some(([key])=>key===selectedSize)?selectedSize:"";
 }
 function render(){
  const sites=filteredSites();
  el("allCount").textContent=state.sites.length;
  el("availableCount").textContent=state.sites.filter(s=>s.status==="available").length;
  el("cityCount").textContent=new Set(state.sites.map(s=>s.city)).size;
- el("showingCount").textContent=sites.length+" موقع";
+ el("showingCount").textContent=sites.length+" قطعة";
  el("mapCount").textContent=sites.length;
  el("listing").innerHTML=sites.length ? sites.map(s=>
   '<button type="button" class="location-card '+(state.selected===s.id?'active':'')+'" data-site="'+escapeHtml(s.id)+'">'+
    '<div class="card-row"><strong>'+escapeHtml(s.name)+'</strong>'+badge(s)+'</div>'+
-   '<small>'+escapeHtml(s.code)+' • '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
-   '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||"")+'</span></div>'+
+   '<small>'+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
+   '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
   '</button>'
  ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'يمكن تغيير خيارات البحث أو العودة لاحقاً.')+'</div>';
  el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>selectSite(button.dataset.site)));
@@ -130,7 +155,9 @@ function renderMarkers(sites){
 function selectSite(id){
  const site=state.sites.find(s=>s.id===id);
  if(!site)return;
+ if(state.selected!==id)state.galleryIndex=0;
  state.selected=id;render();
+ if(!state.staff)history.replaceState(null,"","#site="+encodeURIComponent(id));
  if(state.map){state.map.setView([site.latitude,site.longitude],Math.max(14,state.map.getZoom()),{animate:true})}
 }
 async function photoUrl(path){
@@ -146,44 +173,81 @@ async function renderDetail(){
  const requestId=state.selected;
  const site=state.sites.find(s=>s.id===requestId);
  if(!site){
-   el("siteDetails").innerHTML='<div class="empty detail-empty"><span class="empty-icon">⌖</span>اختر موقعاً من الخريطة أو القائمة لعرض بياناته.</div>';
+   el("siteDetails").innerHTML='<div class="empty detail-empty"><span class="empty-icon">⌖</span>حدد أي قطعة من الخريطة أو القائمة لتظهر تفاصيلها الدقيقة وصورها وقياساتها هنا.</div>';
    return;
  }
  const phone=String(config.whatsappNumber||"").replace(/\D/g,"");
- const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent("مرحباً، أستفسر عن القطعة "+site.code+" ("+site.name+") لدى "+COMPANY):null;
+ const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent("مرحباً، أرغب بالاستفسار عن القطعة "+site.code+" ("+site.name+") لدى "+COMPANY):null;
  const mapUrl="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(site.latitude+","+site.longitude);
- const editButtons=state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل</button><button type="button" class="btn danger" id="deleteSite">حذف</button></div>':"";
- const photos=site.site_photos||[];
- const html='<div class="detail-photo" id="detailImage"><div class="detail-placeholder"><b>R.</b>مساحة إعلانية من شبكة رأفت</div></div>'+
-  '<h3 class="detail-name">'+escapeHtml(site.name)+'</h3>'+
-  '<div class="detail-code">'+escapeHtml(site.code)+' • '+escapeHtml(site.city)+(site.published?'':' • غير منشورة')+'</div>'+
-  '<div class="detail-status">'+badge(site)+'</div>'+
-  '<div class="detail-table">'+[
-   ["المدينة",site.city],["المنطقة",site.area||"غير محددة"],["نوع الإعلان",types[site.type]||site.type],
-   ["القياس",format(site.width_m)+" × "+format(site.height_m)+" متر"],
-   ["المساحة",format(site.width_m*site.height_m)+" م²"],
-   ["عدد الأوجه",site.faces],["الإنارة",site.lighting?"مضاءة":"غير مضاءة"]
-  ].map(([label,val])=>'<div class="detail-line"><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
-  (site.description?'<p class="detail-description">'+escapeHtml(site.description)+'</p>':"")+
-  '<div class="detail-actions"><a class="btn btn-ghost" href="'+mapUrl+'" target="_blank" rel="noopener noreferrer">الاتجاهات ↗</a>'+
-  (whatsapp?'<a class="btn btn-primary" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">استفسار واتساب</a>':"")+'</div>'+
-  (photos.length?'<p class="photo-caption">'+photos.length+' صور محفوظة للموقع</p>':"") + editButtons;
+ const photos=Array.isArray(site.site_photos)?site.site_photos:[];
+ const imageLinks=await Promise.all(photos.map(p=>photoUrl(p.storage_path)));
+ if(state.selected!==requestId)return;
+ const photosAvailable=imageLinks.filter(Boolean);
+ state.galleryIndex=Math.min(state.galleryIndex,Math.max(0,photosAvailable.length-1));
+ const mainImage=photosAvailable.length?
+    '<a href="'+escapeHtml(photosAvailable[state.galleryIndex])+'" target="_blank" rel="noopener noreferrer" title="فتح الصورة بالحجم الكامل"><img src="'+escapeHtml(photosAvailable[state.galleryIndex])+'" alt="صورة اللوحة الإعلانية '+escapeHtml(site.code)+'" loading="lazy"></a>':
+    '<div class="detail-placeholder"><b>R.</b>الصورة الحقيقية للموقع تضاف من لوحة الإدارة</div>';
+ const thumbnails=photosAvailable.length>1?
+   '<div class="photo-gallery">'+photosAvailable.map((u,i)=>
+      '<button class="photo-thumb '+(state.galleryIndex===i?'active':'')+'" type="button" data-photo-index="'+i+'" aria-label="عرض صورة رقم '+(i+1)+'"><img src="'+escapeHtml(u)+'" loading="lazy" alt="صورة '+(i+1)+'"></button>'
+   ).join("")+'</div>':"";
+ const metaRows=[
+   ["رقم القطعة",site.code],["المحافظة",site.governorate||"صلاح الدين"],
+   ["المدينة / القضاء",site.city],["المنطقة / الحي",site.area||"—"],
+   ["الشارع",site.street||"—"],["أقرب معلم",site.landmark||"—"],
+   ["نوع الإعلان",types[site.type]||site.type],
+   ["العرض",format(site.width_m)+" متر"],["الارتفاع",format(site.height_m)+" متر"],
+   ["المساحة الإعلانية",format(site.width_m*site.height_m)+" م²"],
+   ["عدد الأوجه",site.faces],["الإنارة",site.lighting?"مضاءة":"غير مضاءة"],
+   ["اتجاه مواجهة الإعلان",site.facing||"—"],["الخامة / المادة",site.material||"—"]
+ ];
+ const html=
+   '<div class="details-pill"><span>تفاصيل الموقع</span><span>'+escapeHtml(site.code)+'</span></div>'+
+   '<div class="detail-photo">'+mainImage+'</div>'+thumbnails+
+   '<h3 class="detail-name">'+escapeHtml(site.name)+'</h3>'+
+   '<div class="detail-location">⌖ '+escapeHtml(site.governorate||"صلاح الدين")+' / '+escapeHtml(site.city)+(site.area?' / '+escapeHtml(site.area):"")+'</div>'+
+   '<div class="detail-status">'+badge(site)+(site.published?'':' <span class="draft">• غير منشور</span>')+'</div>'+
+   '<div class="spec-heading">المواصفات والتفاصيل</div>'+
+   '<div class="detail-table">'+metaRows.map(([label,val])=>'<div class="detail-line"><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
+   (site.description?'<div class="spec-heading">وصف الموقع</div><p class="detail-description">'+escapeHtml(site.description)+'</p>':"")+
+   '<div class="detail-actions"><a class="btn btn-ghost" href="'+mapUrl+'" target="_blank" rel="noopener noreferrer">⌖ الاتجاهات على الخريطة</a>'+
+   (whatsapp?'<a class="btn btn-primary" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
+   '<button type="button" class="btn btn-primary" id="copyInquiry">نسخ بيانات للاستفسار</button>')+'</div>'+
+   '<p class="detail-tip">يمكنك مشاركة رقم القطعة وموقعها مع فريق المبيعات للاستفسار عن التوفر والأسعار.</p>'+
+   (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
+   (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"");
  el("siteDetails").innerHTML=html;
+ el("siteDetails").querySelectorAll("[data-photo-index]").forEach(btn=>btn.addEventListener("click",()=>{
+   state.galleryIndex=Number(btn.dataset.photoIndex);
+   void renderDetail();
+ }));
+ if(!whatsapp){
+   el("copyInquiry").addEventListener("click",async()=>{
+     const summary=COMPANY+"\nاستفسار عن قطعة إعلانية\nالرمز: "+site.code+"\nالموقع: "+(site.governorate||"صلاح الدين")+" / "+site.city+" / "+(site.area||"")+
+       "\nالقياس: "+format(site.width_m)+" × "+format(site.height_m)+" متر\nالرابط: "+location.origin+location.pathname+"#site="+encodeURIComponent(site.id);
+     try{await navigator.clipboard.writeText(summary);toast("تم نسخ تفاصيل القطعة. أرسلها لفريق المبيعات.");}
+     catch(e){toast("تعذر النسخ التلقائي؛ يمكنك نسخ الرمز: "+site.code);}
+   });
+ }
  if(state.staff){
-  el("editSite").addEventListener("click",()=>openEditor(site));
-  el("deleteSite").addEventListener("click",()=>void deleteSite(site));
+   el("editSite").addEventListener("click",()=>openEditor(site));
+   el("deleteSite").addEventListener("click",()=>void deleteSite(site));
+   el("siteDetails").querySelectorAll("[data-remove-photo]").forEach(btn=>btn.addEventListener("click",()=>void removePhoto(site,btn.dataset.removePhoto)));
  }
- if(photos.length){
-   const url=await photoUrl(photos[0].storage_path);
-   if(url && state.selected===requestId){
-     const image=document.createElement("img");
-     image.alt="صورة الموقع "+site.name;
-     image.loading="lazy";
-     image.src=url;
-     const box=el("detailImage");
-     if(box)box.replaceChildren(image);
-   }
- }
+}
+async function removePhoto(site,photoId){
+ if(!state.staff||!db)return;
+ const photo=(site.site_photos||[]).find(p=>p.id===photoId);
+ if(!photo||!confirm("حذف هذه الصورة من موقع القطعة نهائياً؟"))return;
+ try{
+   const {error:storageError}=await db.storage.from("site-photos").remove([photo.storage_path]);
+   if(storageError)throw storageError;
+   const {error:dbError}=await db.from("site_photos").delete().eq("id",photo.id);
+   if(dbError)throw dbError;
+   state.photoUrls.delete(photo.storage_path);
+   await loadSites();
+   toast("تم حذف الصورة من الموقع.");
+ }catch(e){toast("تعذر حذف الصورة: "+(e.message||"خطأ غير معروف"));}
 }
 function refreshAdmin(){
  el("staffTag").hidden=!state.staff;
@@ -219,6 +283,8 @@ async function loadSites(){
   state.sites=items;
   if(state.selected&&!items.some(s=>s.id===state.selected))state.selected=null;
   renderFilters();render();
+  const hash=location.hash.startsWith("#site=")?decodeURIComponent(location.hash.slice(6)):null;
+  if(hash&&state.sites.some(site=>site.id===hash))selectSite(hash);
   alertBanner("");
  }catch(error){
   state.sites=[];renderFilters();render();
@@ -235,7 +301,12 @@ function openEditor(site=null){
  const get=(field,defaultValue="") => site?.[field]??defaultValue;
  el("fCode").value=get("code");
  el("fName").value=get("name");
- el("fCity").value=get("city");
+ el("fGovernorate").value=get("governorate","صلاح الدين");
+ renderAdminCities(get("city"));
+ el("fStreet").value=get("street");
+ el("fLandmark").value=get("landmark");
+ el("fFacing").value=get("facing");
+ el("fMaterial").value=get("material");
  el("fArea").value=get("area");
  el("fType").value=get("type","billboard");
  el("fStatus").value=get("status","available");
@@ -251,19 +322,26 @@ function openEditor(site=null){
 function sitePayload(){
  const code=el("fCode").value.trim();
  const name=el("fName").value.trim();
+ const governorate=el("fGovernorate").value;
  const city=el("fCity").value.trim();
  const area=el("fArea").value.trim();
+ const street=el("fStreet").value.trim();
+ const landmark=el("fLandmark").value.trim();
+ const facing=el("fFacing").value.trim();
+ const material=el("fMaterial").value.trim();
  const description=el("fDescription").value.trim();
  const coords=getCoords(el("fCoords").value);
  const width_m=number(el("fWidth").value);
  const height_m=number(el("fHeight").value);
  const faces=number(el("fFaces").value);
  if(!code||code.length>40||!name||name.length>140||!city||city.length>80)throw Error("تحقق من رمز القطعة واسم الموقع والمدينة.");
+ if(!REGIONS[governorate]||!REGIONS[governorate].includes(city))throw Error("المحافظة والمدينة غير متطابقتين.");
+ if(street.length>200||landmark.length>200||facing.length>140||material.length>140)throw Error("بعض التفاصيل أطول من الحد المسموح.");
  if(!coords)throw Error("الإحداثيات غير صحيحة، استخدم: latitude, longitude");
  if(!Number.isFinite(width_m)||width_m<=0||width_m>1000||!Number.isFinite(height_m)||height_m<=0||height_m>1000)throw Error("القياس يجب أن يكون أكبر من صفر وأقل من 1000 متر.");
  if(!Number.isInteger(faces)||faces<1||faces>8)throw Error("عدد الأوجه من 1 إلى 8.");
  return {
-   code,name,city,area,description,
+   code,name,governorate,city,area,street,landmark,facing,material,description,
    type:el("fType").value,status:el("fStatus").value,
    width_m,height_m,faces,lighting:el("fLighting").value==="true",
    ...coords,published:el("fPublished").checked
@@ -386,9 +464,15 @@ async function signOut(){
  refreshAdmin();await loadSites();toast("تم تسجيل الخروج.");
 }
 function events(){
- for(const filter of ["search","cityFilter","statusFilter","typeFilter"]){
-  el(filter).addEventListener(filter==="search"?"input":"change",render);
+ for(const filter of ["search","cityFilter","statusFilter","typeFilter","sizeFilter"]){
+  el(filter).addEventListener(filter==="search"?"input":"change",()=>{render();zoomAll()});
  }
+ el("governorateFilter").addEventListener("change",()=>{renderCityOptions();render();zoomAll()});
+ el("fGovernorate").addEventListener("change",()=>renderAdminCities());
+ el("clearFilters").addEventListener("click",()=>{
+  for(const id of ["search","governorateFilter","cityFilter","statusFilter","typeFilter","sizeFilter"])el(id).value="";
+  renderCityOptions();render();zoomAll();
+ });
  el("newSite").addEventListener("click",()=>openEditor());
  el("loginButton").addEventListener("click",()=>openModal("loginModal"));
  el("logoutButton").addEventListener("click",()=>void signOut());
