@@ -246,3 +246,122 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
  .map-style-switch{max-width:calc(100% - 18px);gap:2px}
  .map-style-btn{font-size:10px;padding:7px 8px}
 }
+
+
+/* ── RA'AFAT EMERALD NOCTURNE — premium single-map system ────── */
+.map-area,.map,.leaflet-container {
+ background:#071f24;
+}
+.map-area { isolation:isolate; }
+.map-area::after {
+ content:"";
+ position:absolute;
+ inset:-12%;
+ z-index:2;
+ pointer-events:none;
+ background:
+  radial-gradient(ellipse 34% 46% at 18% 25%, rgba(59,206,185,.125) 0%,transparent 75%),
+  radial-gradient(ellipse 32% 40% at 86% 77%, rgba(244,149,26,.095) 0%,transparent 75%);
+ opacity:.7;
+ transform:translate3d(0,0,0);
+ animation:raafat-ambient 18s ease-in-out infinite alternate;
+ mix-blend-mode:screen;
+}
+@keyframes raafat-ambient {
+ 0% {transform:translate3d(-2%,1%,0) scale(1); opacity:.5}
+ 100% {transform:translate3d(2%,-2%,0) scale(1.07); opacity:.85}
+}
+.map-chip {
+ background:rgba(4,31,34,.87);
+ border:1px solid rgba(136,203,182,.28);
+ box-shadow:0 10px 35px rgba(0,15,18,.42),0 0 22px rgba(13,121,108,.12);
+ color:#e9f9ef;
+ backdrop-filter:blur(16px);
+}
+.map-chip strong {color:#ffc184}
+.map-home {
+ background:#093334;
+ border:1px solid rgba(154,218,194,.45);
+ box-shadow:0 8px 25px rgba(0,21,22,.4);
+ transition:box-shadow .18s,background .18s;
+}
+.map-home:hover{background:#15514b;box-shadow:0 4px 27px rgba(106,236,206,.23)}
+.leaflet-control-zoom a {
+ background:#0b3233!important;
+ color:#e5fff1!important;
+ border-bottom:1px solid rgba(157,209,187,.3)!important;
+}
+.leaflet-control-zoom a:hover {background:#1c5350!important}
+.leaflet-control-zoom{border:1px solid rgba(132,212,184,.35)!important;border-radius:10px!important;overflow:hidden}
+.leaflet-control-attribution{
+ background:rgba(6,40,42,.88)!important;
+ color:#b6d7ca!important;
+}
+.leaflet-control-attribution a{color:#f4af6b!important}
+.raafat-fallback-tile{
+ filter:sepia(.16) hue-rotate(44deg) saturate(.85) brightness(.83) contrast(1.13);
+}
+.raafat-city-icon{
+ border:0!important;
+ background:transparent!important;
+ width:0!important;
+ height:0!important;
+ overflow:visible!important;
+ pointer-events:none!important;
+}
+.raafat-city-name {
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ position:relative;
+ transform:translate(-50%,-50%) scale(.92);
+ white-space:nowrap;
+ direction:rtl;
+ unicode-bidi:isolate;
+ font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
+ font-weight:700;
+ font-size:13px;
+ letter-spacing:0;
+ line-height:1.7;
+ padding:4px 12px 5px;
+ border:1px solid rgba(251,187,106,.35);
+ border-radius:24px;
+ background:rgba(3,30,32,.82);
+ color:#ffcc8c;
+ box-shadow:0 3px 18px rgba(0,18,20,.45),0 0 12px rgba(244,149,26,.12);
+ text-shadow:0 0 11px rgba(251,173,79,.35),0 1px 2px #062025;
+ opacity:0;
+ transition:opacity .3s ease,transform .3s ease;
+ backdrop-filter:blur(5px);
+}
+.raafat-city-name::before{
+ content:"";
+ width:5px;height:5px;border-radius:50%;
+ background:#ffa648;box-shadow:0 0 9px #ffa648;
+ margin-left:6px;flex:none;
+}
+.raafat-city-zoom .raafat-city-name{
+ opacity:1;
+ transform:translate(-50%,-50%) scale(1);
+}
+.site-pin{
+ border-color:rgba(255,238,205,.68)!important;
+ background:#f4951a;
+ box-shadow:0 3px 12px rgba(0,21,22,.55),0 0 17px rgba(244,149,26,.5)!important;
+ animation:raafat-pin-breathe 3.5s ease-in-out infinite;
+}
+.site-pin.selected{
+ box-shadow:0 0 0 5px rgba(244,149,26,.3),0 0 25px rgba(255,180,87,.65)!important;
+}
+@keyframes raafat-pin-breathe{
+ 0%,100%{filter:brightness(.95);box-shadow:0 3px 12px rgba(0,21,22,.5),0 0 12px rgba(244,149,26,.32)}
+ 50%{filter:brightness(1.14);box-shadow:0 3px 12px rgba(0,21,22,.55),0 0 22px rgba(244,149,26,.53)}
+}
+@media(max-width:580px){
+ .raafat-city-name{font-size:11px;padding:3px 9px}
+ .map-chip{top:12px;right:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ .map-area::after,.site-pin{animation:none!important}
+ .raafat-city-name{transition:none}
+}
