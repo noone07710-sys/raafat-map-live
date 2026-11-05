@@ -41,6 +41,8 @@ jobs:
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
+          cp assets/raafat-logo.svg _site/assets/raafat-logo.svg
+          mkdir -p _site/assets
           cp 'e85b3bef-3d06-423e-a284-c3d8681964bf (1).png' _site/assets/raafat-logo.png
           touch _site/.nojekyll
       - name: Configure Pages
