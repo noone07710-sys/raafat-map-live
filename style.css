@@ -2038,3 +2038,32 @@ body.raafat-signature-map.no-map-glow .map-area::after{display:none!important}
  .vip-legend{animation:none!important}
  .vip-tool-button,.raafat-premium-site-icon .site-pin{transition:none!important}
 }
+
+
+
+/* Optional visitor-to-billboard direction indicator: straight line, not road routing. */
+.leaflet-overlay-pane .vip-straight-connection{
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:8 13;
+  filter:drop-shadow(0 0 5px rgba(246,181,103,.38));
+  animation:raafat-vip-connection 3.2s linear infinite;
+  pointer-events:none!important;
+}
+.detail-actions .vip-direct-route-button{
+  flex:1 1 100%;min-height:42px;
+  background:rgba(39,100,80,.3);
+  border:1px solid rgba(155,221,181,.3);
+  color:#cdebd9;font-size:10px;
+  white-space:normal
+}
+.detail-actions .vip-direct-route-button:hover{
+  background:rgba(39,117,87,.42);border-color:rgba(255,191,110,.5)
+}
+@keyframes raafat-vip-connection{
+  from{stroke-dashoffset:0}
+  to{stroke-dashoffset:-42}
+}
+@media(prefers-reduced-motion:reduce){
+ .leaflet-overlay-pane .vip-straight-connection{animation:none!important}
+}
