@@ -66,10 +66,24 @@
     </aside>
     <section class="map-area" aria-label="خريطة القطع الإعلانية">
       <div id="map" class="map raafat-premium-map"></div>
+      <div class="map-reveal" id="mapReveal" role="status" aria-live="polite">
+        <div class="map-reveal-art" aria-hidden="true">
+          <i class="map-reveal-line one"></i><i class="map-reveal-line two"></i><i class="map-reveal-line three"></i>
+          <span class="map-reveal-node a"></span><span class="map-reveal-node b"></span>
+        </div>
+        <div class="map-reveal-brand"><span class="map-reveal-dot"></span>خريطة رأفت</div>
+      </div>
       <div class="map-chip"><span class="live-dot"></span><span>شبكة رأفت</span><strong id="mapCount">0</strong></div>
       
       <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="الرجوع للخريطة العامة" title="الرجوع للخريطة العامة">⌖</button>
+      <div class="map-site-cta" id="mapSiteCTA" hidden>
+        <div class="map-site-identity"><span class="map-site-eyebrow">الموقع المحدد</span><strong id="mapSiteTitle"></strong></div>
+        <div class="map-site-buttons">
+          <button type="button" id="mapSiteDetails" title="عرض تفاصيل القطعة">التفاصيل</button>
+          <a id="mapSiteDirections" href="#" target="_blank" rel="noopener noreferrer" aria-label="بدء الاتجاهات إلى اللوحة">الاتجاهات <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
     </section>
     <aside class="panel details">
       <h2>تفاصيل القطعة</h2>
