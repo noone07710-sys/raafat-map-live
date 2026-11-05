@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 import { fetchRaafatMapStyle } from "./brand-map.js";
+import { createAdminDashboard } from "./admin-dashboard.js";
 // The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -34,9 +35,11 @@ const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
  markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
  basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false,
- locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null
+ locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null,
+ staffRole:null,siteSettings:null
 };
 let toastTimeout;
+let adminDashboard=null;
 
 function toast(message){
  const box = el("toast");
@@ -536,8 +539,8 @@ async function renderDetail(){
    el("siteDetails").innerHTML='<div class="empty detail-empty"><span class="empty-icon">⌖</span>اختر قطعة لعرض تفاصيلها.</div>';
    return;
  }
- const phone=String(config.whatsappNumber||"").replace(/\D/g,"");
- const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent("مرحباً، أرغب بالاستفسار عن القطعة "+site.code+" ("+site.name+") لدى "+COMPANY):null;
+ const phone=String(state.siteSettings?.whatsapp_number||config.whatsappNumber||"").replace(/\D/g,"");
+ const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent((state.siteSettings?.contact_message||"مرحباً، أود الاستفسار عن موقع إعلاني.")+"\nالقطعة: "+site.code+" - "+site.name):null;
  const directionsUrl=directionsToSite(site);
  const photos=Array.isArray(site.site_photos)?site.site_photos:[];
  const imageLinks=await Promise.all(photos.map(p=>photoUrl(p.storage_path)));
@@ -612,6 +615,7 @@ async function removePhoto(site,photoId){
 function refreshAdmin(){
  el("staffTag").hidden=!state.staff;
  el("newSite").hidden=!state.staff;
+ el("manageDashboard").hidden=!state.staff;
  el("loginButton").hidden=state.staff||!ADMIN_ENTRY;
  el("changePasswordButton").hidden=!state.staff;
  el("logoutButton").hidden=!state.user;
@@ -621,11 +625,35 @@ async function authCheck(){
  const {data:auth}=await db.auth.getUser();
  state.user=auth?.user||null;
  state.staff=false;
+ state.staffRole=null;
  if(state.user){
   const {data,error}=await db.from("staff_members").select("role").eq("user_id",state.user.id).maybeSingle();
-  if(!error && data && ["admin","editor"].includes(data.role))state.staff=true;
+  if(!error && data && ["admin","editor"].includes(data.role)){state.staff=true;state.staffRole=data.role;}
  }
  refreshAdmin();
+}
+function applySiteSettings(data){
+ if(!data)return;
+ state.siteSettings=data;
+ el("catalogTitle").textContent=data.headline||"المواقع الإعلانية";
+ el("cityChipsWrap").hidden=data.show_city_chips===false;
+ el("catalogStats").hidden=data.show_statistics===false;
+ document.body.classList.toggle("no-map-glow",data.show_map_glow===false);
+ if(state.map && !state.selected && !location.hash.startsWith("#site=") && !el("cityFilter").value){
+   const city=CITY_CENTERS[data.map_start_city]?data.map_start_city:"تكريت";
+   state.map.setView(CITY_CENTERS[city],11,{animate:false});
+ }
+ void renderDetail();
+}
+async function loadSiteSettings(){
+ if(!db)return;
+ try{
+   const {data,error}=await db.from("site_settings").select("*").eq("id",true).maybeSingle();
+   if(error)throw error;
+   if(data)applySiteSettings(data);
+ }catch(err){
+   console.warn("Optional company settings were not loaded:",err.message);
+ }
 }
 async function loadSites(){
  if(!db)return;
@@ -644,11 +672,12 @@ async function loadSites(){
   state.sites=items;
   if(state.selected&&!items.some(s=>s.id===state.selected))state.selected=null;
   renderFilters();render();
+  adminDashboard?.render();
   const hash=location.hash.startsWith("#site=")?decodeURIComponent(location.hash.slice(6)):null;
   if(hash&&state.sites.some(site=>site.id===hash))selectSite(hash);
   alertBanner("");
  }catch(error){
-  state.sites=[];renderFilters();render();
+  state.sites=[];renderFilters();render();adminDashboard?.render();
   alertBanner("تعذر الاتصال بقاعدة البيانات. تحقق من الإعدادات واتصال الإنترنت وصلاحيات Supabase.");
   console.error("Site fetch failed:",error.message);
  }
@@ -785,6 +814,7 @@ async function signIn(event){
   el("password").value="";
   closeModal("loginModal");
   await loadSites();
+  adminDashboard?.open();
   toast("مرحباً بك في لوحة إدارة شركة رأفت.");
  }catch(error){
   const wrong=/invalid login credentials|invalid_credentials/i.test(String(error.message||""));
@@ -832,7 +862,8 @@ async function changeAdminPassword(event){
 async function signOut(){
  if(!db)return;
  try{await db.auth.signOut()}catch(e){console.warn(e)}
- state.user=null;state.staff=false;state.selected=null;state.photoUrls.clear();
+ adminDashboard?.close();
+ state.user=null;state.staff=false;state.staffRole=null;state.selected=null;state.photoUrls.clear();
  refreshAdmin();await loadSites();toast("تم تسجيل الخروج.");
 }
 function events(){
@@ -847,6 +878,7 @@ function events(){
  });
  el("newSite").addEventListener("click",()=>openEditor());
  el("loginButton").addEventListener("click",()=>openModal("loginModal"));
+ el("manageDashboard").addEventListener("click",()=>adminDashboard?.open());
  el("logoutButton").addEventListener("click",()=>void signOut());
  el("siteForm").addEventListener("submit",saveSite);
  el("loginForm").addEventListener("submit",signIn);
@@ -895,7 +927,10 @@ async function main(){
      }
    });
  }
+ adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,loadSites,selectSite,applySettings:applySiteSettings});
  initializeMap();events();
+ window.addEventListener("orientationchange",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),250));
+ window.addEventListener("resize",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),100));
  if(!db){
   alertBanner("النظام لم يُربط بعد بقاعدة Supabase. يجب إعداد مشروع الشركة وملف config.js قبل نشره للزبائن.");
   el("listing").innerHTML='<div class="empty">لا توجد مواقع فعلية محمّلة. لن نعرض مواقع تجريبية على أنها قطع الشركة.</div>';
@@ -903,7 +938,9 @@ async function main(){
   return;
  }
  await authCheck();
+ await loadSiteSettings();
  if(ADMIN_ENTRY&&!state.staff)openModal("loginModal");
  await loadSites();
+ adminDashboard?.render();
 }
 void main();
