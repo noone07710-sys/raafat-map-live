@@ -1551,3 +1551,73 @@ body.raafat-signature-map .osm-standard-tile{
     width:144px!important;height:100px!important;
   }
 }
+
+
+
+/* VIP coordinate alignment v2
+   The LABEL is now centered on the geographic location, not drawn 78px above it.
+   The Leaflet icon is 144x76 and anchored at [72,38] at all zoom levels.
+   Only decorative halo rings animate; never shift the name or marker box. */
+.vip-district-marker{
+  width:144px!important;
+  height:76px!important;
+  margin-left:-72px!important;
+  margin-top:-38px!important;
+}
+.vip-district-marker .vip-district-beacon,
+.vip-map-close .vip-district-marker .vip-district-beacon{
+  width:144px!important;
+  height:76px!important;
+  position:relative!important;
+  transform:none!important;
+  transform-origin:center center!important;
+}
+.vip-district-marker .vip-beacon-label,
+.vip-district-marker:hover .vip-beacon-label,
+.vip-district-marker.vip-district-active .vip-beacon-label{
+  position:absolute!important;
+  top:50%!important;
+  left:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:max-content;
+  min-width:97px;
+  max-width:136px;
+  min-height:48px;
+  padding:6px 13px 7px;
+  text-align:center;
+  border-radius:14px;
+  z-index:5;
+}
+.vip-district-marker .vip-beacon-wave{
+  left:50%!important;
+  top:50%!important;
+}
+.vip-district-marker .vip-beacon-point{
+  top:calc(50% - 8px)!important;
+  left:calc(50% - 8px)!important;
+  z-index:2;
+}
+.vip-district-marker .vip-beacon-stem{display:none!important}
+.vip-district-marker .vip-beacon-label::before{
+  content:"";
+  position:absolute;
+  inset:3px;
+  border-radius:11px;
+  border:1px solid rgba(255,221,155,.06);
+  pointer-events:none;
+}
+.vip-district-marker.vip-label-muted .vip-beacon-label{
+  visibility:hidden;
+  opacity:0;
+}
+@media(max-width:620px){
+  .vip-district-marker,
+  .vip-district-marker .vip-district-beacon{
+    width:144px!important;
+    height:76px!important;
+  }
+  .vip-district-marker .vip-beacon-label{
+    min-height:45px;
+    padding:5px 11px;
+  }
+}
