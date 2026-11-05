@@ -489,3 +489,27 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
 @media(max-width:560px){
  .map-region-label{font-size:10px;padding-inline-start:7px}
 }
+
+
+/* Formal, minimal loading screen; no decorative illustration or brand slogan. */
+.map-reveal{
+  gap:16px;
+  background:
+    radial-gradient(circle at 50% 43%,rgba(25,107,90,.28),transparent 43%),
+    linear-gradient(155deg,#073f38 0%,#083b37 52%,#07332f 100%);
+}
+.map-reveal::before{display:none}
+.map-loading-spinner{
+  display:block;width:42px;height:42px;border-radius:50%;
+  border:2px solid rgba(181,237,210,.20);
+  border-top-color:#f4951a;
+  border-right-color:rgba(244,149,26,.72);
+  box-shadow:0 0 20px rgba(244,149,26,.11);
+  animation:map-loading-spin .85s linear infinite;
+}
+.map-reveal-brand{
+  font-size:14px;line-height:1.7;font-weight:600;
+  color:#e9f4ec;letter-spacing:0;text-shadow:none;
+}
+@keyframes map-loading-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.map-loading-spinner{animation:none}}
