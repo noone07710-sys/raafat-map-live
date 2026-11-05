@@ -260,6 +260,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     $("dashAddSite").addEventListener("click",()=>{close();openEditor()});
     $("dashQuickNew").addEventListener("click",()=>{close();openEditor()});
     $("dashExport").addEventListener("click",exportCsv);
+    $("dashChangePassword").addEventListener("click",()=>{close();$("changePasswordButton").click()});
     $("dashRefresh").addEventListener("click",async()=>{await loadSites();render();toast("تم تحديث البيانات.")});
     $("dashInventorySearch").addEventListener("input",renderInventory);
     $("dashInventoryStatus").addEventListener("change",renderInventory);
@@ -276,6 +277,12 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     $("dashBulkPublish").addEventListener("click",()=>void bulkUpdate({published:true},"نشر القطع المحددة"));
     $("dashBulkHide").addEventListener("click",()=>void bulkUpdate({published:false},"إخفاء القطع المحددة"));
     $("dashGeneratePassword").addEventListener("click",()=>{$("dashStaffPassword").value=strongPassword();staffMessage("كلمة مرور قوية جاهزة، احفظها بأمان.")});
+    $("dashTogglePassword").addEventListener("click",()=>{
+      const input=$("dashStaffPassword");
+      const showing=input.type==="text";
+      input.type=showing?"password":"text";
+      $("dashTogglePassword").textContent=showing?"إظهار":"إخفاء";
+    });
     $("dashCopyPassword").addEventListener("click",async()=>{
       const pw=$("dashStaffPassword").value;
       if(!pw){staffMessage("ولّد كلمة مرور أولاً.",true);return}
