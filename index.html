@@ -111,6 +111,7 @@
        <div class="admin-dashboard-top-actions">
          <button class="admin-mini-button" id="dashAddSite" type="button">+ إضافة قطعة</button>
          <button class="admin-mini-button secondary" id="dashExport" type="button">تصدير البيانات</button>
+         <button class="admin-mini-button secondary" id="dashChangePassword" type="button">كلمة المرور</button>
          <button class="admin-close" id="closeAdminDashboard" type="button" aria-label="إغلاق لوحة التحكم">×</button>
        </div>
      </header>
@@ -178,8 +179,9 @@
              <select class="input" id="dashStaffRole"><option value="editor">محرر مواقع</option><option value="admin">مدير كامل</option></select>
              <label for="dashStaffPassword">كلمة مرور مؤقتة</label>
              <div class="admin-password-tools">
-               <input id="dashStaffPassword" type="text" class="input" required minlength="14" maxlength="128" autocomplete="off" spellcheck="false">
+               <input id="dashStaffPassword" type="password" class="input" required minlength="14" maxlength="128" autocomplete="new-password" spellcheck="false">
                <button type="button" id="dashGeneratePassword">توليد</button>
+               <button type="button" id="dashTogglePassword">إظهار</button>
                <button type="button" id="dashCopyPassword">نسخ</button>
              </div>
              <p class="admin-note">أنشئ الحساب بكلمة مرور قوية وشاركها مع الموظف بشكل خاص، ثم يغيّرها بعد أول دخول. لا تحتاج رسالة تأكيد لإنشاء الحساب من لوحة المدير.</p>
