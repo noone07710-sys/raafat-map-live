@@ -1,117 +1,132 @@
 /**
- * Raafat Signature vector basemap.
- * CARTO's official Voyager vector style provides real OSM geometry and labels;
- * we recolor its vector layers at runtime, rather than filtering raster PNGs.
- * This module contains no private credentials.
+ * RA'AFAT / SIGNATURE MAP
+ * Custom CARTO vector style; graceful Arabic label handling and elegant luminous roads.
+ * This contains only public design data. The CARTO key is provided by config.js.
  */
-const COLORS = Object.freeze({
-  background: "#003f3e",
-  terrain: "#094a47",
-  park: "#14524b",
-  water: "#082f33",
-  building: "#0b5550",
-  road: "#e5fff5",
-  majorRoad: "#ffffff",
-  roadCasing: "#24605b",
-  border: "#9ecdc3",
-  label: "#f4951a",
-  labelBright: "#ffac53",
-  labelHalo: "#00302f"
+const C = Object.freeze({
+  background:"#071F24", terrain:"#0D3435", district:"#123E3C",
+  park:"#115044", water:"#082D37", waterEdge:"#286F78",
+  building:"#1B4944", buildingOutline:"#2B5B55",
+  roadMajor:"#EBFFF7", roadSecondary:"#C7E9E0", roadLocal:"#91C7BA",
+  casing:"#174C4C", glow:"#D4FFF6",
+  highway:"#FFE0B2", edge:"#609589",
+  name:"#F8AF60", nameStrong:"#FFCA84",
+  halo:"#071E21"
 });
+const zoom=(levels)=>["interpolate",["linear"],["zoom"],...levels.flat()];
+const roadWidth=(major)=>major
+ ? zoom([[7,.6],[10,1.3],[13,2.4],[15,3.6],[18,6.2],[22,9]])
+ : zoom([[7,.1],[10,.45],[13,.8],[15,1.6],[18,2.9],[22,5.3]]);
+const glowWidth=(major)=>major
+ ? zoom([[7,1.8],[10,3.4],[13,6],[15,8],[18,12.5],[22,17]])
+ : zoom([[7,.4],[10,1.1],[13,2.2],[15,3.9],[18,6],[22,10]]);
 
-const roadWidth = (major, casing) => {
-  const scale = major ? [0.75,1.25,2.2,3.6,5.1,7.5] : [0.25,0.55,1.1,1.65,2.9,4.1];
-  return ["interpolate",["linear"],["zoom"],
-    7,scale[0],10,scale[1],13,scale[2],15,scale[3],18,scale[4],22,scale[5]
-  ].map((item,index) => index > 1 && index % 2 === 0 && casing ? item + 1.4 : item);
-};
-
-function restyleLayer(input, out) {
-  const layer = {...input,paint:{...(input.paint||{})}};
-  const name = String(layer.id||"").toLowerCase();
-  const sourceLayer = String(layer["source-layer"]||"").toLowerCase();
-  const p = layer.paint;
-
-  if(layer.type==="background"){
-    p["background-color"]=COLORS.background;
-    p["background-opacity"]=1;
-  } else if(layer.type==="fill"){
-    const isWater = /water|ocean/.test(sourceLayer+" "+name);
-    const isBuilding = /building/.test(sourceLayer+" "+name);
-    const isPark = /park|landcover|grass|wood|forest/.test(sourceLayer+" "+name);
-    p["fill-color"] = isWater ? COLORS.water
-      : isBuilding ? COLORS.building : isPark ? COLORS.park : COLORS.terrain;
-    p["fill-opacity"]=isBuilding?.56:isWater?.98:isPark?.65:.34;
-  } else if(layer.type==="fill-extrusion"){
-    p["fill-extrusion-color"]=COLORS.building;
-    p["fill-extrusion-opacity"]=.55;
-  } else if(layer.type==="line"){
-    const isRoad = sourceLayer==="transportation" && !/rail|ferry/.test(name);
-    const isBoundary = sourceLayer==="boundary" || /boundary/.test(name);
-    const isWater = sourceLayer==="waterway" || /water/.test(name);
+function addPremiumLayer(original, layers, arabicEnabled){
+  const layer={...original,layout:{...(original.layout||{})},paint:{...(original.paint||{})}};
+  const type=layer.type;
+  const source=String(layer["source-layer"]||"").toLowerCase();
+  const id=String(layer.id||"").toLowerCase();
+  const paint=layer.paint;
+  if(type==="background"){
+    paint["background-color"]=C.background;
+    paint["background-opacity"]=1;
+  }else if(type==="fill"){
+    const water=/water|ocean/.test(source+" "+id);
+    const park=/park|landcover|grass|forest|wood/.test(source+" "+id);
+    const building=/building/.test(source+" "+id);
+    const residential=/residential/.test(id);
+    paint["fill-color"]=water?C.water:park?C.park:building?C.building:residential?C.district:C.terrain;
+    paint["fill-opacity"]=water?1:building?.85:park?.68:residential?.55:.53;
+    if(building){paint["fill-outline-color"]=C.buildingOutline}
+    if("fill-pattern" in paint)delete paint["fill-pattern"];
+  }else if(type==="fill-extrusion"){
+    paint["fill-extrusion-color"]=C.building;
+    paint["fill-extrusion-opacity"]=.6;
+  }else if(type==="line"){
+    const isRoad=source==="transportation"&&!/rail|ferry/.test(id);
+    const highway=/motorway|trunk|primary|highway/.test(id);
+    const major=highway||/secondary|road_pri|road_mot/.test(id);
+    const casing=/casing|case|outline|hatch/.test(id);
+    const water=/waterway|water/.test(source);
     if(isRoad){
-      const casing=/casing|case|outline|hatch/.test(name);
-      const major=/motorway|trunk|primary|road_pri|road_trunk|road_mot/.test(name);
-      p["line-color"]=casing?COLORS.roadCasing:(major?COLORS.majorRoad:COLORS.road);
-      p["line-width"]=roadWidth(major,casing);
-      p["line-opacity"]=casing?.74:(major?.97:.78);
-      if(!casing && /fill/.test(name)){
-        const glow={...layer,id:"raafat-glow-"+layer.id,paint:{
-          ...p,"line-color":"#f0fff9",
-          "line-width":roadWidth(major,true),
-          "line-opacity":major?.2:.12,
-          "line-blur":2.3
-        }};
-        out.push(glow);
+      // Soft luminous underlay, ahead of the sharp road centreline.
+      if(!casing){
+        layers.push({...layer,id:"raafat-ambient-"+layer.id,
+          paint:{...paint,"line-color":major?C.glow:C.roadSecondary,
+            "line-width":glowWidth(major),"line-opacity":major?.2:.085,
+            "line-blur":major?3.9:2.3},
+          layout:{...layer.layout}});
       }
-    }else if(isBoundary){
-      p["line-color"]=COLORS.border;
-      p["line-opacity"]=.43;
-      p["line-width"]=.85;
-    }else if(isWater){
-      p["line-color"]="#1f6663";
-      p["line-opacity"]=.65;
+      paint["line-color"]=casing?C.casing:highway?C.highway:major?C.roadMajor:C.roadLocal;
+      paint["line-opacity"]=casing?.62:major?.93:.68;
+      paint["line-width"]=casing?glowWidth(major):roadWidth(major);
+      delete paint["line-dasharray"];
+      paint["line-blur"]=casing?.45:.18;
+    }else if(water){
+      paint["line-color"]=C.waterEdge;
+      paint["line-opacity"]=.74;
+      paint["line-width"]=zoom([[7,.5],[12,1.1],[16,2.8],[20,5]]);
     }else{
-      p["line-color"]="#3d766e";
-      p["line-opacity"]=.42;
+      paint["line-color"]=C.edge;
+      paint["line-opacity"]=.34;
+      paint["line-width"]=.8;
     }
-  } else if(layer.type==="symbol"){
-    if(layer.layout && layer.layout["text-field"]){
-      const isPlace=/place|city|country|state/.test(sourceLayer+" "+name);
-      p["text-color"]=isPlace?COLORS.labelBright:COLORS.label;
-      p["text-halo-color"]=COLORS.labelHalo;
-      p["text-halo-width"]=isPlace?1.8:1.55;
-      p["text-halo-blur"]=.5;
-      p["text-opacity"]=1;
-    }
-  }
-  out.push(layer);
-}
-
-export async function fetchRaafatMapStyle(publicCartoKey) {
-  if(!publicCartoKey)throw new Error("CARTO map key is not configured");
-  const key=encodeURIComponent(String(publicCartoKey));
-  const url="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json?key="+key;
-  const response=await fetch(url,{mode:"cors",credentials:"omit"});
-  if(!response.ok)throw new Error("CARTO vector style unavailable (HTTP "+response.status+")");
-  const style=await response.json();
-  if(!style || style.version!==8 || !Array.isArray(style.layers) || !style.sources){
-    throw new Error("Unsupported CARTO vector style response");
-  }
-  // Keep source URLs from CARTO whenever they already carry their credentials.
-  // Some versions use a placeholder; replace it only in that case.
-  for(const src of Object.values(style.sources)){
-    if(typeof src.url==="string"){
-      src.url=src.url.replace(/\{api_key\}/g,"?key="+key);
-      if(src.type==="vector" && !src.url.includes("?key=") && src.url.includes("tiles.json")){
-        src.url+=(src.url.includes("?")?"&":"?")+"key="+key;
+  }else if(type==="symbol"){
+    if(layer.layout["text-field"]!==undefined){
+      const road=source==="transportation_name";
+      const place=source==="place";
+      const majorPlace=place && /city|capital|state/.test(id);
+      const poi=source==="poi";
+      // MapLibre <6.9 needs an RTL shaping plugin. Avoid scrambled Arabic on
+      // browsers that cannot load it; our persistent city labels still use Arabic DOM text.
+      layer.layout["text-field"]=arabicEnabled
+        ? ["coalesce",["get","name_ar"],["get","name:ar"],["get","name"],["get","name_en"]]
+        : ["coalesce",["get","name_en"],["get","name:en"],["get","name"]];
+      layer.layout["text-letter-spacing"]=0;
+      layer.layout["text-padding"]=road?1.5:3;
+      if(road){
+        layer.maxzoom=24;
+        layer.layout["symbol-spacing"]=170;
+        layer.layout["text-max-angle"]=25;
+        layer.layout["text-size"]=zoom([[10,10],[13,11],[15,12.5],[18,13.4],[22,15]]);
+        layer.layout["text-allow-overlap"]=false;
+        layer.layout["text-ignore-placement"]=false;
+      }else if(place){
+        // Critical place markers are stabilized separately with HTML/Leaflet labels.
+        layer.layout["text-size"]=zoom([[5,10],[10,12],[13,13],[17,15],[22,16]]);
+        if(majorPlace){layer.maxzoom=24;layer.layout["text-optional"]=true;}
+      }else if(poi){
+        layer.layout["text-size"]=zoom([[12,8],[15,10],[18,11],[22,12]]);
       }
+      paint["text-color"]=majorPlace?C.nameStrong:road?C.name:poi?"#E8AB74":C.name;
+      paint["text-halo-color"]=C.halo;
+      paint["text-halo-width"]=majorPlace?2.1:road?1.6:1.45;
+      paint["text-halo-blur"]=majorPlace?.8:.55;
+      paint["text-opacity"]=poi?.82:1;
+      if("icon-opacity" in paint){paint["icon-opacity"]=poi?.55:.75;}
     }
+  }
+  layers.push(layer);
+}
+export async function fetchRaafatMapStyle(publicKey, {arabicEnabled=true}={}){
+  if(!publicKey)throw new Error("CARTO basemap key is missing");
+  const key=encodeURIComponent(String(publicKey));
+  const response=await fetch("https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json?key="+key,{
+    mode:"cors",credentials:"omit"
+  });
+  if(!response.ok)throw new Error("CARTO vector style: "+response.status);
+  const raw=await response.json();
+  if(raw.version!==8||!Array.isArray(raw.layers)||!raw.sources)throw new Error("Invalid vector style data");
+  // Preserve CARTO's current served glyph and sprite URLs and protect the tiles token.
+  for(const src of Object.values(raw.sources)){
+    if(src.type!=="vector"||typeof src.url!=="string")continue;
+    src.url=src.url.replace(/\{api_key\}/g,"?key="+key);
+    if(!/[?&]key=/.test(src.url))src.url+=(src.url.includes("?")?"&":"?")+"key="+key;
   }
   const layers=[];
-  for(const layer of style.layers)restyleLayer(layer,layers);
-  style.layers=layers;
-  style.name="Raafat Signature — Dark Emerald & Amber";
-  style.metadata={...(style.metadata||{}),"raafat:brand":"#003f3e / #f4951a"};
-  return style;
+  for(const layer of raw.layers)addPremiumLayer(layer,layers,arabicEnabled);
+  raw.layers=layers;
+  raw.name="RAAFAT Signature • Emerald Nocturne";
+  raw.metadata={...(raw.metadata||{}),"raafat:palette":"emerald-amber-luminous"};
+  return raw;
 }
