@@ -1,31 +1,32 @@
 /**
- * RAAFAT Calm Gray Map — a quiet, low-contrast daytime vector basemap.
- * Do not change upstream OpenStreetMap place/road data, label text expressions,
- * symbol spacing, zoom ranges or visibility. Only repaint visible layers.
+ * RAAFAT graphite map, sampled directly from the approved reference (#363636).
+ * Never tint the base land at different zoom levels. Preserve every source
+ * symbol layout, original Arabic/English text, POI and road geometry.
  */
 const C=Object.freeze({
-  background:"#edf0f1",
-  land:"#edf0f1",
-  landMuted:"#e9eded",
-  district:"#e8eceb",
-  park:"#dfeae2",
-  forest:"#d4e5db",
-  water:"#d5e6ea",
-  waterEdge:"#afcdd2",
-  building:"#dce2e2",
-  buildingOutline:"#cbd4d3",
-  road:"#ffffff",
-  secondaryRoad:"#fafbfa",
-  highway:"#f6f0e3",
-  casing:"#d2d9d8",
-  boundary:"#a9b9b8",
-  neutral:"#b9c7c5",
-  name:"#42575b",
-  nameStrong:"#27474a",
-  roadName:"#5a686a",
-  poi:"#596d68",
-  halo:"#f6f8f7"
+  background:"#363636",
+  land:"#363636",
+  landMuted:"#363636",
+  district:"#363636",
+  park:"#363636",
+  forest:"#363636",
+  water:"#3a4649",
+  waterEdge:"#5a696b",
+  building:"#434343",
+  buildingOutline:"#515151",
+  road:"#858585",
+  secondaryRoad:"#747474",
+  highway:"#a2a2a2",
+  casing:"#393939",
+  boundary:"#555b5c",
+  neutral:"#535758",
+  name:"#d9dcd9",
+  nameStrong:"#eff0ec",
+  roadName:"#c7cdca",
+  poi:"#d1d6d1",
+  halo:"#363636"
 });
+
 function colorize(layer,output){
  const next={...layer,paint:{...(layer.paint||{})}};
  const paint=next.paint;
@@ -121,7 +122,7 @@ export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
   const layers=[];
   for(const layer of raw.layers)colorize(layer,layers);
   raw.layers=layers;
-  raw.name="Raafat Calm Gray";
-  raw.metadata={...(raw.metadata||{}),"raafat:palette":"calm-gray-daylight","raafat:source":provider};
+  raw.name="Raafat Graphite • 363636";
+  raw.metadata={...(raw.metadata||{}),"raafat:palette":"graphite-363636","raafat:source":provider};
   return raw;
 }
