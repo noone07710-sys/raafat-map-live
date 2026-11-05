@@ -841,3 +841,19 @@ body.no-map-glow .site-pin,body.no-map-glow .raafat-region-orbit{animation:none!
 @media(prefers-reduced-motion:reduce){
  .admin-dashboard *{scroll-behavior:auto!important}
 }
+
+
+/* Keep the signed-in mobile header compact; all actions remain in the dashboard. */
+@media(max-width:850px){
+  .header-actions #newSite,
+  .header-actions #changePasswordButton{display:none!important}
+  .admin-dashboard-content{scroll-padding-top:10px}
+}
+@media(max-width:520px){
+  .admin-password-tools{flex-wrap:wrap}
+  .admin-password-tools .input{flex:1 1 100%;width:100%}
+  .admin-password-tools button{flex:1;min-height:38px}
+  .admin-dashboard-header{padding-top:max(12px,env(safe-area-inset-top))}
+  .admin-dashboard-content{padding-bottom:max(20px,env(safe-area-inset-bottom))}
+  .map-area::after{animation:none}
+}
