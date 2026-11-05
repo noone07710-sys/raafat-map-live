@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#062727">
+  <meta name="description" content="شركة رأفت للدعاية والإعلان والتجارة العامة — شبكة المواقع الإعلانية في العراق">
+  <title>شركة رأفت | شبكة المواقع الإعلانية</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23003f3e'/%3E%3Cpath d='m32 10 23 42H9L32 10Z' fill='none' stroke='%23f4951a' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script defer src="./config.js"></script>
+  <script defer type="module" src="./app.js"></script>
+</head>
+<body>
+ <div class="app-shell">
+  <header class="header">
+    <div class="identity">
+      <div class="logo" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 48 48"><path d="M24 5 44 41H4L24 5Z" fill="none" stroke="#f4951a" stroke-width="2.8"/><path d="M24 15 35 35H13L24 15Z" fill="#f4951a"/><path d="m24 22 6 11H18l6-11Z" fill="#093330"/></svg></div>
+      <div><div class="brand">رأفت<span>.</span> <em>OUTDOOR</em></div><div class="brand-caption">شركة رأفت للدعاية والإعلان والتجارة العامة</div></div>
+    </div>
+    <div class="header-center"><span class="live-dot"></span> شبكة المواقع الإعلانية <span class="header-english">/ OUTDOOR NETWORK</span></div>
+    <nav class="header-actions" aria-label="الإجراءات">
+      <span class="admin-tag" id="staffTag" hidden>إدارة</span>
+      <button class="btn btn-primary" id="newSite" hidden>+ إضافة موقع</button>
+      <button class="btn btn-ghost" id="loginButton">دخول الموظفين</button>
+      <button class="btn btn-ghost" id="logoutButton" hidden>خروج</button>
+    </nav>
+  </header>
+  <main class="main-layout">
+    <aside class="panel browse">
+      <div class="eyebrow">RAAFAT / DISCOVER</div>
+      <h1>موقعك القادم<br><span>يصنع الفرق.</span></h1>
+      <p class="intro">استكشف مواقع الإعلانات الخارجية، اختر مدينتك، وشاهد تفاصيل كل موقع على الخريطة.</p>
+      <div class="alert" id="systemAlert" hidden role="status"></div>
+      <div class="stats" aria-label="إحصائيات المواقع">
+        <div class="stat"><strong id="allCount">—</strong><span>إجمالي القطع</span></div>
+        <div class="stat"><strong id="availableCount">—</strong><span>متاحة</span></div>
+        <div class="stat"><strong id="cityCount">—</strong><span>مدن</span></div>
+      </div>
+      <label class="input-label" for="search">ابحث عن موقع</label>
+      <input class="input" id="search" autocomplete="off" placeholder="رقم القطعة أو المنطقة أو الشارع...">
+      <label class="input-label" for="cityFilter">المدينة</label>
+      <select class="input" id="cityFilter"><option value="">جميع المدن</option></select>
+      <label class="input-label" for="statusFilter">حالة القطعة</label>
+      <select class="input" id="statusFilter">
+        <option value="">جميع الحالات</option><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option>
+      </select>
+      <label class="input-label" for="typeFilter">نوع الإعلان</label>
+      <select class="input" id="typeFilter"><option value="">جميع الأنواع</option><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="other">أخرى</option></select>
+      <div class="list-heading"><strong>القطع المعروضة</strong><span id="showingCount">—</span></div>
+      <div id="listing" class="listing" aria-live="polite"><div class="empty">جاري تحميل المواقع...</div></div>
+    </aside>
+    <section class="map-area" aria-label="خريطة القطع الإعلانية">
+      <div id="map" class="map"></div>
+      <div class="map-chip"><span class="live-dot"></span><span>الخريطة التفاعلية</span><strong id="mapCount">0</strong></div>
+      <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
+      <button class="map-home" id="mapHome" aria-label="الرجوع للخريطة العامة" title="الرجوع للخريطة العامة">⌖</button>
+    </section>
+    <aside class="panel details">
+      <div class="detail-kicker">SITE OVERVIEW</div>
+      <h2>تفاصيل المساحة</h2>
+      <div id="siteDetails" class="details-content"><div class="empty detail-empty"><span class="empty-icon">⌖</span>اختر موقعاً من الخريطة أو القائمة لعرض بياناته.</div></div>
+    </aside>
+  </main>
+  <footer class="mobile-footer">شركة رأفت للدعاية والإعلان والتجارة العامة • جميع الحقوق محفوظة</footer>
+ </div>
+
+ <div class="modal-backdrop" id="loginModal" hidden>
+  <div class="modal small" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+   <div class="modal-head"><div><div class="eyebrow">STAFF PORTAL</div><h2 id="loginTitle">دخول الموظفين</h2></div><button type="button" class="x" data-close="loginModal" aria-label="إغلاق">×</button></div>
+   <p class="hint">الدخول مخصص للموظفين المعتمدين في قاعدة بيانات الشركة.</p>
+   <form id="loginForm">
+     <label for="email">البريد الإلكتروني</label><input class="input" id="email" type="email" autocomplete="username" required>
+     <label for="password">كلمة المرور</label><input class="input" id="password" type="password" autocomplete="current-password" required minlength="6">
+     <button class="btn btn-primary full-button" type="submit">دخول آمن</button>
+     <button class="btn btn-ghost full-button" type="button" id="registerAdmin">إنشاء حساب الإدارة لأول مرة</button>
+     <p class="hint">لإنشاء الحساب أول مرة: أدخل بريدك وكلمة مرور قوية (12 حرفاً على الأقل) واضغط «إنشاء». سيوصلك رابط تأكيد إلى بريدك. لا تشارك كلمة المرور مع أحد.</p>
+   </form>
+  </div>
+ </div>
+
+ <div class="modal-backdrop" id="siteModal" hidden>
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+   <div class="modal-head"><div><div class="eyebrow">INVENTORY / MANAGEMENT</div><h2 id="formTitle">إضافة موقع إعلاني</h2></div><button type="button" class="x" data-close="siteModal" aria-label="إغلاق">×</button></div>
+   <p class="hint">القطع غير المنشورة لا تظهر للزبائن. تأكد من الإحداثيات قبل اختيار «نشر».</p>
+   <form id="siteForm">
+    <div class="form-grid">
+      <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
+      <div><label for="fName">اسم الموقع *</label><input class="input" id="fName" required maxlength="140" placeholder="شارع رئيسي — تقاطع..."></div>
+      <div><label for="fCity">المدينة *</label><input class="input" id="fCity" list="cities" required maxlength="80" placeholder="تكريت"><datalist id="cities"><option value="تكريت"><option value="كركوك"><option value="سامراء"><option value="بيجي"><option value="الشرقاط"><option value="بلد"></datalist></div>
+      <div><label for="fArea">المنطقة / الشارع</label><input class="input" id="fArea" maxlength="160" placeholder="اسم المنطقة"></div>
+      <div><label for="fType">نوع الإعلان</label><select class="input" id="fType"><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="other">أخرى</option></select></div>
+      <div><label for="fStatus">الحالة</label><select class="input" id="fStatus"><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option></select></div>
+      <div><label for="fWidth">العرض (متر) *</label><input class="input" id="fWidth" type="number" required min=".01" max="1000" step=".01"></div>
+      <div><label for="fHeight">الارتفاع (متر) *</label><input class="input" id="fHeight" type="number" required min=".01" max="1000" step=".01"></div>
+      <div><label for="fFaces">الأوجه</label><input class="input" id="fFaces" type="number" value="1" min="1" max="8"></div>
+      <div><label for="fLighting">الإنارة</label><select class="input" id="fLighting"><option value="false">غير مضاءة</option><option value="true">مضاءة</option></select></div>
+      <div class="span2"><label for="fCoords">الإحداثيات (Latitude, Longitude) *</label><input class="input coordinate" id="fCoords" dir="ltr" placeholder="34.60, 43.68" required><div class="coordinate-buttons"><button class="btn btn-ghost" id="pickMap" type="button">⌖ تحديد على الخريطة</button><button class="btn btn-ghost" id="getGPS" type="button">◎ موقعي الحالي GPS</button></div><div class="hint small-hint">يمكن لصق إحداثيات Google Maps. GPS يحتاج HTTPS وموافقة الموقع.</div></div>
+      <div class="span2"><label for="fDescription">تفاصيل إضافية</label><textarea class="input" id="fDescription" maxlength="2000" rows="3"></textarea></div>
+      <div class="span2"><label for="fPhotos">صور القطعة (حتى 5 ميغابايت للصورة)</label><input class="input" id="fPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple><div id="photoInfo" class="hint small-hint">بعد الحفظ تُرفع الصور إلى التخزين الخاص بالشركة.</div></div>
+      <div class="span2 publish-line"><label class="check-line"><input type="checkbox" id="fPublished"> <strong>نشر القطعة للزبائن</strong></label><span>بدون تحديد الخيار ستبقى القطعة داخل لوحة الإدارة فقط.</span></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" type="button" data-close="siteModal">إلغاء</button>
+      <button class="btn btn-primary" type="submit" id="saveButton">حفظ القطعة</button>
+    </div>
+   </form>
+  </div>
+ </div>
+ <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body></html>
