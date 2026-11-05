@@ -497,8 +497,19 @@ function zoomAll(defaultOnly=false){
  if(!visible.length){
    const city=el("cityFilter").value;
    const governorate=el("governorateFilter").value;
-   const focus=CITY_CENTERS[city]||CITY_CENTERS[governorate==="كركوك"?"كركوك":"تكريت"];
-   const zoom=city?14:governorate==="كركوك"?12:11;
+   if(!city&&!governorate){
+     // Premium regional network overview; no invented billboard sites.
+     const bounds=window.L.latLngBounds(Object.values(CITY_CENTERS));
+     state.map.fitBounds(bounds,{padding:[58,68],maxZoom:9,animate:true});
+     return;
+   }
+   if(!city&&governorate==="صلاح الدين"){
+     const bounds=window.L.latLngBounds(REGIONS["صلاح الدين"].map(name=>CITY_CENTERS[name]));
+     state.map.fitBounds(bounds,{padding:[50,58],maxZoom:10,animate:true});
+     return;
+   }
+   const focus=CITY_CENTERS[city]||CITY_CENTERS["كركوك"];
+   const zoom=city?14:12;
    state.map.setView(focus,zoom);
    return;
  }
@@ -1066,6 +1077,11 @@ async function main(){
  await loadSiteSettings();
  if(ADMIN_ENTRY&&!state.staff)openModal("loginModal");
  await loadSites();
+ // An empty inventory is not a blank map: introduce the service areas.
+ if(!state.sites.length&&!state.selected&&!location.hash.startsWith("#site=")
+    &&!el("governorateFilter").value&&!el("cityFilter").value){
+   zoomAll(true);
+ }
  adminDashboard?.render();
 }
 void main();
