@@ -75,9 +75,26 @@
       <div id="map" class="map raafat-premium-map"></div>
       <div class="map-reveal" id="mapReveal" role="status" aria-live="polite">
         <span class="map-loading-spinner" aria-hidden="true"></span>
-        <div class="map-reveal-brand">جاري تحميل الخريطة…</div>
+        <div class="map-reveal-brand"><strong>RAAFAT SIGNATURE</strong><span>شبكة المواقع الإعلانية • جاري تجهيز الخريطة</span></div>
       </div>
       <div class="map-chip"><span class="live-dot"></span><span>المواقع الإعلانية</span><strong id="mapCount">0</strong><span class="map-region-label" id="mapRegionLabel" hidden></span></div>
+      <div class="vip-topline" aria-label="معلومات شبكة رأفت">
+        <span class="vip-topline-monogram" aria-hidden="true">R<span>•</span></span>
+        <div class="vip-topline-name"><small>RAAFAT SIGNATURE MAP</small><strong>شبكة المواقع الإعلانية</strong></div>
+        <span class="vip-topline-status"><i aria-hidden="true"></i> خارطة تفاعلية</span>
+      </div>
+      <div class="vip-map-actions" role="group" aria-label="أدوات الخريطة">
+        <button id="vipCoverage" class="vip-tool-button" type="button" title="استعراض جميع المدن" aria-label="استعراض المدن الثمانية"><span aria-hidden="true">◎</span> شبكة المناطق</button>
+        <button id="vipLegendToggle" class="vip-tool-button vip-legend-button" type="button" aria-expanded="false" aria-controls="vipLegend"><span aria-hidden="true">◈</span> دليل الألوان</button>
+        <div class="vip-legend" id="vipLegend" hidden>
+          <strong>حالات المواقع الإعلانية</strong>
+          <div><i class="vip-legend-dot available"></i><span>متاحة</span></div>
+          <div><i class="vip-legend-dot reserved"></i><span>محجوزة</span></div>
+          <div><i class="vip-legend-dot booked"></i><span>مؤجرة</span></div>
+          <div><i class="vip-legend-dot maintenance"></i><span>صيانة</span></div>
+          <small>العلامات الذهبية تشير إلى مراكز المدن، وليست مواقع اللوحات.</small>
+        </div>
+      </div>
       <div class="live-location-control" id="liveLocationControl" role="group" aria-label="تحديد موقعك الحالي">
         <button class="live-location-button" id="locateMe" type="button" title="عرض موقعي على الخريطة">
           <span class="live-location-symbol" aria-hidden="true">◎</span>
@@ -90,7 +107,7 @@
       <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="عرض جميع المواقع على الخريطة" title="عرض جميع المواقع">⌖</button>
       <div class="map-site-cta" id="mapSiteCTA" hidden>
-        <div class="map-site-identity"><span class="map-site-eyebrow">الموقع المحدد</span><strong id="mapSiteTitle"></strong></div>
+        <div class="map-site-identity"><span class="map-site-eyebrow">الموقع المحدد <span id="mapSiteStatus" class="vip-site-state"></span></span><strong id="mapSiteTitle"></strong></div>
         <div class="map-site-buttons">
           <button type="button" id="mapSiteDetails" title="عرض تفاصيل القطعة">التفاصيل</button>
           <a id="mapSiteDirections" href="#" target="_blank" rel="noopener noreferrer" aria-label="بدء الاتجاهات إلى اللوحة">الاتجاهات <span aria-hidden="true">↗</span></a>
