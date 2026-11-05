@@ -476,3 +476,16 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
  .map-reveal-line,.raafat-region-orbit{animation:none!important}
  .map-reveal{transition:none}
 }
+
+
+/* City context stays in the heading at street zoom to avoid map clutter. */
+.map-region-label{
+ display:inline-flex;align-items:center;
+ padding-inline-start:10px;margin-inline-start:2px;
+ border-inline-start:1px solid rgba(251,194,119,.32);
+ color:#ffcb8e;font-size:11px;font-weight:700;line-height:1.4;
+ white-space:nowrap;
+}
+@media(max-width:560px){
+ .map-region-label{font-size:10px;padding-inline-start:7px}
+}
