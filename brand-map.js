@@ -35,6 +35,8 @@ function colorize(layer,output){
  const key=source+" "+id;
  if(layer.type==="background"){
    paint["background-color"]=C.background;
+   paint["background-opacity"]=1;
+   delete paint["background-pattern"];
  }else if(layer.type==="fill"){
    if(!("fill-pattern" in paint)){
      let color=C.land;
@@ -119,8 +121,18 @@ export async function fetchRaafatMapStyle(publicKey,{arabicEnabled=true}={}){
       if(!/[?&]key=/.test(src.url))src.url+=(src.url.includes("?")?"&":"?")+"key="+key;
     }
   }
-  const layers=[];
-  for(const layer of raw.layers)colorize(layer,layers);
+  // Liberty ships a Natural Earth raster underneath its vector map (z <= 7).
+  // That raster has white/light colors and caused the map to turn white when
+  // zooming out. Use vector-only cartography over a truly SOLID graphite
+  // background instead. Raster hillshade and fade layers cannot wash it out.
+  const layers=[{
+    id:"raafat-graphite-background",type:"background",
+    paint:{"background-color":"#363636","background-opacity":1}
+  }];
+  for(const layer of raw.layers){
+    if(layer.type==="raster"||layer.type==="hillshade")continue;
+    colorize(layer,layers);
+  }
   raw.layers=layers;
   raw.name="Raafat Graphite • 363636";
   raw.metadata={...(raw.metadata||{}),"raafat:palette":"graphite-363636","raafat:source":provider};
