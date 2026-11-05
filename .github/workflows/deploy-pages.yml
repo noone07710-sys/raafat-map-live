@@ -9,6 +9,7 @@ on:
       - 'app.js'
       - 'config.js'
       - 'assets/**'
+      - '*.png'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -34,7 +35,7 @@ jobs:
           mkdir -p _site
           cp index.html style.css app.js config.js _site/
           mkdir -p _site/assets
-          cp assets/raafat-logo.svg _site/assets/
+          cp 'e85b3bef-3d06-423e-a284-c3d8681964bf (1).png' _site/assets/raafat-logo.png
           touch _site/.nojekyll
       - name: Configure Pages
         uses: actions/configure-pages@v5
