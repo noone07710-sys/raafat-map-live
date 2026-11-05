@@ -351,6 +351,8 @@ function render(){
  el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>selectSite(button.dataset.site)));
  renderMarkers(sites);
  if(state.selected && !sites.some(s=>s.id===state.selected))state.selected=null;
+ updateMapSiteCTA();
+ state.updateCityFocus?.();
  void renderDetail();
 }
 function renderMarkers(sites){
@@ -367,6 +369,17 @@ function renderMarkers(sites){
    state.markers.addLayer(marker);
    state.markerById.set(s.id,marker);
  }
+}
+function updateMapSiteCTA(){
+ const card=el("mapSiteCTA");
+ const site=state.sites.find(s=>s.id===state.selected);
+ if(!site){card.hidden=true;return;}
+ const link=directionsToSite(site);
+ if(!link){card.hidden=true;return;}
+ el("mapSiteTitle").textContent=site.code+" · "+site.name;
+ el("mapSiteDirections").href=link;
+ el("mapSiteDirections").setAttribute("aria-label","الاتجاهات إلى "+site.name);
+ card.hidden=false;
 }
 function selectSite(id){
  const site=state.sites.find(s=>s.id===id);
@@ -394,7 +407,7 @@ async function renderDetail(){
  }
  const phone=String(config.whatsappNumber||"").replace(/\D/g,"");
  const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent("مرحباً، أرغب بالاستفسار عن القطعة "+site.code+" ("+site.name+") لدى "+COMPANY):null;
- const mapUrl="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(site.latitude+","+site.longitude);
+ const directionsUrl=directionsToSite(site);
  const photos=Array.isArray(site.site_photos)?site.site_photos:[];
  const imageLinks=await Promise.all(photos.map(p=>photoUrl(p.storage_path)));
  if(state.selected!==requestId)return;
@@ -426,9 +439,9 @@ async function renderDetail(){
    '<div class="spec-heading">المواصفات والتفاصيل</div>'+
    '<div class="detail-table">'+metaRows.map(([label,val])=>'<div class="detail-line"><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
    (site.description?'<div class="spec-heading">وصف الموقع</div><p class="detail-description">'+escapeHtml(site.description)+'</p>':"")+
-   '<div class="detail-actions"><a class="btn btn-ghost" href="'+mapUrl+'" target="_blank" rel="noopener noreferrer">⌖ الاتجاهات على الخريطة</a>'+
-   (whatsapp?'<a class="btn btn-primary" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
-   '<button type="button" class="btn btn-primary" id="copyInquiry">نسخ بيانات للاستفسار</button>')+'</div>'+
+   '<div class="detail-actions"><a class="btn btn-primary" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="بدء الملاحة إلى القطعة المحددة">↗ اتجه إلى القطعة</a>'+
+   (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
+   '<button type="button" class="btn btn-ghost" id="copyInquiry">نسخ بيانات للاستفسار</button>')+'</div>'+
    ''+
    (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
    (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"");
