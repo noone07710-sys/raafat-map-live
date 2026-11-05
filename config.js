@@ -2,5 +2,6 @@
 window.RAAFAT_CONFIG = {
   supabaseUrl: "https://qltepwgudwlophjkcmry.supabase.co",
   supabaseAnonKey: "sb_publishable_j6j4KFPm3C7zxwUHYoOvdA_pBCSjOmm",
+  cartoApiKey: "cb1_52lc_1_85459d16b83e37256e59cc25",
   whatsappNumber: ""
 };
