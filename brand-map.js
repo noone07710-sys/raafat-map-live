@@ -43,7 +43,7 @@ function addPremiumLayer(original, layers, arabicEnabled){
     paint["fill-extrusion-color"]=C.building;
     paint["fill-extrusion-opacity"]=.6;
   }else if(type==="line"){
-    const isRoad=source==="transportation"&&!/rail|ferry/.test(id);
+    const isRoad=/^(transportation|roads|road)$/.test(source)&&!/rail|ferry/.test(id);
     const highway=/motorway|trunk|primary|highway/.test(id);
     const major=highway||/secondary|road_pri|road_mot/.test(id);
     const casing=/casing|case|outline|hatch/.test(id);
@@ -73,10 +73,10 @@ function addPremiumLayer(original, layers, arabicEnabled){
     }
   }else if(type==="symbol"){
     if(layer.layout["text-field"]!==undefined){
-      const road=source==="transportation_name";
-      const place=source==="place";
+      const road=/^(transportation_name|road_labels|roads_labels)$/.test(source)||/road[-_]label/.test(id);
+      const place=/^(place|places)$/.test(source);
       const majorPlace=place && /city|capital|state/.test(id);
-      const poi=source==="poi";
+      const poi=/^(poi|pois|point_of_interest)$/.test(source)||/poi|landmark|shop|amenity/.test(id);
       // MapLibre <6.9 needs an RTL shaping plugin. Avoid scrambled Arabic on
       // browsers that cannot load it; our persistent city labels still use Arabic DOM text.
       layer.layout["text-field"]=arabicEnabled
@@ -97,16 +97,22 @@ function addPremiumLayer(original, layers, arabicEnabled){
         layer.layout["text-size"]=zoom([[5,10],[10,12],[13,13],[17,15],[22,16]]);
         if(majorPlace){layer.maxzoom=24;layer.layout["text-optional"]=true;}
       }else if(poi){
-        // Hide small business/place labels until a visitor zooms into a street.
-        layer.minzoom=Math.max(Number(layer.minzoom)||0,16);
-        layer.layout["text-size"]=zoom([[12,8],[15,10],[18,11],[22,12]]);
+        // Keep real nearby shops, clinics, schools and landmarks legible.
+        layer.minzoom=Math.max(13,Math.min(Number(layer.minzoom)||14.5,14.5));
+        layer.maxzoom=24;
+        layer.layout["text-size"]=zoom([[12,10],[14,11],[16,12.5],[18,13.5],[22,15]]);
+        layer.layout["text-max-width"]=10;
+        layer.layout["text-padding"]=4;
+        layer.layout["text-allow-overlap"]=false;
+        layer.layout["text-ignore-placement"]=false;
+        layer.layout["text-optional"]=true;
       }
-      paint["text-color"]=majorPlace?C.nameStrong:road?C.name:poi?"#E8AB74":C.name;
+      paint["text-color"]=majorPlace?C.nameStrong:road?C.name:poi?"#F2D5B2":C.name;
       paint["text-halo-color"]=C.halo;
       paint["text-halo-width"]=majorPlace?2.1:road?1.6:1.45;
       paint["text-halo-blur"]=majorPlace?.8:.55;
-      paint["text-opacity"]=poi?.56:road?.86:1;
-      if("icon-opacity" in paint){paint["icon-opacity"]=poi?.38:.75;}
+      paint["text-opacity"]=poi?.94:road?.86:1;
+      if("icon-opacity" in paint){paint["icon-opacity"]=poi?.75:.75;}
     }
   }
   layers.push(layer);
@@ -128,6 +134,35 @@ export async function fetchRaafatMapStyle(publicKey, {arabicEnabled=true}={}){
   }
   const layers=[];
   for(const layer of raw.layers)addPremiumLayer(layer,layers,arabicEnabled);
+  // Highlight verified OSM landmarks even when the supplied CARTO style hides POI names.
+  // The source may use the legacy 'poi' schema or current Protomaps 'pois' schema.
+  const sourceLayers=new Set(raw.layers.map(layer=>layer["source-layer"]).filter(Boolean));
+  const vector=Object.entries(raw.sources).find(([,src])=>src.type==="vector");
+  const modern=vector && /\/v2\//.test(String(vector[1].url||""));
+  const poiLayer=sourceLayers.has("pois")?"pois":sourceLayers.has("poi")?"poi":modern?"pois":null;
+  if(vector&&poiLayer){
+    const name=arabicEnabled
+      ? ["coalesce",["get","name:ar"],["get","name_ar"],["get","name"],["get","name:en"]]
+      : ["coalesce",["get","name:en"],["get","name_en"],["get","name"]];
+    const textFont=raw.layers.find(layer=>layer.type==="symbol"&&layer.layout?.["text-font"])?.layout?.["text-font"]||
+      ["Open Sans Regular"];
+    layers.push({
+      id:"raafat-recognizable-landmarks",type:"symbol",
+      source:vector[0],"source-layer":poiLayer,minzoom:12.5,maxzoom:24,
+      filter:["all",["has","name"],
+        ["match",["get","kind"],
+          ["hospital","clinic","school","university","college","supermarket",
+           "marketplace","police","townhall","bank","fuel","hotel","station",
+           "mosque","place_of_worship","pharmacy","bus_station"],true,false]],
+      layout:{"text-field":name,"text-font":textFont,
+        "text-size":zoom([[12,10],[14,11],[17,12],[20,13]]),
+        "text-max-width":10,"text-padding":6,
+        "text-allow-overlap":false,"text-ignore-placement":false,
+        "text-optional":true,"symbol-placement":"point"},
+      paint:{"text-color":"#FFD399","text-opacity":.96,
+        "text-halo-color":C.halo,"text-halo-width":1.65,"text-halo-blur":.45}
+    });
+  }
   raw.layers=layers;
   raw.name="RAAFAT Signature • Emerald Nocturne";
   raw.metadata={...(raw.metadata||{}),"raafat:palette":"emerald-amber-luminous"};
