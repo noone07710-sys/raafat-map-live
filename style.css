@@ -252,7 +252,7 @@ body{overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:poi
 .map-area,.map,.leaflet-container {
  background:#071f24;
 }
-.map-area { isolation:isolate; }
+.map-area { isolation:isolate; overflow:hidden; }
 .map-area::after {
  content:"";
  position:absolute;
