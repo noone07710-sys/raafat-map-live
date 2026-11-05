@@ -245,7 +245,7 @@ async function installRaafatPremiumMap(){
      console.warn("Raafat vector tiles unavailable; fallback remains active.");
      revealFallbackIfReady();
    };
-   const timeout=setTimeout(fallback,18000);
+   const timeout=setTimeout(fallback,12000);
    renderer.on("error",event=>{
      // A single missing POI glyph or a transient tile error must not
      // disable the entire branded map. The startup timeout handles failures.
@@ -393,16 +393,21 @@ function initializeMap(){
  });
  osm.on("load",()=>{
    state.fallbackTilesLoaded=true;
-   finishMapReveal();
+   // Keep the formal loading screen until the custom map is ready.
+   if(state.showFallback)finishMapReveal();
  });
  osm.on("tileerror",event=>{
    console.warn("Standard OSM tiles unavailable:",event);
  });
  osm.addTo(state.map);
  state.basemap=osm;
- document.body.classList.add("osm-standard-map");
- // Never leave a visitor behind a loading screen if the tile provider stalls.
- window.setTimeout(finishMapReveal,9000);
+ document.body.classList.remove("osm-standard-map");
+ document.body.classList.add("raafat-signature-map");
+ // Show original OpenStreetMap tiles only when premium vector map fails.
+ window.setTimeout(()=>{
+   if(!state.map||state.basemap!==osm)return;
+   revealFallbackIfReady();
+ },14000);
  L.control.zoom({position:"bottomright"}).addTo(state.map);
  state.markers=L.markerClusterGroup
    ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:42,chunkedLoading:true,disableClusteringAtZoom:16})
@@ -436,7 +441,8 @@ function initializeMap(){
  el("cancelPick").addEventListener("click",()=>{
    state.pick=false;el("mapPicking").hidden=true;openModal("siteModal");
  });
- // Standard OSM raster tiles are the only active map layer.
+ // The older emerald custom style is back; OSM stays intact as fallback.
+ void installRaafatPremiumMap();
 }
 
 function zoomAll(defaultOnly=false){
