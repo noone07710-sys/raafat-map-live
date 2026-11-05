@@ -26,7 +26,7 @@
  <div class="app-shell">
   <header class="header">
     <div class="identity">
-      <div class="logo"><img src="./assets/raafat-logo.png" alt="شعار شركة رأفت" width="70" height="62"></div>
+      <div class="logo"><img src="./assets/raafat-logo.png" alt="شعار شركة رأفت" width="70" height="62" fetchpriority="high"></div>
       <div class="brand-text"><div class="brand">شركة <span>رأفت</span></div><div class="brand-caption">للدعاية والإعلان والتجارة العامة</div></div>
     </div>
     <nav class="header-actions" aria-label="الإجراءات">
@@ -50,7 +50,10 @@
       </div>
       <label class="input-label" for="search">ابحث عن موقع</label>
       <input class="input" id="search" autocomplete="off" placeholder="رقم القطعة أو المنطقة أو الشارع...">
-      <label class="input-label" for="governorateFilter">المحافظة</label>
+      <details id="advancedFilters" class="filter-disclosure" open>
+        <summary><span>خيارات التصفية</span><span class="filter-disclosure-chevron" aria-hidden="true">⌄</span></summary>
+        <div class="filter-fields">
+          <label class="input-label" for="governorateFilter">المحافظة</label>
       <select class="input" id="governorateFilter"><option value="">جميع المحافظات</option><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select>
       <label class="input-label" for="cityFilter">المدينة / القضاء</label>
       <select class="input" id="cityFilter"><option value="">جميع المدن</option></select>
@@ -63,6 +66,8 @@
       <label class="input-label" for="sizeFilter">القياس (متر)</label>
       <select class="input" id="sizeFilter"><option value="">جميع القياسات</option></select>
       <button class="clear-filters" type="button" id="clearFilters">↻ مسح الفلاتر وعرض الكل</button>
+        </div>
+      </details>
       <div class="list-heading"><strong>المساحات المعروضة</strong><span id="showingCount">—</span></div>
       <div id="listing" class="listing" aria-live="polite"><div class="empty">جاري تحميل المواقع...</div></div>
     </aside>
@@ -83,7 +88,7 @@
       </div>
       
       <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
-      <button class="map-home" id="mapHome" aria-label="الرجوع للخريطة العامة" title="الرجوع للخريطة العامة">⌖</button>
+      <button class="map-home" id="mapHome" aria-label="عرض جميع المواقع على الخريطة" title="عرض جميع المواقع">⌖</button>
       <div class="map-site-cta" id="mapSiteCTA" hidden>
         <div class="map-site-identity"><span class="map-site-eyebrow">الموقع المحدد</span><strong id="mapSiteTitle"></strong></div>
         <div class="map-site-buttons">
