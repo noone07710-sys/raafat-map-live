@@ -30,7 +30,7 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
  markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
- basemap: null, cityLabels: null
+ basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false
 };
 let toastTimeout;
 
@@ -86,6 +86,32 @@ async function enableArabicMapLabels(){
    }
  });
 }
+function finishMapReveal(){
+ const cover=el("mapReveal");
+ if(!cover||cover.classList.contains("is-ready"))return;
+ cover.classList.add("is-ready");
+ cover.setAttribute("aria-hidden","true");
+ window.setTimeout(()=>{cover.hidden=true;},640);
+}
+function revealFallbackIfReady(){
+ state.showFallback=true;
+ if(state.fallbackTilesLoaded){
+   finishMapReveal();
+ }else{
+   // Never leave visitors behind a loading overlay if a tile service stalls.
+   window.setTimeout(finishMapReveal,4500);
+ }
+}
+function directionsToSite(site){
+ if(!site||!validCoords(Number(site.latitude),Number(site.longitude)))return "";
+ const coordinates=Number(site.latitude)+","+Number(site.longitude);
+ return "https://www.google.com/maps/dir/?api=1&destination="+
+   encodeURIComponent(coordinates)+"&travelmode=driving&dir_action=navigate";
+}
+/**
+ * Only one curated regional beacon appears within the viewport at a time.
+ * It is a location highlight, not an administrative-boundary polygon.
+ */
 function addPersistentCityLabels(){
  if(!state.map||state.cityLabels)return;
  const L=window.L;
@@ -93,23 +119,52 @@ function addPersistentCityLabels(){
  pane.style.zIndex="435";
  pane.style.pointerEvents="none";
  const labels=L.layerGroup().addTo(state.map);
+ const markers=new Map();
  for(const [city,coords] of Object.entries(CITY_CENTERS)){
-   const marker=L.marker(coords,{
-     pane:"raafatCities",interactive:false,
-     icon:L.divIcon({
-       className:"raafat-city-icon",
-       html:'<span class="raafat-city-name" lang="ar" dir="rtl">'+escapeHtml(city)+'</span>',
-       iconSize:[0,0],iconAnchor:[0,0]
-     })
+   const gov=REGIONS["كركوك"].includes(city)?"كركوك":"صلاح الدين";
+   const icon=L.divIcon({
+     className:"raafat-city-icon",
+     html:'<div class="raafat-region-beacon"><span class="raafat-region-orbit"></span>'+
+       '<span class="raafat-region-core"></span><div class="raafat-region-copy">'+
+       '<strong lang="ar" dir="rtl">'+escapeHtml(city)+'</strong>'+
+       '<small lang="ar" dir="rtl">'+escapeHtml(gov)+'</small></div></div>',
+     iconSize:[0,0],iconAnchor:[0,0]
    });
-   labels.addLayer(marker);
+   markers.set(city,L.marker(coords,{pane:"raafatCities",interactive:false,icon}));
  }
- state.cityLabels=labels;
  const update=()=>{
-   state.map.getContainer().classList.toggle("raafat-city-zoom",
-     state.map.getZoom()>=10);
+   if(!state.map)return;
+   const filteredCity=el("cityFilter").value;
+   const site=state.sites.find(x=>x.id===state.selected);
+   const candidate=(site&&CITY_CENTERS[site.city]?site.city:null)||
+     (CITY_CENTERS[filteredCity]?filteredCity:null);
+   let city=candidate;
+   if(!city){
+     // For an unfiltered map show only the closest relevant city at overview zoom.
+     if(state.map.getZoom()>=13){
+       city=null;
+     }else{
+       const center=state.map.getCenter();
+       const inGov=el("governorateFilter").value;
+       let best=Infinity;
+       for(const [name,coords] of Object.entries(CITY_CENTERS)){
+         if(inGov && !(REGIONS[inGov]||[]).includes(name))continue;
+         const distance=state.map.distance(center,coords);
+         if(distance<best){best=distance;city=name;}
+       }
+       if(best>60000)city=null;
+     }
+   }
+   if(city && !state.map.getBounds().pad(.18).contains(CITY_CENTERS[city]))city=null;
+   if(city!==state.cityBeacon){
+     labels.clearLayers();
+     if(city)labels.addLayer(markers.get(city));
+     state.cityBeacon=city;
+   }
  };
- state.map.on("zoomend",update);
+ state.cityLabels=labels;
+ state.updateCityFocus=update;
+ state.map.on("moveend zoomend",update);
  update();
 }
 async function installRaafatPremiumMap(){
