@@ -31,7 +31,8 @@
     </div>
     <nav class="header-actions" aria-label="الإجراءات">
       <span class="admin-tag" id="staffTag" hidden>إدارة</span>
-      <button class="btn btn-primary" id="newSite" hidden>+ إضافة موقع</button>
+      <button class="btn btn-primary" id="manageDashboard" type="button" hidden>لوحة التحكم</button>
+      <button class="btn btn-ghost" id="newSite" hidden>+ إضافة موقع</button>
       <button class="btn btn-ghost" id="loginButton" hidden>دخول الإدارة</button>
       <button class="btn btn-ghost" id="changePasswordButton" type="button" hidden>تغيير كلمة المرور</button>
       <button class="btn btn-ghost" id="logoutButton" hidden>خروج</button>
@@ -39,10 +40,10 @@
   </header>
   <main class="main-layout">
     <aside class="panel browse">
-      <h1 class="catalog-title">المواقع الإعلانية</h1>
-      <div class="coverage-box"><div class="coverage-head"><span>المدن</span></div><div class="city-chips" id="cityChips"></div></div>
+      <h1 class="catalog-title" id="catalogTitle">المواقع الإعلانية</h1>
+      <div class="coverage-box" id="cityChipsWrap"><div class="coverage-head"><span>المدن</span></div><div class="city-chips" id="cityChips"></div></div>
       <div class="alert" id="systemAlert" hidden role="status"></div>
-      <div class="stats" aria-label="إحصائيات المواقع">
+      <div class="stats" id="catalogStats" aria-label="إحصائيات المواقع">
         <div class="stat"><strong id="allCount">—</strong><span>إجمالي القطع</span></div>
         <div class="stat"><strong id="availableCount">—</strong><span>متاحة</span></div>
         <div class="stat"><strong id="cityCount">—</strong><span>مدن</span></div>
@@ -98,6 +99,126 @@
   </main>
   <footer class="mobile-footer">شركة رأفت للدعاية والإعلان والتجارة العامة • جميع الحقوق محفوظة</footer>
  </div>
+
+
+ <section class="admin-dashboard" id="adminDashboard" hidden role="dialog" aria-modal="true" aria-labelledby="adminDashTitle">
+   <div class="admin-dashboard-shell">
+     <header class="admin-dashboard-header">
+       <div class="admin-dashboard-title">
+         <span class="admin-dashboard-mark">R<span>•</span></span>
+         <div><div class="admin-dashboard-eyebrow">لوحة إدارة شركة رأفت</div><h2 id="adminDashTitle">مركز إدارة المواقع الإعلانية</h2></div>
+       </div>
+       <div class="admin-dashboard-top-actions">
+         <button class="admin-mini-button" id="dashAddSite" type="button">+ إضافة قطعة</button>
+         <button class="admin-mini-button secondary" id="dashExport" type="button">تصدير البيانات</button>
+         <button class="admin-close" id="closeAdminDashboard" type="button" aria-label="إغلاق لوحة التحكم">×</button>
+       </div>
+     </header>
+     <nav class="admin-dashboard-tabs" aria-label="أقسام لوحة التحكم">
+       <button type="button" data-dash-tab="overview" class="active" aria-selected="true">نظرة عامة</button>
+       <button type="button" data-dash-tab="inventory" aria-selected="false">إدارة القطع</button>
+       <button type="button" data-dash-tab="staff" id="dashStaffTab" aria-selected="false">الموظفون والصلاحيات</button>
+       <button type="button" data-dash-tab="settings" id="dashSettingsTab" aria-selected="false">إعدادات الموقع</button>
+     </nav>
+     <div class="admin-dashboard-content">
+       <section class="admin-tab-panel" data-dash-panel="overview">
+         <div class="admin-section-heading"><div><h3>أداء شبكة الإعلانات</h3><p>ملخص مباشر من بيانات المواقع الفعلية</p></div><button class="admin-link" id="dashRefresh" type="button">تحديث</button></div>
+         <div class="admin-overview-grid">
+           <div class="admin-overview-stat"><small>إجمالي القطع</small><strong id="dashTotal">0</strong></div>
+           <div class="admin-overview-stat"><small>متاحة</small><strong id="dashAvailable">0</strong></div>
+           <div class="admin-overview-stat"><small>محجوزة</small><strong id="dashReserved">0</strong></div>
+           <div class="admin-overview-stat"><small>مؤجرة</small><strong id="dashBooked">0</strong></div>
+           <div class="admin-overview-stat"><small>غير منشورة</small><strong id="dashUnpublished">0</strong></div>
+           <div class="admin-overview-stat"><small>المساحة الكلية م²</small><strong id="dashArea">0</strong></div>
+         </div>
+         <div class="admin-widget-grid">
+           <div class="admin-widget"><h4>توزيع القطع حسب المدينة</h4><div id="dashCitiesChart" class="admin-chart-list"></div></div>
+           <div class="admin-widget"><h4>إجراءات سريعة</h4>
+             <div class="admin-shortcuts">
+               <button type="button" data-dash-go="inventory">عرض وتعديل المواقع <span>←</span></button>
+               <button type="button" id="dashQuickNew">إضافة قطعة جديدة <span>＋</span></button>
+               <button type="button" data-dash-go="settings">تخصيص الموقع <span>←</span></button>
+             </div>
+             <p class="admin-note">لا تُعرض المواقع غير المنشورة أمام الزبائن. تتحدد صلاحيات المستخدم من النظام وليس من الرابط.</p>
+           </div>
+         </div>
+       </section>
+       <section class="admin-tab-panel" data-dash-panel="inventory" hidden>
+         <div class="admin-section-heading"><div><h3>إدارة المخزون الإعلاني</h3><p>بحث وتحديث حالة المواقع ونشرها ونسخها</p></div></div>
+         <div class="admin-inventory-tools">
+           <input id="dashInventorySearch" class="input" autocomplete="off" placeholder="بحث بالرمز أو الاسم أو المدينة">
+           <select id="dashInventoryStatus" class="input" aria-label="تصفية حسب الحالة">
+             <option value="">كل الحالات</option><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option>
+           </select>
+           <select id="dashInventoryPublication" class="input" aria-label="تصفية حسب النشر">
+             <option value="">المنشورة والمسودات</option><option value="published">المنشورة</option><option value="draft">غير المنشورة</option>
+           </select>
+         </div>
+         <div class="admin-bulkbar">
+           <label><input type="checkbox" id="dashSelectAll"> تحديد الكل</label>
+           <span id="dashSelectedCount">0 محددة</span>
+           <select class="input" id="dashBulkStatus" aria-label="تغيير حالة القطع"><option value="">تغيير الحالة</option><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option></select>
+           <button type="button" id="dashApplyStatus">تطبيق الحالة</button>
+           <button type="button" id="dashBulkPublish">نشر المحدد</button>
+           <button type="button" id="dashBulkHide">إخفاء المحدد</button>
+         </div>
+         <div class="admin-table-scroll"><table class="admin-data-table">
+           <thead><tr><th>اختيار</th><th>رمز القطعة</th><th>الموقع</th><th>القياس</th><th>الحالة</th><th>النشر</th><th>الإجراءات</th></tr></thead>
+           <tbody id="dashInventoryRows"></tbody>
+         </table></div>
+         <p id="dashInventoryCount" class="admin-note"></p>
+       </section>
+       <section class="admin-tab-panel" data-dash-panel="staff" hidden>
+         <div class="admin-section-heading"><div><h3>إدارة المستخدمين والصلاحيات</h3><p>أنشئ حساب مدير أو محرر جديداً، وحدد من يمكنه تعديل المواقع</p></div></div>
+         <div class="admin-widget-grid">
+           <form id="dashStaffForm" class="admin-widget admin-staff-form">
+             <h4>إنشاء حساب موظف</h4>
+             <label for="dashStaffEmail">البريد الإلكتروني</label><input id="dashStaffEmail" type="email" class="input" required autocomplete="off" placeholder="staff@example.com">
+             <label for="dashStaffRole">نوع الصلاحية</label>
+             <select class="input" id="dashStaffRole"><option value="editor">محرر مواقع</option><option value="admin">مدير كامل</option></select>
+             <label for="dashStaffPassword">كلمة مرور مؤقتة</label>
+             <div class="admin-password-tools">
+               <input id="dashStaffPassword" type="text" class="input" required minlength="14" maxlength="128" autocomplete="off" spellcheck="false">
+               <button type="button" id="dashGeneratePassword">توليد</button>
+               <button type="button" id="dashCopyPassword">نسخ</button>
+             </div>
+             <p class="admin-note">أنشئ الحساب بكلمة مرور قوية وشاركها مع الموظف بشكل خاص، ثم يغيّرها بعد أول دخول. لا تحتاج رسالة تأكيد لإنشاء الحساب من لوحة المدير.</p>
+             <button class="btn btn-primary full-button" type="submit" id="dashCreateStaff">إنشاء الحساب</button>
+             <div class="admin-form-message" id="dashStaffMessage" role="status"></div>
+           </form>
+           <div class="admin-widget">
+             <div class="admin-widget-title"><h4>فريق الإدارة</h4><button id="dashReloadStaff" class="admin-link" type="button">تحديث</button></div>
+             <div id="dashStaffList" class="admin-staff-list"><p class="admin-note">افتح القسم لعرض المستخدمين.</p></div>
+           </div>
+         </div>
+       </section>
+       <section class="admin-tab-panel" data-dash-panel="settings" hidden>
+         <div class="admin-section-heading"><div><h3>تخصيص الموقع</h3><p>تغييرات مباشرة تظهر للزبائن بعد الحفظ</p></div></div>
+         <form id="dashSettingsForm">
+           <div class="admin-widget-grid">
+             <div class="admin-widget admin-settings-group">
+               <h4>معلومات الشركة والتواصل</h4>
+               <label for="dashHeadline">عنوان قائمة المواقع</label><input class="input" id="dashHeadline" maxlength="90" required>
+               <label for="dashWhatsApp">رقم واتساب للاستفسارات (مفتاح الدولة، دون +)</label><input class="input" id="dashWhatsApp" inputmode="tel" maxlength="25" placeholder="9647XXXXXXXXX">
+               <label for="dashContactMessage">رسالة الاستفسار الجاهزة</label><textarea class="input" id="dashContactMessage" rows="3" maxlength="280"></textarea>
+             </div>
+             <div class="admin-widget admin-settings-group">
+               <h4>الواجهة والخريطة</h4>
+               <label for="dashMapStart">المدينة الافتراضية</label>
+               <select class="input" id="dashMapStart"><option value="تكريت">تكريت</option><option value="بيجي">بيجي</option><option value="الدور">الدور</option><option value="سامراء">سامراء</option><option value="الشرقاط">الشرقاط</option><option value="العلم">العلم</option><option value="بلد">بلد</option><option value="كركوك">كركوك</option></select>
+               <label class="admin-switch"><input type="checkbox" id="dashCityChips"> عرض اختصارات المدن</label>
+               <label class="admin-switch"><input type="checkbox" id="dashStats"> عرض إحصائيات المواقع</label>
+               <label class="admin-switch"><input type="checkbox" id="dashGlow"> تفعيل الإضاءة الهادئة على الخريطة</label>
+               <p class="admin-note">تحفظ الإعدادات في قاعدة البيانات، من دون تغيير ملفات GitHub يدوياً.</p>
+             </div>
+           </div>
+           <div class="admin-settings-save"><button class="btn btn-primary" id="dashSaveSettings" type="submit">حفظ الإعدادات</button><span id="dashSettingsMessage" role="status"></span></div>
+         </form>
+       </section>
+     </div>
+     <div class="admin-dashboard-footer"><span id="dashSessionRole">جلسة إدارة معتمدة</span><span>شركة رأفت للدعاية والإعلان</span></div>
+   </div>
+ </section>
 
  <div class="modal-backdrop" id="loginModal" hidden>
   <div class="modal small" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
