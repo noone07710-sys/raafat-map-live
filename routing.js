@@ -327,16 +327,19 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
  }
  function chooseStart(){
   if(!activeSite)return;
-  choosing=true;
-  stopWatch();
-  setStatus("اضغط على الخارطة لتحديد البداية.");
-  toast("اختر نقطة الانطلاق على الخريطة.");
+  choosing=true;manualOrigin=true;
+  stopWatch();stopWatchdog();
+  lastFix=null;lastAccuracy=Infinity;lastFixTime=0;
+  if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
+  setStatus("حدد بداية الطريق على الخارطة • للمعاينة فقط");
+  toast("اختر نقطة البداية. الملاحة الحية تحتاج GPS.");
  }
  function handleMapClick(latlng){
   if(!choosing||!activeSite)return false;
   choosing=false;
   const point=[Number(latlng.lat),Number(latlng.lng)];
-  setOrigin(point);drawArrow(point,0);void planRoute(point);
+  // Manually chosen coordinates are never represented as a live GPS heading.
+  setOrigin(point);void planRoute(point);
   return true;
  }
  function onLiveLocation(point,accuracy=Infinity,heading=null){
