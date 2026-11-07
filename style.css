@@ -2719,3 +2719,63 @@ body.raafat-signature-map .map-area .map-reveal-brand{
 .booking-tier-bottom{font-size:10px;color:#f1c586;margin-top:auto;line-height:1.6}
 @media(max-width:700px){.booking-package-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:400px){.booking-package-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Raafat booking: true-content-height modal and responsive VIP site selector */
+.booking-backdrop{overflow-y:auto!important;overscroll-behavior:contain;align-items:flex-start!important;padding:clamp(12px,3vw,34px)!important}
+.booking-backdrop .booking-modal{height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;flex:0 0 auto!important;align-self:flex-start!important;box-sizing:border-box;width:min(100%,790px)!important;margin:0 auto 22px!important}
+.booking-modal-head,.booking-form,.booking-package-info,.booking-price-card{height:auto!important;max-height:none!important;overflow:visible!important;box-sizing:border-box}
+.booking-modal-head{border-radius:24px 24px 0 0}
+.booking-package-info{min-height:0;display:block;padding:19px 22px!important;word-break:normal;overflow-wrap:anywhere}
+.booking-package-info strong{display:block;line-height:1.8;white-space:normal}
+.booking-package-info p{display:block;line-height:2;white-space:normal;margin-bottom:0}
+.booking-price-card{min-width:0;overflow-wrap:anywhere}
+.booking-price-card strong{font-size:clamp(22px,4vw,31px);line-height:1.3;white-space:normal}
+.booking-sites-picker{margin-top:18px;background:linear-gradient(132deg,#152f39,#0c232d);border:1px solid rgba(221,182,115,.45);border-radius:17px;padding:20px;box-shadow:inset 0 1px #ffffff16}
+.booking-sites-header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.booking-sites-header strong{font-size:17px;color:#fff}
+.booking-sites-header p{font-size:12px;line-height:1.9;color:#bbcfcd;margin:8px 0}
+.booking-open-map{background:linear-gradient(115deg,#d3a561,#edce97);border:0;border-radius:11px;color:#122b31;padding:12px 15px;font-weight:850;cursor:pointer;min-height:43px}
+.booking-open-map:hover{filter:brightness(1.1)}
+.booking-selected-sites{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:9px;margin-top:15px}
+.booking-site-chip{display:flex;align-items:center;gap:9px;min-width:0;border-radius:12px;padding:11px;background:#061e27;border:1px solid rgba(224,183,119,.42);color:#e9f0ef}
+.booking-site-chip-code{flex-shrink:0;font:bold 12px Arial,sans-serif;background:#c99a57;color:#0b2730;padding:7px 6px;border-radius:8px}
+.booking-site-chip-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.booking-site-chip-info strong{font-size:12px;color:#fff;line-height:1.55}
+.booking-site-chip-info small{font-size:10px;color:#c4d3d0;line-height:1.7}
+.booking-site-chip button{background:#ffffff12;color:#fff;border:1px solid #ffffff24;border-radius:8px;font-size:21px;min-width:28px;min-height:28px;cursor:pointer}
+.booking-no-sites{color:#c8d2ce;padding:12px;font-size:12px;background:#ffffff09;border-radius:9px;line-height:1.8;grid-column:1/-1}
+.booking-selection-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:13px;color:#f3d29b;font-size:12px}
+.booking-selection-actions button{background:transparent;color:#f0c9a0;border:0;text-decoration:underline;cursor:pointer}
+.booking-total-summary{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:18px;padding:15px;border:1px solid #dbb5766b;background:linear-gradient(110deg,#6d522a38,#0c2f36);border-radius:13px;color:#d8e4df}
+.booking-total-summary b{color:#f7d6a0;font-family:Arial,sans-serif;font-size:17px;margin-inline-start:7px}
+.booking-map-picker[hidden]{display:none!important}
+.booking-map-picker{position:absolute;z-index:1050;inset-inline:clamp(10px,3vw,28px);top:clamp(12px,4vh,40px);background:linear-gradient(125deg,rgba(9,34,43,.98),rgba(13,46,53,.97));border:1px solid #e3bd7e;border-radius:17px;padding:15px;box-shadow:0 15px 55px #0008;backdrop-filter:blur(12px);color:#fff}
+.booking-map-picker-heading{display:flex;gap:13px;align-items:center}
+.booking-map-picker-heading strong{display:block;font-size:17px;color:#fae0b3}
+.booking-map-picker-heading small{display:block;font-size:11px;color:#d0ddda;line-height:1.7;margin-top:4px}
+.booking-map-picker-icon{font-size:24px;color:#f2c47b}
+.booking-map-picker-footer{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}
+.booking-map-picker-footer strong{margin-inline-end:auto;color:#edd4ab}
+.booking-map-picker-footer button{border:1px solid #d4b278;border-radius:9px;padding:10px 14px;background:#dcb477;color:#16313a;font-weight:800;cursor:pointer}
+.booking-map-picker-footer button:last-child{background:#ffffff14;color:#f3e6d0}
+.site-pin.booking-picked{box-shadow:0 0 0 5px #f6d08d77,0 0 22px #f2b553bf!important;transform:scale(1.15);border-color:#ffe5a1!important}
+.site-pin.booking-picked:after{content:"✓";position:absolute;top:-12px;inset-inline-end:-11px;font-size:12px;font-weight:900;background:#ffd18a;color:#15323b;border-radius:50%;width:20px;height:20px;display:grid;place-items:center}
+.booking-admin-table .booking-admin-sites{display:flex;gap:5px;flex-wrap:wrap;margin:5px 0}
+.booking-admin-table .booking-admin-site{padding:5px 7px;border:1px solid #cb9d5c6b;border-radius:7px;color:#edc687;background:#bc8b3a18;font-size:11px}
+.booking-admin-table .booking-admin-site small{color:#cfddda}
+.booking-admin-table .booking-admin-total{font-weight:800;color:#f5cb89;font-family:Arial,sans-serif}
+@media(max-width:620px){
+.booking-backdrop{padding:0!important}
+.booking-backdrop .booking-modal{border-radius:0!important;margin:0!important;min-height:100dvh!important;width:100%!important}
+.booking-modal-head{border-radius:0!important}
+.booking-package-info{padding:15px!important}
+.booking-sites-picker{padding:14px}
+.booking-sites-header{align-items:stretch;flex-direction:column}
+.booking-open-map{width:100%}
+.booking-map-picker{top:12px;inset-inline:9px;padding:12px}
+.booking-map-picker-heading strong{font-size:14px}
+.booking-map-picker-footer{gap:6px}
+.booking-map-picker-footer button{padding:8px}
+.booking-total-summary{flex-direction:column}
+}
