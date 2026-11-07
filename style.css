@@ -3138,3 +3138,28 @@ select option{direction:rtl;text-align:right;padding:10px;line-height:1.8;backgr
 }
 .raafat-route-panel .raafat-route-actions button:focus-visible,
 .map-site-buttons #mapSiteDirections:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+
+/* Interaction recovery: allow natural page scroll and stable independent side panels */
+html{overflow-x:hidden}
+body:not(.booking-open):not(.dashboard-open){overflow-x:hidden!important;overflow-y:auto!important}
+@media(min-width:851px){
+ .app-shell{min-height:100dvh;height:auto!important}
+ .main-layout{min-height:calc(100dvh - 84px);height:auto}
+ .main-layout>.panel{
+   position:relative;max-height:calc(100dvh - 84px);
+   min-height:0;overflow-y:auto!important;overflow-x:hidden;
+   overscroll-behavior-y:auto;
+   -webkit-overflow-scrolling:touch;
+   scrollbar-width:thin;
+ }
+ .main-layout>.map-area{height:calc(100dvh - 84px);min-height:530px}
+}
+@media(max-width:850px){
+ body:not(.booking-open):not(.dashboard-open){overflow-y:auto!important}
+ .main-layout>.panel{overflow-y:visible;max-height:none;touch-action:pan-y}
+ .map-area{touch-action:pan-y}
+}
+.map-reveal,.map-reveal::before,.map-reveal::after{pointer-events:none!important}
+.map-area .raafat-route-panel[hidden],.map-area .booking-map-picker[hidden]{display:none!important}
+.map-area .map-site-cta[hidden]{display:none!important}
