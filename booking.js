@@ -2,7 +2,7 @@
 const PACKAGES = Object.freeze({
  A:{size:"120 سم × 2 م",prices:{3:280,6:430,12:670}},
  B:{size:"2 × 3 م",prices:{3:520,6:760,12:1120}},
- C:{size:"2.5 × 3.5 م",prices:{3:760,6:110,12:1800}},
+ C:{size:"2.5 × 3.5 م",prices:{3:760,6:1100,12:1800}},
  D:{size:"3 × 4 م",prices:{3:800,6:1300,12:2100}},
  E:{size:"لوحات أسطح وبنايات",prices:{}}
 });
@@ -18,164 +18,267 @@ export function packageForSite(site){
  if((w===3&&h===4)||(w===4&&h===3))return "D";
  return "E";
 }
+
 export function setupBookings({db,getState,toast}){
- let busy=false;
  const countries=$("bookingGovernorate"),cities=$("bookingCity"),sites=$("bookingSite"),category=$("bookingCategory"),duration=$("bookingDuration");
- const modal=$("bookingModal");
- const writeCities=()=>{cities.innerHTML=REGIONS[countries.value].map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join("");writeSites()};
- const writeSites=(selected="")=>{
-  const inventory=(getState().sites||[]).filter(s=>s.published&&s.status==="available"&&s.governorate===countries.value&&s.city===cities.value&&packageForSite(s)===category.value);
-  sites.innerHTML='<option value="">بدون تحديد قطعة — يحددها الفريق لاحقاً</option>'+inventory.map(s=>'<option value="'+safe(s.id)+'">'+safe(s.code+" — "+s.name)+'</option>').join("");
-  if(inventory.some(s=>s.id===selected))sites.value=selected;
- };
- const packageCards=$("bookingPackageCards");
+ const modal=$("bookingModal"),bar=$("bookingMapPicker"),chosen=new Map();
+ let busy=false,selecting=false,dirty=false,currentCategory='A';
+ const available=s=>s?.published&&s.status==="available";
+ const inventory=()=>getState().sites||[];
+ const validSite=id=>inventory().find(s=>s.id===id&&available(s)&&packageForSite(s)===category.value);
+ const picked=()=>Array.from(chosen.values());
+ const money=v=>"$"+Number(v).toLocaleString("en-US");
+ const restoreScroll=()=>document.body.classList.toggle("booking-open",!modal.hidden);
+ function writeCities(){
+   const options=REGIONS[countries.value]||[];
+   cities.innerHTML=options.map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join("");
+   writeSites();
+ }
+ function writeSites(){
+   const options=inventory().filter(s=>available(s)&&s.governorate===countries.value&&s.city===cities.value&&packageForSite(s)===category.value);
+   sites.innerHTML='<option value="">+ أضف قطعة من هذه المدينة</option>'+options.map(s=>
+     '<option value="'+safe(s.id)+'" '+(chosen.has(s.id)?"disabled":"")+'>'+safe(s.code+" — "+s.name)+(chosen.has(s.id)?" ✓":"")+'</option>').join("");
+ }
  function renderCards(){
-  packageCards.innerHTML=Object.entries(PACKAGES).map(([key,p])=>
-   '<button type="button" class="booking-tier-card '+(category.value===key?"selected":"")+'" data-tier="'+key+'" aria-pressed="'+(category.value===key)+'"><span class="booking-tier-top">RAAFAT <b>'+key+'</b></span><strong>فئة '+key+'</strong><small>'+p.size+'</small><span class="booking-tier-bottom">'+(key==="E"?"السعر بعد الكشف":"لوحة ضوئية • وجهان")+'</span></button>').join("");
-  packageCards.querySelectorAll("[data-tier]").forEach(btn=>btn.addEventListener("click",()=>{category.value=btn.dataset.tier;writePackage()}));
+   $("bookingPackageCards").innerHTML=Object.entries(PACKAGES).map(([key,p])=>
+     '<button type="button" class="booking-tier-card '+(category.value===key?"selected":"")+'" data-tier="'+key+'" aria-pressed="'+(category.value===key)+'">'+
+     '<span class="booking-tier-top">RAAFAT <b>'+key+'</b></span><strong>فئة '+key+'</strong><small>'+safe(p.size)+'</small>'+
+     '<span class="booking-tier-bottom">'+(key==="E"?"السعر بعد الكشف":"لوحة ضوئية • وجهان")+'</span></button>').join("");
+   $("bookingPackageCards").querySelectorAll("[data-tier]").forEach(btn=>btn.addEventListener("click",()=>changeCategory(btn.dataset.tier)));
  }
- const writePackage=()=>{
-  const p=PACKAGES[category.value];
-  $("bookingPackageInfo").innerHTML=category.value==="E"
-   ?'<strong>فئة E • لوحات أسطح وبنايات</strong><p>السعر يُحدّد بعد مراجعة الموقع والتوفر. لا توجد تسعيرة ثابتة لهذه الفئة.</p>'
-   :'<strong>فئة '+safe(category.value)+' • '+p.size+'</strong><p>لوحات ضوئية • السعر يشمل الإيجار والتصميم والطباعة والتركيب/التبديل والصيانة • وجهان</p>';
-  duration.disabled=category.value==="E";
-  duration.required=category.value!=="E";
-  $("bookingDurationWrap").hidden=category.value==="E";
-  duration.value="3";
-  writePrice();writeSites();renderCards();
- };
- const writePrice=()=>{
-  const p=PACKAGES[category.value].prices[duration.value];
-  $("bookingPrice").textContent=p?"$"+p.toLocaleString("en-US"):"السعر بعد مراجعة الموقع";
-  $("bookingPriceNote").textContent=category.value==="C"&&duration.value==="6"?"يرجى تأكيد السعر النهائي لفئة C / 6 أشهر مع الإدارة.":"السعر شامل الخدمات المذكورة، والتأكيد النهائي بعد مراجعة الإدارة.";
- };
- function openBooking(siteId=""){
-  $("bookingForm").reset();
-  const site=(getState().sites||[]).find(s=>s.id===siteId&&s.published&&s.status==="available");
-  category.value=site?packageForSite(site):"A";
-  countries.value=site?.governorate||"صلاح الدين";
-  writeCities();
-  if(site)cities.value=site.city;
-  writePackage();
-  writeSites(siteId);
-  $("bookingResult").hidden=true;
-  $("bookingForm").hidden=false;
-  $("bookingSend").disabled=false;
-  $("bookingPhone").value="";
-  modal.hidden=false;document.body.classList.add("booking-open");
+ function writePackage(){
+   const p=PACKAGES[category.value];
+   $("bookingPackageInfo").innerHTML=category.value==="E"
+     ?'<strong>فئة E • لوحات الأسطح</strong><p>تخضع للكشف الميداني وتوفر الموقع، وتحدد التكلفة بعد مراجعة الإدارة.</p>'
+     :'<strong>فئة '+category.value+' • '+safe(p.size)+'</strong><p>لوحات ضوئية، والسعر يشمل الإيجار والتصميم والطباعة والتبديل والصيانة • وجهان.</p>';
+   duration.disabled=category.value==="E";
+   duration.required=category.value!=="E";
+   $("bookingDurationWrap").hidden=category.value==="E";
+   renderCards();
+   writeSites();
+   renderSelection();
  }
- function close(){modal.hidden=true;document.body.classList.remove("booking-open");}
+ function changeCategory(key){
+   if(key===currentCategory)return;
+   if(chosen.size && !confirm("تغيير الفئة يمسح القطع المحددة حالياً. هل تريد المتابعة؟")){category.value=currentCategory;renderCards();return;}
+   category.value=key;currentCategory=key;chosen.clear();dirty=true;writePackage();
+ }
+ function renderSelection(){
+   for(const [id,s] of chosen)if(!validSite(id))chosen.delete(id);
+   const arr=picked();
+   $("bookingSelectedSites").innerHTML=arr.length?arr.map(s=>
+     '<div class="booking-site-chip"><span class="booking-site-chip-code">'+safe(s.code)+'</span>'+
+     '<div class="booking-site-chip-info"><strong>'+safe(s.name)+'</strong><small>'+safe(s.governorate)+' / '+safe(s.city)+' • '+safe(s.area||"")+'</small></div>'+
+     '<button type="button" data-remove-booking-site="'+safe(s.id)+'" aria-label="إزالة القطعة '+safe(s.code)+'">×</button></div>').join("")
+     :'<div class="booking-no-sites">لم تحدد أي قطعة بعد • بإمكانك إرسال طلب عام ويختار الفريق المواقع المناسبة لك.</div>';
+   $("bookingSelectedCount").textContent=arr.length+" قطعة محددة";
+   $("bookingMapCount").textContent=arr.length+" قطعة محددة";
+   $("bookingSummaryCount").textContent=arr.length?String(arr.length):"1 (طلب عام)";
+   const unit=PACKAGES[category.value].prices[duration.value];
+   $("bookingPriceLabel").textContent=arr.length>1?"السعر الإجمالي لـ "+arr.length+" قطع":"سعر الباقة";
+   $("bookingPrice").textContent=unit?money(unit*Math.max(arr.length,1)):"بعد الكشف";
+   $("bookingSummaryPrice").textContent=unit?money(unit*Math.max(arr.length,1)):"يحدد لاحقاً";
+   $("bookingPriceNote").textContent=arr.length>1&&unit?
+     "سعر القطعة "+money(unit)+" × "+arr.length+" قطع • تأكيد التوفر بعد مراجعة الإدارة.":
+     "الأسعار تشمل الخدمات المبينة، والتأكيد النهائي بعد مراجعة الإدارة.";
+   writeSites();
+   document.dispatchEvent(new CustomEvent("raafat:booking-selection-changed"));
+ }
+ function addOrRemove(id){
+   const s=validSite(id);
+   if(!s){toast("هذه القطعة غير متاحة أو ليست من الفئة "+category.value+". اختر قطعة متاحة من نفس الفئة.");return false;}
+   if(chosen.has(id))chosen.delete(id);
+   else {
+     if(chosen.size>=30){toast("يمكن تحديد حتى 30 قطعة في الطلب الواحد.");return false;}
+     chosen.set(id,s);
+   }
+   dirty=true;renderSelection();
+   toast(chosen.has(id)?"تمت إضافة القطعة "+s.code+" إلى طلبك.":"تمت إزالة القطعة "+s.code+".");
+   return true;
+ }
+ function openBooking(siteId="",preserve=false){
+   if(!preserve){
+     $("bookingForm").reset();chosen.clear();dirty=false;
+     const s=inventory().find(s=>s.id===siteId&&available(s));
+     category.value=s?packageForSite(s):"A";currentCategory=category.value;
+     countries.value=s?.governorate||"صلاح الدين";
+     writeCities();
+     if(s)cities.value=s.city;
+     duration.value="3";
+     if(s)chosen.set(s.id,s);
+   }
+   selecting=false;bar.hidden=true;modal.hidden=false;restoreScroll();
+   $("bookingForm").hidden=false;$("bookingResult").hidden=true;
+   $("bookingSend").disabled=false;
+   writePackage();
+   $("bookingPhone").dispatchEvent(new Event("input"));
+ }
+ function close(){
+   if(busy)return;
+   if(!$("bookingResult").hidden || !dirty || confirm("توجد بيانات حجز غير مرسلة. هل تريد إغلاق النموذج وفقدانها؟")){
+     modal.hidden=true;bar.hidden=true;selecting=false;restoreScroll();
+   }
+ }
+ function pickOnMap(){
+   if(busy)return;
+   selecting=true;modal.hidden=true;bar.hidden=false;restoreScroll();
+   document.querySelector(".map-area")?.scrollIntoView({behavior:"smooth",block:"center"});
+   toast("اضغط على علامات المواقع بالخريطة. يمكن تحديد أكثر من قطعة من نفس الفئة.");
+ }
+ function finishMap(){
+   if(!selecting)return;
+   selecting=false;bar.hidden=true;openBooking("",true);
+ }
  function trackUrl(token){return location.origin+location.pathname+"#booking="+encodeURIComponent(token);}
- function whatsappLink(result, payload){
-  const phone=String(getState().siteSettings?.whatsapp_number||window.RAAFAT_CONFIG?.whatsappNumber||"").replace(/\D/g,"");
-  const content="طلب حجز إعلاني جديد - شركة رأفت\nالمرجع: "+result.reference+
-  "\nالاسم: "+payload.p_customer_name+"\nالهاتف: "+payload.p_phone+"\nالجهة: "+payload.p_company_name+
-  "\nالمحافظة: "+payload.p_governorate+" / "+payload.p_city+
-  "\nالفئة: "+payload.p_category+"\nالمدة: "+(payload.p_duration_months||"حسب الاتفاق")+
-  "\nالسعر: "+(result.price_usd?"$"+result.price_usd:"بعد الكشف")+
-  "\nرابط المتابعة: "+trackUrl(result.tracking_token);
-  return "https://"+(phone?"wa.me/"+phone:"api.whatsapp.com/send")+"?text="+encodeURIComponent(content);
+ function whatsappLink(result,payload,selected){
+   const phone=String(getState().siteSettings?.whatsapp_number||window.RAAFAT_CONFIG?.whatsappNumber||"").replace(/\D/g,"");
+   const details=selected.length?selected.map((s,i)=>(i+1)+". "+s.code+" — "+s.name+" ("+s.governorate+" / "+s.city+")").join("\n"):"طلب عام بدون قطع محددة";
+   const text="طلب حجز إعلاني - شركة رأفت\nرقم الطلب: "+result.reference+
+     "\nالزبون: "+payload.p_customer_name+"\nالهاتف: "+payload.p_phone+"\nالجهة: "+payload.p_company_name+
+     "\nالمحافظة: "+payload.p_governorate+" / "+payload.p_city+
+     "\nالفئة: "+payload.p_category+"\nالمدة: "+(payload.p_duration_months?payload.p_duration_months+" أشهر":"بعد الكشف")+
+     "\nالقطع المختارة ("+selected.length+"):\n"+details+
+     "\nالمجموع: "+(result.price_usd?money(result.price_usd):"بعد الكشف")+
+     "\nرابط الطلب: "+trackUrl(result.tracking_token);
+   return "https://"+(phone?"wa.me/"+phone:"api.whatsapp.com/send")+"?text="+encodeURIComponent(text);
  }
  async function submit(event){
-  event.preventDefault();if(busy||!db)return;
-  const payload={
-   p_customer_name:$("bookingName").value.trim(),
-   p_phone:$("bookingPhone").value.replace(/\D/g,""),
-   p_company_name:$("bookingCompany").value.trim(),
-   p_governorate:countries.value,p_city:cities.value,p_category:category.value,
-   p_duration_months:category.value==="E"?null:Number(duration.value),
-   p_site_id:sites.value||null
-  };
-  if(!/^\d{11}$/.test(payload.p_phone)){toast("رقم الهاتف يجب أن يتكون من 11 رقماً بالضبط.");return}
-  busy=true;$("bookingSend").disabled=true;$("bookingSend").textContent="جاري تثبيت الطلب…";
-  try{
-   const {data,error}=await db.rpc("submit_booking_request",payload);
-   if(error)throw error;
-   const result=data?.[0];if(!result)throw Error("لم تُرجع قاعدة البيانات رقم الحجز");
-   const url=trackUrl(result.tracking_token);
-   $("bookingForm").hidden=true;$("bookingResult").hidden=false;
-   $("bookingReference").textContent=result.reference;
-   $("bookingResultLink").value=url;
-   $("bookingResultMessage").textContent="شكراً لثقتك بشركة رأفت. تم استلام طلبك بنجاح وهو بانتظار مراجعة الإدارة. هذا ليس تأكيداً نهائياً للحجز.";
-   $("bookingWhatsApp").href=whatsappLink(result,payload);
-   toast("تم إرسال الطلب للإدارة بنجاح.");
-  }catch(err){console.error("Booking failed:",err.message);toast("تعذر حفظ طلبك: "+(err.message||"حاول لاحقاً")); }
-  finally{busy=false;$("bookingSend").disabled=false;$("bookingSend").textContent="تأكيد إرسال طلب الحجز"}
+   event.preventDefault();if(busy||!db)return;
+   const selected=picked();
+   const payload={
+     p_customer_name:$("bookingName").value.trim(),
+     p_phone:$("bookingPhone").value.replace(/\D/g,""),
+     p_company_name:$("bookingCompany").value.trim(),
+     p_governorate:countries.value,p_city:cities.value,p_category:category.value,
+     p_duration_months:category.value==="E"?null:Number(duration.value),
+     p_site_ids:selected.map(s=>s.id)
+   };
+   if(!/^\d{11}$/.test(payload.p_phone)){toast("رقم الهاتف يجب أن يكون 11 رقماً بالضبط.");return}
+   busy=true;$("bookingSend").disabled=true;$("bookingSend").textContent="جاري إرسال الطلب…";
+   try{
+     const {data,error}=await db.rpc("submit_booking_request_multi",payload);
+     if(error)throw error;
+     const result=data?.[0];if(!result)throw Error("لم ترجع قاعدة البيانات رقم الحجز");
+     $("bookingForm").hidden=true;$("bookingResult").hidden=false;
+     $("bookingReference").textContent=result.reference;
+     $("bookingResultLink").value=trackUrl(result.tracking_token);
+     $("bookingResultMessage").textContent="شكراً لثقتك بشركة رأفت! تم استلام طلبك الذي يضم "+result.site_count+" قطع محددة، وهو بانتظار موافقة الإدارة. لا يعتبر حجزاً مؤكداً حتى اعتماده.";
+     $("bookingWhatsApp").href=whatsappLink(result,payload,selected);
+     dirty=false;toast("تم تسجيل طلب الحجز بنجاح.");
+   }catch(err){console.error("Booking failed:",err.message);toast("تعذر تسجيل الحجز: "+(err.message||"يرجى المحاولة لاحقاً"));}
+   finally{busy=false;$("bookingSend").disabled=false;$("bookingSend").textContent="تأكيد إرسال طلب الحجز";}
  }
  async function track(token){
-  if(!db)return;
-  try{
-   const {data,error}=await db.rpc("track_booking_request",{p_token:token});
-   if(error)throw error;
-   const row=data?.[0];
-   $("bookingTrackingContent").innerHTML=row?
-     '<div class="tracking-state">'+safe(({pending:"بانتظار مراجعة الإدارة",approved:"تمت الموافقة",rejected:"لم تتم الموافقة",completed:"مكتمل"})[row.status]||row.status)+'</div>'+
-     '<h3>'+safe(row.reference)+'</h3><p>'+safe(row.company_name)+'</p>'+
-     '<p>'+safe(row.governorate)+" / "+safe(row.city)+'</p>'+
-     '<p>فئة '+safe(row.category)+(row.site_code?" • قطعة "+safe(row.site_code):"")+'</p>'+
-     '<p>المدة: '+safe(row.duration_months||"تحدد بعد الكشف")+' أشهر</p>'+
-     '<p>السعر: '+(row.quoted_price_usd?"$"+safe(row.quoted_price_usd):"بعد مراجعة الموقع")+'</p>':
-     '<p>رابط المتابعة غير صالح أو لم يعد متاحاً.</p>';
-   $("bookingTracking").hidden=false;
-  }catch(err){toast("تعذر تحميل متابعة الحجز.");}
+   if(!db)return;
+   try{
+     const {data,error}=await db.rpc("track_booking_request_multi",{p_token:token});
+     if(error)throw error;
+     const row=data?.[0];
+     const requested=Array.isArray(row?.sites)?row.sites:[];
+     $("bookingTrackingContent").innerHTML=row?
+       '<div class="tracking-state">'+safe(({pending:"بانتظار مراجعة الإدارة",approved:"تمت الموافقة",rejected:"لم تتم الموافقة",completed:"مكتمل"})[row.status]||row.status)+'</div>'+
+       '<h3>'+safe(row.reference)+'</h3><p>'+safe(row.company_name)+'</p>'+
+       '<p>'+safe(row.governorate)+" / "+safe(row.city)+'</p>'+
+       '<p>الفئة: '+safe(row.category)+' • المدة: '+safe(row.duration_months||"بعد الكشف")+'</p>'+
+       '<p>القطع المختارة: '+requested.length+'</p>'+
+       requested.map(s=>'<p>'+safe(s.code)+' • '+safe(s.name)+' — '+safe(s.governorate)+' / '+safe(s.city)+'</p>').join("")+
+       '<p>الإجمالي: '+(row.quoted_price_usd?money(row.quoted_price_usd):"بعد الكشف")+'</p>':
+       '<p>رابط المتابعة غير صالح أو غير متاح.</p>';
+     $("bookingTracking").hidden=false;
+   }catch(err){toast("تعذر فتح رابط المتابعة.");}
  }
  function hashTrack(){const token=location.hash.match(/^#booking=([0-9a-f-]{36})$/i)?.[1];if(token)void track(token);}
  $("bookNow").addEventListener("click",()=>openBooking());
  document.addEventListener("click",event=>{
-  const btn=event.target.closest("[data-book-site]");if(btn)openBooking(btn.dataset.bookSite);
+   const button=event.target.closest("[data-book-site]");
+   if(button)openBooking(button.dataset.bookSite);
  });
  $("bookingClose").addEventListener("click",close);
- modal.addEventListener("click",event=>{if(event.target===modal)close()});
- countries.addEventListener("change",writeCities);
- cities.addEventListener("change",()=>writeSites());
- category.addEventListener("change",writePackage);
- duration.addEventListener("change",writePrice);
+ // Never dismiss on outside click: forms may contain unsaved customer data.
+ $("bookingChooseOnMap").addEventListener("click",pickOnMap);
+ $("bookingMapFinish").addEventListener("click",finishMap);
+ $("bookingMapCancel").addEventListener("click",finishMap);
+ $("bookingClearSites").addEventListener("click",()=>{if(chosen.size){chosen.clear();dirty=true;renderSelection();}});
+ $("bookingSelectedSites").addEventListener("click",e=>{const btn=e.target.closest("[data-remove-booking-site]");if(btn)addOrRemove(btn.dataset.removeBookingSite);});
+ countries.addEventListener("change",()=>{dirty=true;writeCities();});
+ cities.addEventListener("change",()=>{dirty=true;writeSites();});
+ category.addEventListener("change",event=>changeCategory(event.target.value));
+ duration.addEventListener("change",()=>{dirty=true;renderSelection();});
+ sites.addEventListener("change",()=>{if(sites.value)addOrRemove(sites.value);sites.value="";});
+ $("bookingForm").addEventListener("input",()=>{dirty=true;});
  $("bookingForm").addEventListener("submit",submit);
- $("bookingPhone").addEventListener("input",event=>{event.target.value=event.target.value.replace(/\D/g,"").slice(0,11)});
- $("bookingCopy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("bookingResultLink").value);toast("تم نسخ رابط متابعة الحجز.");}catch{toast("انسخ الرابط يدوياً.")}});
+ $("bookingPhone").addEventListener("input",event=>{event.target.value=event.target.value.replace(/\D/g,"").slice(0,11);});
+ $("bookingCopy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("bookingResultLink").value);toast("تم نسخ رابط متابعة الحجز.");}catch{toast("انسخ الرابط يدوياً.");}});
  $("bookingTrackClose").addEventListener("click",()=>$("bookingTracking").hidden=true);
- $("bookingTracking").addEventListener("click",e=>{if(e.target===$("bookingTracking"))$("bookingTracking").hidden=true});
  window.addEventListener("hashchange",hashTrack);
  hashTrack();
  if(new URLSearchParams(location.search).get("booking")==="1")openBooking();
- return {openBooking};
+ return {
+   openBooking,
+   isSelecting:()=>selecting,
+   isSelected:id=>chosen.has(id),
+   handleSiteSelection:id=>{if(!selecting)return false;addOrRemove(id);return true;},
+   refreshSelection:()=>{if(!modal.hidden||selecting)renderSelection();}
+ };
 }
+
+
 export function setupAdminBookings({db,getState,toast}){
  const table=$("dashBookingRows"),count=$("dashBookingCount");
  if(!table)return;
- let bookings=[];
+ let bookings=[],loading=false;
+ const labels={pending:"بانتظار المراجعة",approved:"موافق عليه",rejected:"مرفوض",completed:"مكتمل"};
+ const money=v=>"$"+Number(v).toLocaleString("en-US");
  async function load(){
-  if(!getState().staff||!db)return;
-  count.textContent="جاري تحميل الطلبات…";
-  const {data,error}=await db.from("booking_requests").select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,status,created_at,tracking_token").order("created_at",{ascending:false}).limit(150);
-  if(error){count.textContent="تعذر تحميل الحجوزات: "+error.message;return}
-  bookings=data||[];
-  const pending=bookings.filter(b=>b.status==="pending").length;
-  $("dashBookingBadge").textContent=pending?String(pending):"";
-  count.textContent=bookings.length+" طلب • "+pending+" بانتظار المراجعة";
-  table.innerHTML=bookings.length?bookings.map(b=>
-   '<tr><td><strong>RF-'+safe(b.id.replace(/-/g,"").slice(0,8).toUpperCase())+'</strong><small>'+new Date(b.created_at).toLocaleString("ar-IQ")+'</small></td>'+
-   '<td>'+safe(b.customer_name)+'<small dir="ltr">'+safe(b.phone)+'</small></td>'+
-   '<td>'+safe(b.company_name)+'<small>'+safe(b.governorate)+' / '+safe(b.city)+'</small></td>'+
-   '<td>'+safe(b.site_code||"غير محددة")+' • '+safe(b.category)+'<small>'+safe(b.duration_months||"كشف موقع")+' أشهر • '+(b.quoted_price_usd?"$"+safe(b.quoted_price_usd):"بعد الكشف")+'</small></td>'+
-   '<td>'+safe(({pending:"بانتظار المراجعة",approved:"موافق عليه",rejected:"مرفوض",completed:"مكتمل"})[b.status])+'</td>'+
-   '<td><select class="input" data-booking-status="'+safe(b.id)+'"><option value="pending" '+(b.status==="pending"?"selected":"")+'>بانتظار المراجعة</option><option value="approved" '+(b.status==="approved"?"selected":"")+'>موافقة</option><option value="rejected" '+(b.status==="rejected"?"selected":"")+'>رفض</option><option value="completed" '+(b.status==="completed"?"selected":"")+'>مكتمل</option></select>'+
-   '<button type="button" data-booking-link="'+safe(b.tracking_token)+'">رابط الزبون</button></td></tr>').join(""):'<tr><td colspan="6">لا توجد طلبات حجز بعد.</td></tr>';
-  table.querySelectorAll("[data-booking-status]").forEach(select=>select.addEventListener("change",async()=>{
-   const row=bookings.find(b=>b.id===select.dataset.bookingStatus);
-   if(!row||!confirm("تأكيد تغيير حالة الطلب؟")){select.value=row?.status||"pending";return}
-   const {error}=await db.from("booking_requests").update({status:select.value,updated_at:new Date().toISOString()}).eq("id",row.id);
-   if(error){toast("تعذر تحديث الحالة: "+error.message);select.value=row.status;return}
-   await load();toast("تم تحديث حالة الحجز.");
-  }));
-  table.querySelectorAll("[data-booking-link]").forEach(btn=>btn.addEventListener("click",async()=>{
-   const url=location.origin+location.pathname+"#booking="+btn.dataset.bookingLink;
-   try{await navigator.clipboard.writeText(url);toast("تم نسخ رابط الحجز.");}catch{prompt("رابط الحجز",url)}
-  }));
+  if(!getState().staff||!db||loading)return;
+  loading=true;
+  count.textContent="جاري تحميل طلبات الحجز…";
+  try{
+   const {data,error}=await db.from("booking_requests")
+    .select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,status,created_at,tracking_token,booking_request_sites(site_id,site_code,site_name,governorate,city,unit_price_usd)")
+    .order("created_at",{ascending:false}).limit(150);
+   if(error)throw error;
+   bookings=data||[];
+   const pending=bookings.filter(b=>b.status==="pending").length;
+   $("dashBookingBadge").textContent=pending?String(pending):"";
+   count.textContent=bookings.length+" طلب • "+pending+" بانتظار المراجعة";
+   table.innerHTML=bookings.length?bookings.map(b=>{
+    const requested=b.booking_request_sites||[];
+    const chips=requested.map(s=>
+      '<span class="booking-admin-site">'+safe(s.site_code)+'<small>'+safe(s.governorate)+' / '+safe(s.city)+'</small></span>').join("");
+    const countText=requested.length?requested.length+" قطع مختارة":"طلب عام / بدون قطع";
+    return '<tr><td><strong>RF-'+safe(b.id.replace(/-/g,"").slice(0,8).toUpperCase())+'</strong><small>'+new Date(b.created_at).toLocaleString("ar-IQ")+'</small></td>'+
+     '<td>'+safe(b.customer_name)+'<small dir="ltr">'+safe(b.phone)+'</small></td>'+
+     '<td>'+safe(b.company_name)+'<small>'+safe(b.governorate)+' / '+safe(b.city)+'</small></td>'+
+     '<td><strong>فئة '+safe(b.category)+'</strong> • '+safe(b.duration_months||"كشف موقع")+' أشهر'+
+     '<div class="booking-admin-sites">'+(chips||'<span class="booking-admin-site">'+safe(b.site_code||"بدون قطعة محددة")+'</span>')+'</div>'+
+     '<small>'+countText+'</small><div class="booking-admin-total">'+(b.quoted_price_usd?money(b.quoted_price_usd):"بعد الكشف")+'</div>'+
+     requested.map(s=>s.site_id?'<a class="booking-admin-map-link" href="'+safe(location.origin+location.pathname+'#site='+encodeURIComponent(s.site_id))+'" target="_blank" rel="noopener noreferrer">⌖ '+safe(s.site_code)+'</a>':"").join(" ")+
+     '</td>'+
+     '<td>'+safe(labels[b.status]||b.status)+'</td>'+
+     '<td><select class="input" data-booking-status="'+safe(b.id)+'">'+
+     Object.entries(labels).map(([key,label])=>'<option value="'+key+'" '+(b.status===key?"selected":"")+'>'+label+'</option>').join("")+
+     '</select><button type="button" data-booking-link="'+safe(b.tracking_token)+'">نسخ رابط الزبون</button></td></tr>';
+   }).join(""):'<tr><td colspan="6">لا توجد طلبات حجز حتى الآن.</td></tr>';
+   table.querySelectorAll("[data-booking-status]").forEach(select=>select.addEventListener("change",async()=>{
+    const booking=bookings.find(b=>b.id===select.dataset.bookingStatus);
+    if(!booking||!confirm("هل تريد تغيير حالة الطلب إلى "+labels[select.value]+"؟")){select.value=booking?.status||"pending";return;}
+    select.disabled=true;
+    const {error}=await db.from("booking_requests").update({status:select.value,updated_at:new Date().toISOString()}).eq("id",booking.id);
+    if(error){toast("لم يتم اعتماد التغيير: "+error.message);select.disabled=false;select.value=booking.status;return;}
+    toast("تم تحديث الحجز والقطع المرتبطة به.");
+    await load();
+   }));
+   table.querySelectorAll("[data-booking-link]").forEach(btn=>btn.addEventListener("click",async()=>{
+    const url=location.origin+location.pathname+"#booking="+btn.dataset.bookingLink;
+    try{await navigator.clipboard.writeText(url);toast("تم نسخ رابط متابعة الزبون.");}
+    catch{prompt("رابط المتابعة",url);}
+   }));
+  }catch(err){count.textContent="تعذر تحميل الطلبات: "+(err.message||"حدث خطأ");}
+  finally{loading=false;}
  }
  document.addEventListener("raafat:bookings-tab",()=>void load());
- setInterval(()=>{if(getState().staff&&!$("adminDashboard").hidden)void load()},60000);
+ setInterval(()=>{if(getState().staff&&!$("adminDashboard").hidden)void load();},60000);
  $("dashBookingRefresh").addEventListener("click",()=>void load());
  return {load};
 }
