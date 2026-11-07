@@ -3670,3 +3670,160 @@ body .map-area #mapHome.raafat-gps-locate.is-realtime::after{
 @media(prefers-reduced-motion:reduce){
  .raafat-route-realtime[data-state="live"] .raafat-live-dot{animation:none}
 }
+
+
+/* Mobile map layout v3 — mutually exclusive screen zones.
+   Keep desktop geometry and data untouched; place utility icons without stacking. */
+@media(max-width:850px){
+ .map-area{position:relative!important;isolation:isolate}
+ /* Top right: current area / count; its own lane above the color legend. */
+ .map-area .map-chip{
+   position:absolute!important;top:9px!important;right:9px!important;left:auto!important;
+   width:auto!important;max-width:min(48%,185px)!important;
+   min-height:34px!important;box-sizing:border-box!important;
+   padding:7px 9px!important;gap:5px!important;
+   border-radius:10px!important;
+   font-size:10px!important;line-height:1.3!important;
+   z-index:580!important;
+ }
+ .map-area .map-chip .map-region-label{
+   max-width:65px!important;overflow:hidden!important;
+   white-space:nowrap!important;text-overflow:ellipsis!important;
+ }
+ /* Legend is below the area badge. Hide the redundant region coverage action. */
+ .map-area .vip-map-actions{
+   position:absolute!important;top:52px!important;right:9px!important;
+   left:auto!important;bottom:auto!important;
+   display:flex!important;flex-direction:row!important;
+   align-items:flex-start!important;justify-content:flex-start!important;
+   width:auto!important;max-width:calc(100% - 18px)!important;
+   gap:0!important;margin:0!important;
+   z-index:575!important;
+ }
+ .map-area .vip-map-actions #vipCoverage{display:none!important}
+ .map-area .vip-map-actions #vipLegendToggle{
+   width:auto!important;min-height:34px!important;
+   padding:7px 10px!important;font-size:10px!important;
+   line-height:1.25!important;border-radius:10px!important;
+ }
+ .map-area .vip-legend{
+   position:absolute!important;top:calc(100% + 7px)!important;bottom:auto!important;
+   right:0!important;left:auto!important;
+   width:min(210px,calc(100vw - 32px))!important;max-width:calc(100vw - 32px)!important;
+   max-height:min(275px,45svh)!important;
+   overflow-y:auto!important;overscroll-behavior:contain;
+ }
+ /* The direction toggle gets the opposite TOP corner: not another bottom icon. */
+ .map-area #mapNavigationToggle.raafat-route-fab:not(.is-active){
+   top:9px!important;left:9px!important;right:auto!important;bottom:auto!important;
+   width:40px!important;height:40px!important;min-width:40px!important;
+   z-index:1165!important;
+ }
+ /* The X remains at top right when navigating; route panel stays to its left. */
+ .map-area #mapNavigationToggle.raafat-route-fab.is-active{
+   top:9px!important;right:9px!important;left:auto!important;bottom:auto!important;
+   width:40px!important;height:40px!important;min-width:40px!important;
+   z-index:1165!important;
+ }
+ .map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+   top:9px!important;left:9px!important;right:auto!important;bottom:auto!important;
+   width:min(285px,calc(100% - 70px))!important;
+   max-width:calc(100% - 70px)!important;
+ }
+ /* The selected billboard card uses one row at the bottom, with reserved space above. */
+ .map-area .map-site-cta:not([hidden]){
+   box-sizing:border-box!important;
+   left:50%!important;right:auto!important;bottom:9px!important;
+   transform:translateX(-50%)!important;
+   width:calc(100% - 18px)!important;max-width:none!important;
+   height:56px!important;min-height:56px!important;max-height:56px!important;
+   padding:8px 10px!important;gap:8px!important;
+   overflow:hidden!important;border-radius:12px!important;
+ }
+ .map-area .map-site-cta .map-site-eyebrow{
+   display:none!important;
+ }
+ .map-area .map-site-cta .map-site-identity{flex:1;min-width:0}
+ .map-area .map-site-cta .map-site-identity strong{
+   display:block!important;font-size:11px!important;
+   max-width:100%!important;white-space:nowrap!important;
+   overflow:hidden!important;text-overflow:ellipsis!important;
+ }
+ .map-area .map-site-cta .map-site-buttons button{
+   min-height:35px!important;padding:7px 10px!important;
+   font-size:10px!important;white-space:nowrap!important;
+ }
+ /* Bottom pair: GPS on LEFT and zoom on RIGHT, never on the CTA. */
+ body .map-area #mapHome.raafat-gps-locate{
+   position:absolute!important;left:10px!important;right:auto!important;
+   top:auto!important;bottom:11px!important;
+   width:42px!important;height:42px!important;min-width:42px!important;
+   z-index:1100!important;border-radius:12px!important;
+ }
+ .map-area .leaflet-bottom.leaflet-right{
+   bottom:11px!important;right:10px!important;
+   left:auto!important;z-index:1050!important;
+ }
+ .map-area .leaflet-control-zoom{
+   margin:0!important;border-radius:11px!important;
+ }
+ /* Reserve a separate lower lane whenever a selected piece card is visible. */
+ .map-area:has(.map-site-cta:not([hidden])) #mapHome.raafat-gps-locate{
+   bottom:82px!important;
+ }
+ .map-area:has(.map-site-cta:not([hidden])) .leaflet-bottom.leaflet-right{
+   bottom:82px!important;
+ }
+ /* Navigation hides the card; bottom controls return to the normal lane. */
+ .map-area.is-navigating #mapHome.raafat-gps-locate{
+   bottom:11px!important;left:10px!important;display:grid!important;
+ }
+ .map-area.is-navigating .leaflet-bottom.leaflet-right{
+   bottom:11px!important;right:10px!important;
+ }
+ /* GPS feedback never covers the buttons or the selected-site card. */
+ body .map-area .raafat-location-announcer:not([hidden]){
+   left:61px!important;right:auto!important;
+   bottom:15px!important;top:auto!important;
+   max-width:min(190px,calc(100% - 128px))!important;
+   max-height:60px!important;overflow:hidden!important;
+   font-size:9px!important;
+ }
+ body .map-area:has(.map-site-cta:not([hidden])) .raafat-location-announcer:not([hidden]){
+   bottom:91px!important;
+ }
+ body .map-area.is-navigating .raafat-location-announcer:not([hidden]){
+   bottom:15px!important;
+ }
+ /* Avoid Leaflet attribution taking the same space as the GPS controls. */
+ .map-area .leaflet-control-attribution{
+   max-width:55vw!important;font-size:8px!important;
+ }
+}
+@media(max-width:390px){
+ .map-area .map-chip{max-width:48%!important;font-size:9px!important}
+ .map-area .vip-map-actions{top:50px!important}
+ .map-area .map-site-cta .map-site-buttons button{padding:6px 8px!important}
+ .map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+   width:calc(100% - 69px)!important;
+ }
+}
+
+
+/* On narrow screens city-name beacons should not cover actual billboard pieces.
+   City names still appear at regional zoom; at street zoom the billboard pin wins. */
+@media(max-width:850px){
+ .map-area .map:not(.vip-zoom-far):not(.vip-zoom-mid) .vip-district-marker{
+   opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+ }
+ body .map-area .vip-zoom-mid .vip-district-marker .vip-beacon-label{
+   min-width:62px!important;max-width:90px!important;min-height:30px!important;
+   padding:3px 6px!important;border-radius:8px!important;
+ }
+ body .map-area .vip-zoom-mid .vip-district-marker .vip-beacon-label strong{
+   font-size:10px!important;line-height:1.35!important;
+ }
+ body .map-area .vip-zoom-mid .vip-district-marker .vip-beacon-label small{
+   font-size:8px!important;
+ }
+}
