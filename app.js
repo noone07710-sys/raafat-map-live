@@ -776,7 +776,7 @@ async function renderDetail(){
  const requestId=state.selected;
  const site=state.sites.find(s=>s.id===requestId);
  if(!site){
-   el("siteDetails").innerHTML='<div class="empty detail-empty"><span class="empty-icon">⌖</span>اختر قطعة لعرض تفاصيلها.</div>';
+   el("siteDetails").innerHTML='<div class="empty detail-empty"><span class="empty-icon" aria-hidden="true"><svg class="raafat-target-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1.75v4M12 18.25v4M1.75 12h4M18.25 12h4"/></svg></span>اختر قطعة لعرض تفاصيلها.</div>';
    return;
  }
  const phone=String(state.siteSettings?.whatsapp_number||config.whatsappNumber||"").replace(/\D/g,"");
