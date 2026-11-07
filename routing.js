@@ -56,7 +56,9 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
  let routePoints=[],routeManeuvers=[],routeOffsets=[],totalRouteMeters=0,routeSeconds=0,lastPoint=null,lastBearing=0;
  let arrowMarker=null,following=true,offRouteSince=0,arrivalShown=false,arrivalFixCount=0,manualOrigin=false,routeMode="auto";
  let lastFixTime=0,lastArrivalFixTime=0,lastAccuracy=Infinity,sideOfStreet=null,signalWatchdog=null;
+ // GPS horizontal accuracy is an estimate, not a lane-level guarantee.
  const MAX_GUIDANCE_ACCURACY=30;
+ const MAX_PREVIEW_ACCURACY=150;
  const meters=(a,b)=>map.distance(a,b);
  const bearing=(a,b)=>{
    const lat1=a[0]*Math.PI/180,lat2=b[0]*Math.PI/180,delta=(b[1]-a[1])*Math.PI/180;
@@ -116,8 +118,8 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
      return;
    }
    if(!goodAccuracy||accuracy>MAX_GUIDANCE_ACCURACY||snap.distance>Math.max(22,accuracy*1.5)){
-     $("raafatRouteNext").textContent="التوجيه متوقف — الموقع غير مؤكد";
-     if(!abort)setStatus("تأكد من GPS في مكان مفتوح");
+     $("raafatRouteNext").textContent="المسار ظاهر — بانتظار موقع أدق";
+     if(!abort)setStatus("دقة موقعك ±"+Math.round(accuracy)+" م • الانعطافات تحتاج GPS أدق");
      $("raafatRouteRemaining").textContent=roadKm(routeDistance/1000);
    }else{
      if(!abort)setStatus("");
@@ -159,14 +161,19 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
    }
  }
  function updateGPS(point,accuracy=Infinity,heading=null,timestamp=Date.now()){
-   if(!activeSite||!goodCoord(point))return;
+   if(!activeSite||!goodCoord(point)||manualOrigin)return;
    const age=Date.now()-timestamp;
-   if(!Number.isFinite(age)||age>10000||age< -5000)return;
-   lastFixTime=timestamp;lastAccuracy=accuracy;
-   if(!Number.isFinite(accuracy)||accuracy>80){
-     $("raafatRouteNext").textContent="إشارة GPS ضعيفة — التوجيه متوقف";
-     setStatus("انتظر إشارة موقع أدق");
+   if(!Number.isFinite(age)||age>10000||age < -5000)return;
+   lastFixTime=timestamp;
+   lastAccuracy=accuracy;
+   if(!Number.isFinite(accuracy)||accuracy>MAX_PREVIEW_ACCURACY){
+     $("raafatRouteNext").textContent="حدد نقطة البداية أو فعّل GPS دقيقاً";
+     $("raafatRouteRemaining").textContent="—";
+     const estimate=Number.isFinite(accuracy)?" (±"+Math.round(accuracy)+" م)":"";
+     setStatus("إحداثيات الجهاز غير دقيقة"+estimate+" • مسار المعاينة متاح");
+     $("raafatRouteChooseStart").hidden=false;
      if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
+     // Keep an existing road route if present, but never issue a turn from this fix.
      return;
    }
    const old=lastPoint;lastPoint=point.slice();lastFix=point.slice();
@@ -175,9 +182,9 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
    }
    if(accuracy<=MAX_GUIDANCE_ACCURACY)drawArrow(point,heading);
    else if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
-   $("raafatRouteGpsAccuracy").textContent="GPS ±"+Math.round(accuracy)+" م • يتحدث تلقائياً";
-   if(following&&watchId!==null&&!choosing){
-     if(meters(point,map.getCenter())>16)map.panTo(point,{animate:false});
+   $("raafatRouteGpsAccuracy").textContent="GPS ±"+Math.round(accuracy)+" م";
+   if(following&&watchId!==null&&!choosing&&accuracy<=MAX_GUIDANCE_ACCURACY){
+     if(meters(point,map.getCenter())>26)map.panTo(point,{animate:false});
    }
    updateProgress(point,accuracy);
  }
@@ -203,8 +210,8 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
    signalWatchdog=setInterval(()=>{
      if(!activeSite||manualOrigin)return;
      if(!lastFixTime||Date.now()-lastFixTime>12000){
-       $("raafatRouteNext").textContent="GPS غير محدّث — التوجيه متوقف";
-       setStatus("توقف بمكان آمن وتحقق من إشارة الموقع");
+       $("raafatRouteNext").textContent="بانتظار تحديث GPS";
+       setStatus("آخر موقع قديم — لا تعتمد على تعليمات الانعطاف");
        if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
      }
    },3000);
@@ -213,6 +220,9 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
   cleanRoute();stopWatch();stopWatchdog();if(arrowMarker&&map.hasLayer(arrowMarker))map.removeLayer(arrowMarker);arrowMarker=null;activeSite=null;starting=null;lastFix=null;lastPoint=null;choosing=false;following=true;offRouteSince=0;arrivalFixCount=0;arrivalShown=false;manualOrigin=false;
   panel.hidden=true;navMapArea?.classList.remove("is-navigating");document.body.classList.remove("raafat-is-navigating");$("raafatRouteChooseStart").hidden=true;
   lastAccuracy=Infinity;lastFixTime=0;lastArrivalFixTime=0;
+  $("raafatRouteNext").textContent="";$("raafatRouteRemaining").textContent="—";setStatus("");
+  // Update the arrow/X immediately, independent of the routing request.
+  onChange();
   window.setTimeout(()=>map.invalidateSize({pan:false}),100);
  }
  function setOrigin(point){
@@ -233,8 +243,10 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
    if(!goodCoord(point))return;
    const accuracy=Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:50;
    updateGPS(point,accuracy,pos.coords.heading,pos.timestamp);
-   if(!lastRequested&&!abort&&accuracy<=MAX_GUIDANCE_ACCURACY&&Date.now()-pos.timestamp<=10000)void planRoute(point);
+   // Route preview can start with coarser GPS, while turn instructions stay gated at 30 m.
+   if(!lastRequested&&!abort&&accuracy<=MAX_PREVIEW_ACCURACY&&Date.now()-pos.timestamp<=10000)void planRoute(point);
   },err=>{
+   if(!activeSite||manualOrigin)return;
    setStatus("تعذر تحديد GPS؛ حدد بداية الطريق يدوياً.");$("raafatRouteChooseStart").hidden=false;
    stopWatch();
   },{enableHighAccuracy:true,maximumAge:0,timeout:20000});
@@ -290,7 +302,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
      setStatus("الطريق تقريبي — لا تستخدمه كتوجيه حي قبل تحديد موقعك");
    }else{
      $("raafatRouteNext").textContent="جاري تحديد الانعطاف القادم…";
-     if(lastFix&&lastAccuracy<=MAX_GUIDANCE_ACCURACY)updateProgress(lastFix,lastAccuracy);
+     if(lastFix&&lastAccuracy<=MAX_PREVIEW_ACCURACY)updateProgress(lastFix,lastAccuracy);
    }
   }catch(err){
    if(index!==requestId||!activeSite)return;
