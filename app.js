@@ -483,10 +483,16 @@ function initializeMap(){
    }
  });
  window.addEventListener("pagehide",stopLiveLocationTracking,{once:true});
- el("mapSiteDirections").addEventListener("click",()=>{
+ el("mapNavigationToggle").addEventListener("click",()=>{
+   if(navigationController?.isActive()){
+     navigationController.clear();
+     return;
+   }
    const site=state.sites.find(s=>s.id===state.selected);
-   if(site)navigationController?.start(site);
+   if(site&&canNavigateToSite(site))navigationController?.start(site);
  });
+ window.L.DomEvent.disableClickPropagation(el("mapNavigationToggle"));
+ window.L.DomEvent.disableScrollPropagation(el("mapNavigationToggle"));
  el("mapSiteDetails").addEventListener("click",()=>{
    el("siteDetails").scrollIntoView({behavior:"smooth",block:"nearest"});
  });
@@ -689,7 +695,19 @@ function updateVipDirectLink(){
  }
 }
 
+function updateNavigationToggle(){
+ const toggle=el("mapNavigationToggle");
+ if(!toggle)return;
+ const site=state.sites.find(s=>s.id===state.selected);
+ const active=Boolean(navigationController?.isActive());
+ toggle.hidden=!active&&!canNavigateToSite(site);
+ toggle.classList.toggle("is-active",active);
+ toggle.setAttribute("aria-pressed",String(active));
+ toggle.setAttribute("aria-label",active?"إلغاء الاتجاهات":"ابدأ الاتجاهات إلى القطعة");
+ toggle.title=active?"إلغاء الاتجاهات":"الاتجاهات إلى القطعة";
+}
 function updateMapSiteCTA(){
+ updateNavigationToggle();
  const card=el("mapSiteCTA");
  const site=state.sites.find(s=>s.id===state.selected);
  if(!site){card.hidden=true;updateVipDirectLink();return;}
@@ -698,7 +716,6 @@ function updateMapSiteCTA(){
  label.textContent="• "+(statuses[site.status]||site.status);
  label.className="vip-site-state "+(statuses[site.status]?site.status:"available");
  el("mapSiteTitle").textContent=site.code+" · "+site.name;
- el("mapSiteDirections").setAttribute("aria-label","فتح الملاحة داخل الموقع إلى "+site.name);
  card.hidden=false;
  updateVipDirectLink();
 }
@@ -1287,7 +1304,8 @@ async function main(){
        map:state.map,
        getSite:()=>state.sites.find(s=>s.id===state.selected),
        getLocation:()=>state.lastLocation,
-       toast
+       toast,
+       onChange:updateNavigationToggle
      });
    }catch(error){
      console.error("Raafat navigation startup failed:",error);
