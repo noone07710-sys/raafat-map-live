@@ -3604,3 +3604,69 @@ body .map-area .raafat-location-announcer:not([hidden]){
  body .map-area:not(:has(.map-site-cta:not([hidden]))) .raafat-location-announcer:not([hidden]){bottom:16px}
  body .map-area.is-navigating .raafat-location-announcer:not([hidden]){bottom:16px}
 }
+
+
+/* Realtime GPS indicator: show LIVE only for a fresh browser position update */
+.raafat-route-compact .raafat-route-realtime{
+ display:inline-flex!important;align-items:center!important;align-self:flex-start;
+ gap:6px;max-width:100%;padding:4px 8px;margin-bottom:2px;
+ border-radius:8px;border:1px solid rgba(165,194,189,.23);
+ background:rgba(99,119,121,.17);color:#b9d3d1;
+ font:800 10px/1.5 Arial,"IBM Plex Sans Arabic",sans-serif;
+ direction:ltr;white-space:nowrap;letter-spacing:.1px;
+}
+.raafat-route-realtime .raafat-live-dot{
+ display:inline-block;width:7px;height:7px;min-width:7px;
+ border-radius:50%;background:#9baeb0;
+}
+.raafat-route-realtime[data-state="live"]{
+ background:rgba(27,123,87,.23);
+ border-color:rgba(77,230,152,.38);color:#8ff3bd;
+}
+.raafat-route-realtime[data-state="live"] .raafat-live-dot{
+ background:#50e994;box-shadow:0 0 0 3px rgba(70,226,140,.14);
+ animation:raafat-realtime-pulse 1.65s ease-in-out infinite;
+}
+.raafat-route-realtime[data-state="approx"]{
+ color:#f2d29c;background:rgba(160,116,45,.18);
+ border-color:rgba(228,189,120,.35);
+}
+.raafat-route-realtime[data-state="approx"] .raafat-live-dot{background:#efc06a}
+.raafat-route-realtime[data-state="error"],
+.raafat-route-realtime[data-state="stale"],
+.raafat-route-realtime[data-state="weak"]{
+ color:#f1b5a9;border-color:rgba(228,146,129,.23);
+}
+.raafat-route-realtime[data-state="error"] .raafat-live-dot,
+.raafat-route-realtime[data-state="stale"] .raafat-live-dot,
+.raafat-route-realtime[data-state="weak"] .raafat-live-dot{background:#dc9084}
+.raafat-route-realtime[data-state="manual"]{color:#e2ca9a}
+@keyframes raafat-realtime-pulse{
+ 0%,100%{box-shadow:0 0 0 2px rgba(76,223,143,.13)}
+ 50%{box-shadow:0 0 0 5px rgba(76,223,143,.03)}
+}
+/* Do not render directional heading when GPS can only locate the user. */
+.raafat-route-direction-icon .raafat-navigation-location-dot{
+ box-sizing:border-box;
+ display:block;width:23px;height:23px;margin:10px auto;
+ border-radius:50%;background:#32c3ff;border:3px solid #fff;
+ box-shadow:0 2px 12px rgba(0,0,0,.58),0 0 0 7px rgba(46,192,249,.15);
+}
+/* Live indicator on the sole bottom-location control. */
+body .map-area #mapHome.raafat-gps-locate.is-realtime::after{
+ content:"REALTIME";position:absolute;top:-12px;right:-7px;
+ display:block;padding:3px 5px;border-radius:6px;
+ background:#17694c;color:#d1ffe4;
+ border:1px solid rgba(114,243,170,.45);
+ box-shadow:0 2px 8px rgba(0,0,0,.2);
+ font:800 8px/1 Arial,sans-serif;letter-spacing:.25px;
+ pointer-events:none;white-space:nowrap;
+}
+@media(max-width:520px){
+ .raafat-route-compact .raafat-route-realtime{
+   padding:3px 6px;font-size:9px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .raafat-route-realtime[data-state="live"] .raafat-live-dot{animation:none}
+}
