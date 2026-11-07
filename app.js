@@ -323,7 +323,10 @@ function updateLiveLocationUI(message=""){
    button.setAttribute("aria-label",button.title);
  }
  const status=el("locationStatus");
- if(status)status.textContent=message;
+ if(status){
+   status.textContent=message;
+   status.hidden=!message||!/(جاري|بانتظار|تعذّر|مرفوض|غير دقيقة|ضعيفة|ننتظر|إشارة)/.test(message);
+ }
 }
 function stopLiveLocationTracking(){
  state.locationGeneration++;
