@@ -314,17 +314,16 @@ async function installRaafatPremiumMap(){
  */
 function updateLiveLocationUI(message=""){
  const tracking=state.locationWatchId!==null;
- const follow=tracking&&state.followLocation;
- const button=el("locateMe");
- button.classList.toggle("is-tracking",tracking);
- button.classList.toggle("is-following",follow);
- button.setAttribute("aria-pressed",String(tracking));
- button.title=tracking?(follow?"تتبع موقعي بشكل مباشر":"إعادة توسيط الخريطة على موقعي"):"عرض موقعي على الخريطة";
- el("locationButtonText").textContent=tracking?(follow?"جارٍ تتبع موقعي":"توسيط موقعي"):"موقعي الحالي";
- el("stopLocation").hidden=!tracking;
+ const button=el("mapHome");
+ if(button){
+   button.classList.toggle("is-tracking",tracking);
+   button.classList.toggle("is-following",tracking&&state.followLocation);
+   button.setAttribute("aria-pressed",String(tracking));
+   button.title=tracking?"توسيط موقعي — GPS نشط":"تحديد موقعي على الخارطة";
+   button.setAttribute("aria-label",button.title);
+ }
  const status=el("locationStatus");
- status.textContent=message;
- status.hidden=!message;
+ if(status)status.textContent=message;
 }
 function stopLiveLocationTracking(){
  state.locationGeneration++;
@@ -368,7 +367,13 @@ function startLiveLocationTracking(){
    if(!validCoords(lat,lng))return;
    const point=[lat,lng];
    const firstFix=!state.gpsMarker;
-   const accuracy=Number.isFinite(coords.accuracy)?Math.max(5,coords.accuracy):100;
+   const age=Date.now()-Number(position.timestamp);
+   if(!Number.isFinite(age)||age>15000||age < -5000){updateLiveLocationUI("ننتظر قراءة GPS حديثة");return;}
+   const accuracy=Number.isFinite(coords.accuracy)?Math.max(1,coords.accuracy):Infinity;
+   if(!Number.isFinite(accuracy)||accuracy>500){
+     updateLiveLocationUI("إشارة الموقع غير دقيقة — انتقل لمكان مفتوح");
+     return;
+   }
    if(firstFix){
      state.gpsAccuracy=window.L.circle(point,{
        radius:Math.min(accuracy,15000),color:"#69d8ff",weight:1,
@@ -405,6 +410,7 @@ function startLiveLocationTracking(){
       error.code===2?"تعذّر تحديد الموقع. تأكد من تشغيل GPS.":"ننتظر إشارة الموقع من الجهاز…";
    if(error.code===1)stopLiveLocationTracking();
    updateLiveLocationUI(message);
+   toast(message);
  };
  try{
    state.locationWatchId=navigator.geolocation.watchPosition(onPosition,onError,{
@@ -469,12 +475,12 @@ function initializeMap(){
    if(bookingController?.isSelecting()||navigationController?.isActive())return;
    clearSelectedSite();
  });
- el("mapHome").addEventListener("click",()=>zoomAll(true));
- // Consent is requested only by the location button, never during page load.
- window.L.DomEvent.disableClickPropagation(el("liveLocationControl"));
- window.L.DomEvent.disableScrollPropagation(el("liveLocationControl"));
- el("locateMe").addEventListener("click",startLiveLocationTracking);
- el("stopLocation").addEventListener("click",stopLiveLocationTracking);
+ // The only visible GPS control is the bottom crosshair.
+ window.L.DomEvent.disableClickPropagation(el("mapHome"));
+ el("mapHome").addEventListener("click",()=>{
+   if(navigationController?.isActive())navigationController.recenter();
+   else startLiveLocationTracking();
+ });
  state.map.on("mousedown touchstart",()=>{if(state.locationWatchId!==null)state.followLocation=false;});
  state.map.on("dragstart",()=>{
    if(state.locationWatchId!==null){
