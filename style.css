@@ -3325,57 +3325,141 @@ body:not(.booking-open):not(.dashboard-open){overflow-x:hidden!important;overflo
  .vip-site-detail .vip-site-hero.has-photo{height:185px!important;min-height:185px!important}
 }
 
-
-/* Navigation is a map-first mode, not the billboard browsing dashboard. */
-@media(min-width:851px){
- .main-layout:has(>.map-area.is-navigating){
-  grid-template-columns:minmax(0,1fr)!important;
- }
- .main-layout:has(>.map-area.is-navigating)>.panel{
-  display:none!important;
- }
- .main-layout:has(>.map-area.is-navigating)>.map-area{
-  grid-column:1!important;grid-row:1!important;
-  width:100%!important;min-width:0!important;
-  height:calc(100dvh - 84px)!important;
- }
+/* Map controls — compact, deliberate placement on laptop and mobile.
+   Navigation NEVER changes the main grid or hides sidebar panels. */
+.map-area{position:relative;min-width:0}
+.map-area .map-chip{
+ top:12px!important;right:12px!important;left:auto!important;
+ max-width:min(48%,230px);padding:8px 11px!important;
+ font-size:11px!important;border-radius:12px!important;
+ display:flex;align-items:center;gap:7px;
 }
-@media(max-width:850px){
- .main-layout:has(>.map-area.is-navigating)>.panel{
-  display:none!important;
- }
- .main-layout:has(>.map-area.is-navigating)>.map-area{
-  height:calc(100svh - 75px)!important;
-  min-height:390px!important;max-height:none!important;
- }
+.map-area .map-chip .map-region-label{max-width:100px;overflow:hidden;text-overflow:ellipsis}
+body .map-area .live-location-control{
+ left:12px!important;top:12px!important;
+ width:146px!important;max-width:146px!important;
 }
-.map-area.is-navigating .raafat-route-panel.raafat-route-compact{
- box-sizing:border-box!important;z-index:1200!important;
+body .map-area .live-location-control .live-location-button{
+ width:146px!important;min-width:0!important;max-width:146px!important;
+ height:38px!important;min-height:38px!important;
+ font-size:11px!important;border-radius:11px!important;
 }
-
-/* Clean navigation mode: hide browsing pins/controls, preserve route and moving GPS arrow */
-body.raafat-is-navigating .map-area .map-site-cta,
-body.raafat-is-navigating .map-area .map-chip,
-body.raafat-is-navigating .map-area .vip-map-actions,
-body.raafat-is-navigating .map-area .live-location-control,
-body.raafat-is-navigating .map-area .map-home,
-body.raafat-is-navigating .map-area .vip-district-beacon,
-body.raafat-is-navigating .map-area .leaflet-tooltip-pane,
-body.raafat-is-navigating .map-area .leaflet-popup-pane,
-body.raafat-is-navigating .map-area .raafat-premium-site-icon,
-body.raafat-is-navigating .map-area .leaflet-marker-pane > :not(.raafat-route-direction-icon){
+body .map-area .live-location-control .live-location-status{
+ width:146px!important;max-width:146px!important;
+ font-size:9px!important;
+}
+.map-area .vip-map-actions{
+ left:12px!important;right:auto!important;bottom:80px!important;
+ display:flex!important;gap:6px!important;max-width:calc(100% - 24px);
+}
+.map-area .vip-map-actions .vip-tool-button{
+ min-height:34px!important;padding:7px 10px!important;
+ font-size:10px!important;border-radius:10px!important;
+ box-shadow:0 4px 12px #0004!important;
+}
+.map-area .map-home{
+ left:12px!important;bottom:13px!important;
+ width:40px!important;height:40px!important;
+ border-radius:11px!important;
+}
+.map-area .map-site-cta:not([hidden]){
+ width:min(465px,calc(100% - 120px))!important;
+ left:50%!important;right:auto!important;
+ bottom:12px!important;transform:translateX(-50%)!important;
+ gap:10px!important;padding:9px 11px!important;
+ min-height:57px!important;border-radius:12px!important;
+}
+.map-area .map-site-cta .map-site-identity{min-width:0;flex:1}
+.map-area .map-site-cta .map-site-identity strong{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.map-area .map-site-cta .map-site-buttons{flex-shrink:0}
+.map-area .leaflet-bottom.leaflet-right{bottom:12px!important}
+.map-area .leaflet-control-zoom{margin:0 12px 0 0!important}
+.map-area .raafat-route-panel.raafat-route-compact{
+ width:min(275px,calc(100% - 28px))!important;
+ top:61px!important;left:12px!important;right:auto!important;
+}
+.map-area.is-navigating .map-site-cta,
+.map-area.is-navigating .map-chip,
+.map-area.is-navigating .vip-map-actions,
+.map-area.is-navigating .map-home,
+.map-area.is-navigating .live-location-control,
+.map-area.is-navigating .leaflet-tooltip-pane,
+.map-area.is-navigating .leaflet-popup-pane,
+.map-area.is-navigating .raafat-premium-site-icon{
  display:none!important;
 }
-body.raafat-is-navigating .main-layout>.panel{display:none!important}
-@media(min-width:851px){
- body.raafat-is-navigating .main-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
- body.raafat-is-navigating .main-layout>.map-area{grid-column:1!important;width:100%!important;height:calc(100dvh - 84px)!important;min-height:480px}
+.map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+ top:12px!important;left:12px!important;
 }
+.map-area.is-navigating .leaflet-control-zoom{opacity:.85}
+
+/* Navigation keeps the original desktop grid and two side panels intact. */
+body.raafat-is-navigating .main-layout>.map-area{
+ grid-column:auto!important;grid-row:auto!important;
+}
+
+/* Tablet/mobile: map stays in normal vertical flow; controls don't cover the road. */
 @media(max-width:850px){
- body.raafat-is-navigating .main-layout>.map-area{height:calc(100svh - 75px)!important;min-height:390px}
+ body.raafat-is-navigating .main-layout,
+ .main-layout:has(>.map-area.is-navigating){
+  display:flex!important;flex-direction:column!important;
+ }
+ .main-layout>.map-area,
+ body.raafat-is-navigating .main-layout>.map-area,
+ .main-layout:has(>.map-area.is-navigating)>.map-area{
+  order:1!important;width:100%!important;
+  height:clamp(390px,62svh,650px)!important;
+  min-height:390px!important;max-height:650px!important;
+  flex:0 0 auto!important;
+ }
+ .main-layout>.panel{display:block!important}
+ body.raafat-is-navigating .main-layout>.panel{display:block!important}
+ .map-area .map-chip{top:8px!important;right:8px!important;font-size:10px!important;max-width:42%;padding:6px 8px!important}
+ body .map-area .live-location-control{left:8px!important;top:8px!important;width:118px!important;max-width:118px!important}
+ body .map-area .live-location-control .live-location-button{width:118px!important;min-height:34px!important;height:34px!important;font-size:10px!important}
+ body .map-area .live-location-control .live-location-status{width:118px!important;max-width:118px!important}
+ .map-area .vip-map-actions{
+   top:53px!important;bottom:auto!important;
+   right:8px!important;left:auto!important;
+ }
+ .map-area .vip-map-actions #vipCoverage{display:none!important}
+ .map-area .vip-map-actions .vip-tool-button{
+   min-height:32px!important;padding:6px 9px!important;font-size:10px!important;
+ }
+ .map-area .vip-legend{
+   bottom:auto!important;top:calc(100% + 8px)!important;
+   right:0!important;left:auto!important;
+   max-height:min(260px,43svh)!important;overflow-y:auto!important;
+ }
+ .map-area .map-site-cta:not([hidden]){
+   width:calc(100% - 18px)!important;
+   bottom:9px!important;left:50%!important;
+   padding:8px 9px!important;min-height:53px!important;
+ }
+ .map-area .map-site-cta .map-site-identity strong{font-size:11px!important}
+ .map-area .map-site-cta .map-site-buttons button{font-size:10px!important;padding:7px 8px!important}
+ .map-area .map-home{left:9px!important;bottom:85px!important;width:36px!important;height:36px!important}
+ .map-area:not(:has(.map-site-cta:not([hidden]))) .map-home{bottom:10px!important}
+ .map-area .leaflet-bottom.leaflet-right{bottom:79px!important}
+ .map-area:not(:has(.map-site-cta:not([hidden]))) .leaflet-bottom.leaflet-right{bottom:9px!important}
+ .map-area .raafat-route-panel.raafat-route-compact{
+   top:87px!important;left:8px!important;width:min(256px,calc(100% - 16px))!important;
+ }
+ .map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+   top:9px!important;left:9px!important;
+ }
+ .map-area.is-navigating .leaflet-bottom.leaflet-right{bottom:9px!important}
 }
-body.raafat-is-navigating .map-area .raafat-route-panel.raafat-route-compact{
- display:block!important;top:16px!important;left:16px!important;
- width:min(290px,calc(100% - 32px))!important;
+@media(max-width:400px){
+ .map-area .map-chip{max-width:45%;font-size:9px!important}
+ .map-area .vip-map-actions .vip-tool-button{font-size:9px!important}
+ .map-area .map-site-cta .map-site-buttons{gap:4px}
 }
-body.raafat-is-navigating .map-area .raafat-route-panel.raafat-route-compact[hidden]{display:none!important}
+
+/* Large laptop screens already have a dedicated site details sidebar:
+   remove the redundant bottom floating site card from the map itself. */
+@media(min-width:1241px){
+ .map-area .map-site-cta:not([hidden]){display:none!important}
+ .map-area .vip-map-actions{bottom:67px!important}
+ .map-area .leaflet-bottom.leaflet-right{bottom:12px!important}
+}
