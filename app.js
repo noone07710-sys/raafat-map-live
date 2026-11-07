@@ -8,7 +8,7 @@ const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") ===
 
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
 const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
-const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","الدجيل","الضلوعية","الإسحاقي","يثرب","طوز خورماتو","آمرلي","سليمان بيك","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]});
+const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]});
 
 const CITY_CENTERS = Object.freeze({
   "تكريت":[34.6158,43.6786],
@@ -807,28 +807,51 @@ async function renderDetail(){
    ["عدد الأوجه",site.faces],["الإنارة",site.lighting?"مضاءة":"غير مضاءة"],
    ["اتجاه مواجهة الإعلان",site.facing||"—"],["الخامة / المادة",site.material||"—"]
  ];
+ const category=packageForSite(site);
+ const dims=format(site.width_m)+" × "+format(site.height_m);
+ const statusText=statuses[site.status]||site.status;
+ const areaText=[site.governorate||"صلاح الدين",site.city,site.area].filter(Boolean).join(" • ");
+ const safeCode=escapeHtml(site.code);
+ const safeName=escapeHtml(site.name);
+ const safeArea=escapeHtml(areaText);
+ const safeType=escapeHtml(types[site.type]||site.type);
+ const photoHero=photosAvailable.length
+   ?'<div class="vip-site-hero-photo">'+mainImage+'</div>'
+   :'<div class="vip-site-hero-fallback"><span>RAAFAT</span><strong>موقع إعلاني مميز</strong><small>صور القطعة تُضاف من لوحة الإدارة</small></div>';
  const html=
-   '<div class="details-pill"><span>تفاصيل الموقع</span><span>'+escapeHtml(site.code)+'</span></div>'+
-   '<div class="detail-photo">'+mainImage+'</div>'+thumbnails+
-   '<div class="vip-detail-facts" aria-label="معلومات القطعة المختصرة">'+
-     '<div><small>القياس</small><strong>'+format(site.width_m)+' × '+format(site.height_m)+' م</strong></div>'+
-     '<div><small>نوع الإعلان</small><strong>'+escapeHtml(types[site.type]||site.type)+'</strong></div>'+
-     '<div><small>عدد الأوجه</small><strong>'+escapeHtml(site.faces||1)+'</strong></div>'+
-   '</div>'+vipOverviewRadar(site)+
-   '<h3 class="detail-name">'+escapeHtml(site.name)+'</h3>'+
-   '<div class="detail-location">⌖ '+escapeHtml(site.governorate||"صلاح الدين")+' / '+escapeHtml(site.city)+(site.area?' / '+escapeHtml(site.area):"")+'</div>'+
-   '<div class="detail-status"><span class="detail-category-tag category-'+packageForSite(site)+'">فئة '+packageForSite(site)+'</span> '+badge(site)+(site.published?'':' <span class="draft">• غير منشور</span>')+'</div>'+
-   '<div class="spec-heading">المواصفات والتفاصيل</div>'+
-   '<div class="detail-table">'+metaRows.map(([label,val])=>'<div class="detail-line"><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
-   (site.description?'<div class="spec-heading">وصف الموقع</div><p class="detail-description">'+escapeHtml(site.description)+'</p>':"")+
-   '<div class="detail-actions"><button class="btn btn-primary" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"?'disabled title="هذه القطعة غير متاحة"':'')+'>✦ احجز الآن • فئة '+packageForSite(site)+'</button><a class="btn btn-ghost" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="بدء الملاحة إلى القطعة المحددة">↗ اتجه إلى القطعة</a>'+
-   (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
-   '<button type="button" class="btn btn-ghost" id="copyInquiry">نسخ بيانات للاستفسار</button>')+
-   '<button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button>'+
-   '<button type="button" class="btn btn-ghost vip-direct-route-button" id="vipDirectRoute" title="خط مستقيم تقريبي وليس مسار قيادة">◌ خط مباشر من موقعي (ليس مساراً)</button></div>'+
-   ''+
-   (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
-   (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"");
+   '<article class="vip-site-detail">'+
+    '<div class="vip-site-hero">'+
+      photoHero+
+      '<div class="vip-site-hero-shade"></div>'+
+      '<div class="vip-site-hero-top"><span class="vip-detail-ref">RAAFAT / '+safeCode+'</span><span class="vip-detail-class category-'+category+'">CLASS '+category+'</span></div>'+
+      '<div class="vip-site-hero-bottom"><span class="vip-hero-caption">موقع إعلاني معتمد</span><h3>'+safeName+'</h3><p>'+safeArea+'</p></div>'+
+    '</div>'+
+    (thumbnails?'<div class="vip-site-gallery">'+thumbnails+'</div>':'')+
+    '<div class="vip-site-overview">'+
+      '<div class="vip-site-status-row"><span class="detail-category-tag category-'+category+'">فئة '+category+'</span>'+badge(site)+(site.published?'':'<span class="draft">غير منشورة</span>')+'</div>'+
+      '<div class="vip-site-intro"><span class="vip-section-eyebrow">ADVERTISING LOCATION</span><h4>'+safeName+'</h4><p>'+safeArea+'</p></div>'+
+      '<div class="vip-site-metric-grid">'+
+        '<div class="vip-site-metric"><small>قياس اللوحة</small><strong dir="ltr">'+dims+' <em>م</em></strong></div>'+
+        '<div class="vip-site-metric"><small>المساحة</small><strong dir="ltr">'+format(site.width_m*site.height_m)+' <em>م²</em></strong></div>'+
+        '<div class="vip-site-metric"><small>عدد الأوجه</small><strong>'+escapeHtml(site.faces||1)+'</strong></div>'+
+        '<div class="vip-site-metric"><small>نوع الإعلان</small><strong>'+safeType+'</strong></div>'+
+      '</div>'+
+      '<div class="vip-site-action-stack">'+
+        '<button class="btn btn-primary vip-site-book-button" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"?'disabled title="هذه القطعة غير متاحة"':'')+'>✦ احجز الموقع الإعلاني <span>←</span></button>'+
+        '<div class="vip-site-action-grid"><a class="btn btn-ghost" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="الاتجاهات إلى هذه القطعة">⌖ الاتجاهات</a>'+
+          (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">◈ الاستفسار واتساب</a>':
+          '<button type="button" class="btn btn-ghost" id="copyInquiry">⧉ نسخ للاستفسار</button>')+'</div>'+
+      '</div>'+
+      '<details class="vip-site-specification"><summary><span><b>المواصفات الكاملة</b><small>العنوان والأبعاد والتجهيزات</small></span><span class="vip-spec-arrow" aria-hidden="true">⌄</span></summary>'+
+        '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
+      '</details>'+
+      (site.description?'<div class="vip-site-description"><span class="vip-section-eyebrow">ABOUT THE LOCATION</span><strong>وصف الموقع</strong><p>'+escapeHtml(site.description)+'</p></div>':"")+
+      '<div class="vip-site-secondary-actions"><button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button>'+
+      '<button type="button" class="btn btn-ghost vip-direct-route-button" id="vipDirectRoute" title="خط مستقيم تقريبي وليس مسار قيادة">◌ خط مباشر من موقعي</button></div>'+
+      (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
+      (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"")+
+    '</div>'+
+   '</article>';
  el("siteDetails").innerHTML=html;
  el("vipDirectRoute")?.addEventListener("click",()=>{
    if(!state.lastLocation){
