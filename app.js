@@ -817,10 +817,10 @@ async function renderDetail(){
  const safeType=escapeHtml(types[site.type]||site.type);
  const photoHero=photosAvailable.length
    ?'<div class="vip-site-hero-photo">'+mainImage+'</div>'
-   :'<div class="vip-site-hero-fallback"><span>RAAFAT</span><strong>موقع إعلاني مميز</strong><small>صور القطعة تُضاف من لوحة الإدارة</small></div>';
+   :'<div class="vip-site-hero-fallback"><img src="./assets/raafat-logo.png" alt="" loading="lazy"><strong>معاينة الموقع الإعلاني</strong><small>لا توجد صورة مرفوعة لهذه القطعة بعد</small></div>';
  const html=
    '<article class="vip-site-detail">'+
-    '<div class="vip-site-hero">'+
+    '<div class="vip-site-hero '+(photosAvailable.length?'has-photo':'no-photo')+'">'+
       photoHero+
       '<div class="vip-site-hero-shade"></div>'+
       '<div class="vip-site-hero-top"><span class="vip-detail-ref">RAAFAT / '+safeCode+'</span><span class="vip-detail-class category-'+category+'">CLASS '+category+'</span></div>'+
@@ -842,7 +842,7 @@ async function renderDetail(){
           (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">◈ الاستفسار واتساب</a>':
           '<button type="button" class="btn btn-ghost" id="copyInquiry">⧉ نسخ للاستفسار</button>')+'</div>'+
       '</div>'+
-      '<details class="vip-site-specification"><summary><span><b>المواصفات الكاملة</b><small>العنوان والأبعاد والتجهيزات</small></span><span class="vip-spec-arrow" aria-hidden="true">⌄</span></summary>'+
+      '<details class="vip-site-specification"><summary><span><b>المواصفات الكاملة</b><small>العنوان والأبعاد والتجهيزات</small></span><span class="vip-spec-arrow" aria-hidden="true"><svg class="vip-spec-chevron-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>'+
         '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
       '</details>'+
       (site.description?'<div class="vip-site-description"><span class="vip-section-eyebrow">ABOUT THE LOCATION</span><strong>وصف الموقع</strong><p>'+escapeHtml(site.description)+'</p></div>':"")+
