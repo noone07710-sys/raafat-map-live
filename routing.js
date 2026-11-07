@@ -96,12 +96,12 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    if(!snap)return;
    $("raafatRouteRemaining").textContent=roadKm(snap.remaining/1000);
    $("raafatRouteDuration").textContent=durationLabel(routeSeconds*Math.min(1,snap.remaining/Math.max(1,totalRouteMeters)));
-   const next=routeManeuvers.find(m=>Number(m.begin_shape_index)>snap.index+1)||routeManeuvers[routeManeuvers.length-1];
+   const next=routeManeuvers.find(m=>Number(m.begin_shape_index)>snap.index+1&&![13,14,15].includes(Number(m.type)));
    if(next){
      $("raafatRouteNext").textContent=instruction(next);
      const stepNode=steps.querySelector('[data-step-index="'+routeManeuvers.indexOf(next)+'"]');
      steps.querySelectorAll(".raafat-route-step").forEach(node=>node.classList.toggle("is-next",node===stepNode));
-   }
+   }else $("raafatRouteNext").textContent="تابع الطريق نحو القطعة";
    if(snap.distance>Math.max(90,2*Math.min(accuracy,60))){
      if(!offRouteSince)offRouteSince=Date.now();
      else if(Date.now()-offRouteSince>10000&&Date.now()-requestTime>45000&&!abort){
@@ -125,7 +125,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
  }
  const endpoint=String(window.RAAFAT_CONFIG?.routingApiUrl||"https://valhalla1.openstreetmap.de").replace(/\/+$/,"");
  const demo=/^https:\/\/valhalla\d?\.openstreetmap\.de$/i.test(endpoint);
- const setStatus=msg=>{status.textContent=msg;};
+ const setStatus=msg=>{status.textContent=msg;status.hidden=!msg;};
  const coordinates=site=>[Number(site.latitude),Number(site.longitude)];
  function cleanRoute(){
   abort?.abort();abort=null;requestId++;
@@ -135,7 +135,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
  function stopWatch(){if(watchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;}
  function clear(){
   cleanRoute();stopWatch();if(arrowMarker&&map.hasLayer(arrowMarker))map.removeLayer(arrowMarker);arrowMarker=null;activeSite=null;starting=null;lastFix=null;lastPoint=null;choosing=false;following=true;offRouteSince=0;manualOrigin=false;
-  panel.hidden=true;$("raafatRouteChooseStart").hidden=false;
+  panel.hidden=true;$("raafatRouteChooseStart").hidden=true;
  }
  function setOrigin(point){
   if(!goodCoord(point))return;
@@ -145,7 +145,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
  }
  function activateGPS(){
   if(!navigator.geolocation||!window.isSecureContext){
-   setStatus("تحديد موقعك يحتاج متصفح HTTPS وإذن الموقع. يمكنك اختيار نقطة البداية من الخارطة.");return;
+   setStatus("تعذر تحديد GPS؛ حدد بداية الطريق يدوياً.");$("raafatRouteChooseStart").hidden=false;return;
   }
   stopWatch();
   setStatus("جاري طلب موقعك… قد يطلب المتصفح إذن الوصول إلى GPS.");
@@ -157,7 +157,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    updateGPS(point,accuracy,pos.coords.heading);
    if(!lastRequested&&!abort){void planRoute(point);}
   },err=>{
-   setStatus(err.code===1?"تم رفض إذن الموقع؛ اختر بداية الطريق يدوياً من الخارطة.":"تعذر تحديد موقعك. حاول من مكان مفتوح أو اختر نقطة البداية يدوياً.");
+   setStatus("تعذر تحديد GPS؛ حدد بداية الطريق يدوياً.");$("raafatRouteChooseStart").hidden=false;
    stopWatch();
   },{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
  }
@@ -195,16 +195,16 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    $("raafatRouteDistance").textContent=roadKm(summary.length||leg.summary?.length||0);
    $("raafatRouteDuration").textContent=durationLabel(summary.time||leg.summary?.time||0);
    $("raafatRouteGpsAccuracy").textContent=watchId===null?"نقطة بداية يدوية":"GPS نشط • الموقع يتحدث";
-   setStatus("تم حساب طريق القيادة. اتبع تعليمات الطريق مع الانتباه للوحات المرورية الفعلية.");
+   setStatus("");$("raafatRouteChooseStart").hidden=true;
    const maneuvers=routeManeuvers;
    steps.innerHTML=maneuvers.slice(0,60).map((m,i)=>
     '<li class="raafat-route-step" data-step-index="'+i+'"><span class="raafat-route-number">'+(i+1)+'</span><span><strong>'+esc(instruction(m))+'</strong><small>'+roadKm(m.length||0)+'</small></span></li>').join("")||'<li>اتبع الطريق المرسوم إلى الموقع المحدد.</li>';
-   $("raafatRouteNext").textContent=instruction(maneuvers[0]||{type:0});
+   $("raafatRouteNext").textContent=instruction(maneuvers.find(m=>![13,14,15].includes(Number(m.type)))||{type:10});
    updateProgress(lastFix||from);
   }catch(err){
    if(index!==requestId||!activeSite)return;
    $("raafatRouteDistance").textContent="—";$("raafatRouteDuration").textContent="—";
-   setStatus(err.name==="AbortError"?"انتهت مهلة خدمة المسارات؛ جرّب مجدداً.":err.message||"تعذر حساب الطريق.");
+   setStatus("تعذر حساب الطريق. يمكنك إعادة المحاولة.");$("raafatRouteChooseStart").hidden=false;
    steps.innerHTML='<li>لم يتم رسم طريق؛ لن نعرض خطاً مستقيماً على أنه مسار قيادة.</li>';
   }finally{clearTimeout(timeout);if(index===requestId)abort=null;}
  }
@@ -214,7 +214,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
   $("raafatRouteDestination").textContent=site.code+" • "+site.name;
   $("raafatRouteDistance").textContent="—";$("raafatRouteDuration").textContent="—";
   steps.innerHTML="";$("raafatRouteRemaining").textContent="—";$("raafatRouteNext").textContent="جاري تحديد البداية…";
-  setStatus("اختر نقطة الانطلاق أو اسمح بالوصول لموقعك لحساب طريق القيادة.");
+  setStatus("جاري تحديد موقعك…");$("raafatRouteChooseStart").hidden=false;
   const gps=getLocation();
   if(goodCoord(gps)){setOrigin(gps);void planRoute(gps);}
   activateGPS();
@@ -223,7 +223,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
   if(!activeSite)return;
   choosing=true;
   stopWatch();
-  setStatus("اضغط على مكان بداية رحلتك فوق الخارطة، وسيتم حساب الطريق منه.");
+  setStatus("اضغط على الخارطة لتحديد البداية.");
   toast("اختر نقطة الانطلاق على الخريطة.");
  }
  function handleMapClick(latlng){
