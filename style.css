@@ -3080,3 +3080,61 @@ select option{direction:rtl;text-align:right;padding:10px;line-height:1.8;backgr
 .vip-site-hero.has-photo .vip-site-hero-shade{
  background:linear-gradient(to bottom,rgba(2,13,22,.3),transparent 26%,transparent 63%,rgba(2,13,22,.78))!important;
 }
+
+
+/* RAAFAT self-contained, in-map driving navigation */
+.raafat-route-panel[hidden]{display:none!important}
+.raafat-route-panel{
+ position:absolute;z-index:1180;top:88px;left:14px;
+ width:min(356px,calc(100% - 28px));max-height:calc(100% - 110px);
+ overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;
+ border:1px solid rgba(245,206,139,.64);border-radius:17px;
+ background:linear-gradient(160deg,rgba(12,40,50,.98),rgba(7,28,37,.98));
+ color:#eff8f1;box-shadow:0 22px 65px rgba(0,0,0,.61);backdrop-filter:blur(16px);
+ direction:rtl;
+}
+.raafat-route-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 16px 13px;border-bottom:1px solid #e4bb7b2e}
+.raafat-route-head>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.raafat-route-head small{font:700 9px Arial,sans-serif;letter-spacing:1.3px;color:#e5b974}
+.raafat-route-head strong{font-size:17px;color:white;line-height:1.55}
+.raafat-route-head span{font-size:11px;color:#c7d6d1;line-height:1.7;overflow-wrap:anywhere}
+.raafat-route-head button{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid #ffffff40;border-radius:10px;color:#fff;background:#2c444b;font-size:22px;line-height:1}
+.raafat-route-stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:13px 14px 8px}
+.raafat-route-stats>div{display:flex;flex-direction:column;gap:6px;min-height:73px;border:1px solid #debb7947;border-radius:10px;background:#173741;padding:11px}
+.raafat-route-stats small{color:#c0d2ce;font-size:10px}
+.raafat-route-stats strong{color:#ffda9e;font:800 17px/1.4 "IBM Plex Sans Arabic",sans-serif}
+.raafat-route-status{margin:8px 15px;color:#e8e4d8;font-size:11px;line-height:1.9}
+.raafat-route-gps{display:block;margin:0 15px 10px;color:#a2c5c7;font-size:10px}
+.raafat-route-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:13px 14px 16px}
+.raafat-route-actions button{min-height:40px;padding:7px 4px;border-radius:9px;background:#24505a;border:1px solid #71938d66;color:#fff;font-size:10px;line-height:1.6;font-weight:700}
+.raafat-route-actions button:hover{background:#35636a;border-color:#e6c286}
+.raafat-route-instructions{border-top:1px solid #e3bd7a32}
+.raafat-route-instructions>summary{cursor:pointer;list-style:none;padding:15px;font-size:12px;font-weight:800;color:#f7d39a}
+.raafat-route-instructions>summary::-webkit-details-marker{display:none}
+.raafat-route-instructions ol{margin:0;padding:0 14px 12px;list-style:none;display:flex;flex-direction:column;gap:9px;max-height:215px;overflow-y:auto}
+.raafat-route-step{display:flex;align-items:flex-start;gap:9px;background:#143741;border:1px solid #ffffff10;padding:10px;border-radius:10px}
+.raafat-route-step .raafat-route-number{width:24px;height:24px;flex:0 0 24px;display:grid;place-items:center;background:#d3ac70;color:#182f36;border-radius:8px;font:900 11px Arial,sans-serif}
+.raafat-route-step>span:last-child{display:flex;flex-direction:column;gap:5px;min-width:0}
+.raafat-route-step strong{font-size:11px;line-height:1.7;font-weight:650;overflow-wrap:anywhere}
+.raafat-route-step small{font-size:10px;color:#b5c7c1}
+.raafat-route-warning{font-size:10px;line-height:1.9;color:#e3d1b7;background:#80622a26;padding:11px 15px;margin:0;border-top:1px solid #e3bd7a26}
+.map-site-buttons #mapSiteDirections{display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.vip-site-action-grid #raafatStartDirections{width:100%;cursor:pointer}
+@media(max-width:850px){.raafat-route-panel{top:64px;left:10px;max-height:calc(100% - 76px);width:min(330px,calc(100% - 20px))}}
+@media(max-width:520px){.raafat-route-panel{top:70px;left:7px;width:calc(100% - 14px);max-height:calc(100% - 80px)}.raafat-route-actions button{font-size:9.5px}}
+
+
+/* Route CTA remains visible at desktop and mobile breakpoints. */
+.map-site-buttons #mapSiteDirections{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ min-height:39px;
+ border:1px solid #f4cc8c!important;
+ background:linear-gradient(125deg,#f1ca8e,#c7954a)!important;
+ color:#132d33!important;font-weight:800!important;
+ padding:8px 13px!important;border-radius:9px!important;
+ cursor:pointer;
+}
+.raafat-route-panel .raafat-route-actions button:focus-visible,
+.map-site-buttons #mapSiteDirections:focus-visible{outline:2px solid #fff;outline-offset:3px}
