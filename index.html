@@ -120,11 +120,20 @@
  </div>
  <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="عرض جميع المواقع على الخريطة" title="عرض جميع المواقع"><svg class="raafat-target-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1.75v4M12 18.25v4M1.75 12h4M18.25 12h4"/></svg></button>
+      <div id="raafatRoutePanel" class="raafat-route-panel" role="region" aria-label="ملاحة رأفت الداخلية" hidden>
+        <div class="raafat-route-head"><div><small>RAAFAT • NAVIGATION</small><strong>الاتجاهات داخل الخريطة</strong><span id="raafatRouteDestination"></span></div><button id="raafatRouteClose" type="button" aria-label="إنهاء الملاحة">×</button></div>
+        <div class="raafat-route-stats"><div><small>المسافة على الطريق</small><strong id="raafatRouteDistance">—</strong></div><div><small>زمن الرحلة التقريبي</small><strong id="raafatRouteDuration">—</strong></div></div>
+        <p class="raafat-route-status" id="raafatRouteStatus" aria-live="polite"></p>
+        <small class="raafat-route-gps" id="raafatRouteGpsAccuracy"></small>
+        <div class="raafat-route-actions"><button id="raafatRouteMyLocation" type="button">◎ موقعي</button><button id="raafatRouteChooseStart" type="button">⌖ اختر البداية</button><button id="raafatRouteRefresh" type="button">↻ تحديث المسار</button></div>
+        <details class="raafat-route-instructions" open><summary>تعليمات الطريق والانعطافات</summary><ol id="raafatRouteSteps"></ol></details>
+        <p class="raafat-route-warning">حساب الطريق يرسل إحداثيات البداية والوجهة إلى مزوّد مسارات خارجي. المسافة والوقت تقديريان وليسا بيانات حركة مرور مباشرة. تحقّق من اللوحات المرورية، ولا تستخدم الشاشة أثناء القيادة.</p>
+      </div>
       <div class="map-site-cta" id="mapSiteCTA" hidden>
         <div class="map-site-identity"><span class="map-site-eyebrow">الموقع المحدد <span id="mapSiteStatus" class="vip-site-state"></span></span><strong id="mapSiteTitle"></strong></div>
         <div class="map-site-buttons">
           <button type="button" id="mapSiteDetails" title="عرض تفاصيل القطعة">التفاصيل</button>
-          <a id="mapSiteDirections" href="#" target="_blank" rel="noopener noreferrer" aria-label="بدء الاتجاهات إلى اللوحة">الاتجاهات <span aria-hidden="true">↗</span></a>
+          <a id="mapSiteDirections" type="button" aria-label="عرض اتجاهات القيادة على نفس الخريطة">الاتجاهات <span aria-hidden="true">⌖</span></button>
         </div>
       </div>
     </section>
