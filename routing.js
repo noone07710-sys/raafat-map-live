@@ -65,17 +65,18 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
    return (Math.atan2(Math.sin(delta)*Math.cos(lat2),Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(delta))*180/Math.PI+360)%360;
  };
  const safePoint=p=>goodCoord(p)&&Math.abs(p[0])<90;
- function drawArrow(point,heading){
-   if(!safePoint(point))return;
-   const orientation=Number.isFinite(heading)?heading:lastBearing;
-   lastBearing=orientation;
-   const html='<span class="raafat-navigation-arrow" style="transform:rotate('+orientation.toFixed(0)+'deg)"><svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><path d="M20 3 L34 34 L20 27 L6 34 Z" fill="#39c5ff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></span>';
-   if(arrowMarker)arrowMarker.setLatLng(point).setIcon(window.L.divIcon({className:"raafat-route-direction-icon",html,iconSize:[44,44],iconAnchor:[22,22]}));
-   else{
-     const pane=map.getPane("raafatNavigation")||map.createPane("raafatNavigation");
-     pane.style.zIndex="650";pane.style.pointerEvents="none";
-     arrowMarker=window.L.marker(point,{pane:"raafatNavigation",interactive:false,keyboard:false,zIndexOffset:1000,icon:window.L.divIcon({className:"raafat-route-direction-icon",html,iconSize:[44,44],iconAnchor:[22,22]})}).addTo(map);
-   }
+ // A blue arrow appears only with a trustworthy direction. Otherwise show the GPS dot.
+ function drawArrow(point,heading=null){
+  if(!safePoint(point))return;
+  const oriented=Number.isFinite(heading)&&heading>=0&&heading<360;
+  const html=oriented?'<span class="raafat-navigation-arrow" style="transform:rotate('+heading.toFixed(0)+'deg)"><svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><path d="M20 3 L34 34 L20 27 L6 34 Z" fill="#39c5ff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></span>':'<span class="raafat-navigation-location-dot" aria-label="موقعك الحالي"></span>';
+  const icon=window.L.divIcon({className:"raafat-route-direction-icon",html,iconSize:[44,44],iconAnchor:[22,22]});
+  if(arrowMarker)arrowMarker.setLatLng(point).setIcon(icon);
+  else {
+    const pane=map.getPane("raafatNavigation")||map.createPane("raafatNavigation");
+    pane.style.zIndex="650";pane.style.pointerEvents="none";
+    arrowMarker=window.L.marker(point,{pane:"raafatNavigation",interactive:false,keyboard:false,zIndexOffset:1000,icon}).addTo(map);
+  }
  }
  function closestOnRoute(point){
    if(routePoints.length<2)return null;
@@ -160,37 +161,48 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
      }
    }
  }
- function updateGPS(point,accuracy=Infinity,heading=null,timestamp=Date.now()){
-   if(!activeSite||!goodCoord(point)||manualOrigin)return;
-   const age=Date.now()-timestamp;
-   if(!Number.isFinite(age)||age>10000||age < -5000)return;
-   lastFixTime=timestamp;
-   lastAccuracy=accuracy;
-   if(!Number.isFinite(accuracy)||accuracy>MAX_PREVIEW_ACCURACY){
-     $("raafatRouteNext").textContent="حدد نقطة البداية أو فعّل GPS دقيقاً";
-     $("raafatRouteRemaining").textContent="—";
-     const estimate=Number.isFinite(accuracy)?" (±"+Math.round(accuracy)+" م)":"";
-     setStatus("إحداثيات الجهاز غير دقيقة"+estimate+" • مسار المعاينة متاح");
-     $("raafatRouteChooseStart").hidden=false;
-     if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
-     // Keep an existing road route if present, but never issue a turn from this fix.
-     return;
-   }
-   const old=lastPoint;lastPoint=point.slice();lastFix=point.slice();
-   if(!Number.isFinite(heading)||heading<0){
-     heading=old&&meters(old,point)>6?bearing(old,point):lastBearing;
-   }
-   if(accuracy<=MAX_GUIDANCE_ACCURACY)drawArrow(point,heading);
-   else if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
-   $("raafatRouteGpsAccuracy").textContent="GPS ±"+Math.round(accuracy)+" م";
-   if(following&&watchId!==null&&!choosing&&accuracy<=MAX_GUIDANCE_ACCURACY){
-     if(meters(point,map.getCenter())>26)map.panTo(point,{animate:false});
-   }
-   updateProgress(point,accuracy);
+ function updateGPS(point,accuracy=Infinity,heading=null,timestamp=Date.now(),speed=null){
+  if(!activeSite||!goodCoord(point)||manualOrigin)return;
+  const age=Date.now()-timestamp;
+  if(!Number.isFinite(age)||age>10000||age< -5000)return;
+  lastFixTime=timestamp;lastAccuracy=accuracy;
+  if(!Number.isFinite(accuracy)||accuracy>MAX_PREVIEW_ACCURACY){
+    setRealtime("weak");
+    $("raafatRouteNext").textContent="حدد نقطة البداية أو فعّل GPS دقيقاً";
+    $("raafatRouteRemaining").textContent="—";
+    setStatus("إحداثيات الجهاز غير دقيقة • مسار المعاينة متاح");
+    $("raafatRouteChooseStart").hidden=false;
+    if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
+    return;
+  }
+  setRealtime(accuracy<=MAX_GUIDANCE_ACCURACY?"live":"approx",accuracy);
+  const old=lastPoint;
+  const movement=old?meters(old,point):0;
+  lastPoint=point.slice();lastFix=point.slice();
+  const deviceBearing=Number.isFinite(heading)&&heading>=0&&heading<360
+    &&(!Number.isFinite(speed)||speed>=0.7)?heading:null;
+  const movementBearing=old&&accuracy<=MAX_GUIDANCE_ACCURACY&&movement>Math.max(10,accuracy*1.5)?bearing(old,point):null;
+  if(accuracy<=MAX_GUIDANCE_ACCURACY)drawArrow(point,deviceBearing!==null?deviceBearing:movementBearing);
+  else if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
+  $("raafatRouteGpsAccuracy").textContent="GPS ±"+Math.round(accuracy)+" م";
+  if(following&&watchId!==null&&!choosing&&accuracy<=MAX_GUIDANCE_ACCURACY){
+    if(meters(point,map.getCenter())>26)map.panTo(point,{animate:false});
+  }
+  updateProgress(point,accuracy);
  }
+
  const endpoint=String(window.RAAFAT_CONFIG?.routingApiUrl||"https://valhalla1.openstreetmap.de").replace(/\/+$/,"");
  const demo=/^https:\/\/valhalla\d?\.openstreetmap\.de$/i.test(endpoint);
  const setStatus=msg=>{status.textContent=msg;status.hidden=!msg;};
+ const realtimeBadge=$("raafatRouteRealtime"),realtimeText=$("raafatRouteRealtimeText");
+ function setRealtime(mode,accuracy=Infinity){
+  if(!realtimeBadge||!realtimeText)return;
+  realtimeBadge.dataset.state=mode;
+  const actual=(mode==="live"||mode==="approx")&&Number.isFinite(accuracy);
+  realtimeText.textContent=actual?"REALTIME · "+(mode==="approx"?"تقريبي ":"")+"±"+Math.round(accuracy)+" م":
+    ({stale:"تحديث GPS متوقف",weak:"GPS غير دقيق",manual:"معاينة الطريق",error:"GPS غير متاح",waiting:"بانتظار GPS"})[mode]||"بانتظار GPS";
+ }
+
  const navMapArea=map.getContainer().closest(".map-area");
  const visibleNextTurn=(m,distanceMeters)=>{
    const txt=instruction(m);
@@ -210,6 +222,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
    signalWatchdog=setInterval(()=>{
      if(!activeSite||manualOrigin)return;
      if(!lastFixTime||Date.now()-lastFixTime>12000){
+       setRealtime("stale");
        $("raafatRouteNext").textContent="بانتظار تحديث GPS";
        setStatus("آخر موقع قديم — لا تعتمد على تعليمات الانعطاف");
        if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
@@ -220,6 +233,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
   cleanRoute();stopWatch();stopWatchdog();if(arrowMarker&&map.hasLayer(arrowMarker))map.removeLayer(arrowMarker);arrowMarker=null;activeSite=null;starting=null;lastFix=null;lastPoint=null;choosing=false;following=true;offRouteSince=0;arrivalFixCount=0;arrivalShown=false;manualOrigin=false;
   panel.hidden=true;navMapArea?.classList.remove("is-navigating");document.body.classList.remove("raafat-is-navigating");$("raafatRouteChooseStart").hidden=true;
   lastAccuracy=Infinity;lastFixTime=0;lastArrivalFixTime=0;
+  setRealtime("waiting");
   $("raafatRouteNext").textContent="";$("raafatRouteRemaining").textContent="—";setStatus("");
   // Update the arrow/X immediately, independent of the routing request.
   onChange();
@@ -233,22 +247,25 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
  }
  function activateGPS(){
   if(!navigator.geolocation||!window.isSecureContext){
+   setRealtime("error");
    setStatus("تعذر تحديد GPS؛ حدد بداية الطريق يدوياً.");$("raafatRouteChooseStart").hidden=false;return;
   }
   stopWatch();startWatchdog();
+  setRealtime("waiting");
   setStatus("جاري طلب موقعك… قد يطلب المتصفح إذن الوصول إلى GPS.");
   watchId=navigator.geolocation.watchPosition(pos=>{
    if(!activeSite)return;
    const point=[Number(pos.coords.latitude),Number(pos.coords.longitude)];
    if(!goodCoord(point))return;
    const accuracy=Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:50;
-   updateGPS(point,accuracy,pos.coords.heading,pos.timestamp);
+   updateGPS(point,accuracy,pos.coords.heading,pos.timestamp,pos.coords.speed);
    // Route preview can start with coarser GPS, while turn instructions stay gated at 30 m.
    if(!lastRequested&&!abort&&accuracy<=MAX_PREVIEW_ACCURACY&&Date.now()-pos.timestamp<=10000)void planRoute(point);
   },err=>{
    if(!activeSite||manualOrigin)return;
+   setRealtime("error");
    setStatus("تعذر تحديد GPS؛ حدد بداية الطريق يدوياً.");$("raafatRouteChooseStart").hidden=false;
-   stopWatch();
+   stopWatch();stopWatchdog();
   },{enableHighAccuracy:true,maximumAge:0,timeout:20000});
  }
  async function planRoute(from,isReroute=false){
@@ -321,6 +338,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
   $("raafatRouteDestination").textContent=site.code+" • "+site.name;
   $("raafatRouteDistance").textContent="—";$("raafatRouteDuration").textContent="—";
   steps.innerHTML="";$("raafatRouteRemaining").textContent="—";$("raafatRouteNext").textContent="جاري تحديد البداية…";
+  setRealtime("waiting");
   setStatus("جاري تحديد موقعك…");$("raafatRouteChooseStart").hidden=false;
   // Never start live guidance from a potentially stale cached location.
   activateGPS();
@@ -328,6 +346,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
  function chooseStart(){
   if(!activeSite)return;
   choosing=true;manualOrigin=true;
+  setRealtime("manual");
   stopWatch();stopWatchdog();
   lastFix=null;lastAccuracy=Infinity;lastFixTime=0;
   if(arrowMarker&&map.hasLayer(arrowMarker)){map.removeLayer(arrowMarker);arrowMarker=null;}
@@ -342,11 +361,11 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
   setOrigin(point);void planRoute(point);
   return true;
  }
- function onLiveLocation(point,accuracy=Infinity,heading=null){
+ function onLiveLocation(point,accuracy=Infinity,heading=null,speed=null,timestamp=Date.now()){
   if(!activeSite||watchId!==null||manualOrigin)return;
-  if(goodCoord(point)&&accuracy<=MAX_GUIDANCE_ACCURACY){
-    updateGPS(point,accuracy,heading,Date.now());
-    if(!lastRequested&&!abort)void planRoute(point);
+  if(goodCoord(point)&&accuracy<=MAX_PREVIEW_ACCURACY){
+    updateGPS(point,accuracy,heading,timestamp,speed);
+    if(!lastRequested&&!abort&&Date.now()-timestamp<=10000)void planRoute(point);
   }
  }
  function recenter(){
