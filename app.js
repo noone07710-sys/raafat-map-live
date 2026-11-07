@@ -8,7 +8,7 @@ const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") ===
 
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
 const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
-const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد"],"كركوك":["كركوك"]});
+const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","الدجيل","الضلوعية","الإسحاقي","يثرب","طوز خورماتو","آمرلي","سليمان بيك","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]});
 
 const CITY_CENTERS = Object.freeze({
   "تكريت":[34.6158,43.6786],
@@ -967,7 +967,8 @@ function sitePayload(){
  const measuredClass=packageForSite({width_m:Number(el("fWidth").value),height_m:Number(el("fHeight").value)});
  if(requestedClass!=="auto"&&requestedClass!==measuredClass)throw Error("القياس لا يتطابق مع فئة "+requestedClass+". عدّل القياس أو اختر فئة صحيحة.");
  const rawCode=el("fCode").value.trim();
- const code=requestedClass!=="auto"&&/^\d+$/.test(rawCode)?requestedClass+"-"+rawCode:rawCode;
+ const effectiveClass=requestedClass==="auto"?measuredClass:requestedClass;
+ const code=/^\d+$/.test(rawCode)?effectiveClass+"-"+rawCode:rawCode;
  const name=el("fName").value.trim();
  const governorate=el("fGovernorate").value;
  const city=el("fCity").value.trim();
