@@ -351,7 +351,7 @@ function startLiveLocationTracking(){
    return;
  }
  if(state.locationWatchId!==null){
-   state.followLocation=true;
+   state.followLocation=false;
    if(state.lastLocation)state.map.flyTo(state.lastLocation,Math.max(16,state.map.getZoom()),{animate:true,duration:.6});
    updateLiveLocationUI(state.lastLocation?"تحديث الموقع مباشر":"جاري تحديد الموقع…");
    return;
@@ -359,7 +359,7 @@ function startLiveLocationTracking(){
  state.followLocation=true;
  const generation=++state.locationGeneration;
  const pane=state.map.getPane("raafatGps")||state.map.createPane("raafatGps");
- pane.style.zIndex="625";
+ pane.style.zIndex="625";pane.style.pointerEvents="none";
  updateLiveLocationUI("جاري طلب إذن الموقع…");
  const onPosition=position=>{
    if(generation!==state.locationGeneration||!state.map)return;
@@ -388,14 +388,12 @@ function startLiveLocationTracking(){
      state.gpsAccuracy.setLatLng(point).setRadius(Math.min(accuracy,15000));
    }
    state.lastLocation=point;
-   navigationController?.onLiveLocation(point);
+   navigationController?.onLiveLocation(point,accuracy,coords.heading);
    updateVipDirectLink();
    if(state.followLocation){
-     if(firstFix){
-       state.map.flyTo(point,Math.max(16,state.map.getZoom()),{animate:true,duration:.65});
-     }else if(state.map.distance(state.map.getCenter(),point)>25){
-       state.map.panTo(point,{animate:true,duration:.35});
-     }
+     if(firstFix)state.map.flyTo(point,Math.max(16,state.map.getZoom()),{animate:true,duration:.65});
+     // Locator recenters once only: never pull the map away while the user is choosing billboards.
+     state.followLocation=false;
    }
    const formatted=accuracy>=1000?"±"+(accuracy/1000).toFixed(1)+" كم":"±"+Math.round(accuracy)+" م";
    updateLiveLocationUI("موقع مباشر • الدقة "+formatted);
@@ -422,7 +420,7 @@ function startLiveLocationTracking(){
 function initializeMap(){
  if(!window.L){alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت.");finishMapReveal();return;}
  const L=window.L;
- state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22})
+ state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22,scrollWheelZoom:false})
    .setView(CITY_CENTERS["تكريت"],11);
  // Show the same detailed standard cartography visitors see on OpenStreetMap.
  // Keep labels and POIs intact; do not rewrite vector symbol layers.
@@ -477,6 +475,7 @@ function initializeMap(){
  window.L.DomEvent.disableScrollPropagation(el("liveLocationControl"));
  el("locateMe").addEventListener("click",startLiveLocationTracking);
  el("stopLocation").addEventListener("click",stopLiveLocationTracking);
+ state.map.on("mousedown touchstart",()=>{if(state.locationWatchId!==null)state.followLocation=false;});
  state.map.on("dragstart",()=>{
    if(state.locationWatchId!==null){
      state.followLocation=false;
@@ -653,6 +652,7 @@ function renderMarkers(sites){
      title:"فئة "+category+" • لوحة "+s.code+" — "+(statuses[s.status]||"")
    });
    marker.on("click",()=>{
+     state.followLocation=false;
      if(bookingController?.handleSiteSelection(s.id))return;
      if(state.selected===s.id){navigationController?.clear();clearSelectedSite();return;}
      selectSite(s.id);
@@ -715,6 +715,7 @@ function selectSite(id){
  const site=state.sites.find(s=>s.id===id);
  if(!site)return;
  if(state.selected!==id){
+   navigationController?.clear();
    state.galleryIndex=0;
    state.vipDirectLinkEnabled=false;
    updateVipDirectLink();
