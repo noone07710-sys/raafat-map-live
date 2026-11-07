@@ -3463,3 +3463,90 @@ body.raafat-is-navigating .main-layout>.map-area{
  .map-area .vip-map-actions{bottom:67px!important}
  .map-area .leaflet-bottom.leaflet-right{bottom:12px!important}
 }
+
+
+/* One quiet direction action — arrow before route, X while navigating. */
+.map-area #mapNavigationToggle.raafat-route-fab{
+ position:absolute!important;
+ z-index:1165!important;
+ right:12px!important;left:auto!important;top:auto!important;bottom:102px!important;
+ width:43px!important;height:43px!important;min-width:43px!important;
+ display:grid!important;place-items:center!important;
+ margin:0!important;padding:0!important;
+ border:1px solid rgba(255,233,190,.8)!important;
+ border-radius:14px!important;
+ background:linear-gradient(135deg,#f2ce94,#c99550)!important;
+ color:#173039!important;
+ box-shadow:0 5px 18px rgba(1,24,31,.35)!important;
+ line-height:0!important;cursor:pointer;
+ transition:background .17s ease,transform .17s ease,box-shadow .17s ease;
+ -webkit-tap-highlight-color:transparent;
+}
+.map-area #mapNavigationToggle.raafat-route-fab[hidden]{display:none!important}
+.map-area #mapNavigationToggle.raafat-route-fab:active{transform:scale(.94)}
+.map-area #mapNavigationToggle.raafat-route-fab:focus-visible{outline:2px solid white;outline-offset:3px}
+.map-area #mapNavigationToggle.raafat-route-fab.is-active{
+ bottom:14px!important;
+ background:rgba(14,43,50,.96)!important;
+ color:#fff!important;
+ border-color:rgba(240,211,162,.65)!important;
+}
+.map-area #mapNavigationToggle.raafat-route-fab svg{display:block;width:20px;height:20px;pointer-events:none}
+.map-area #mapNavigationToggle.raafat-route-fab .raafat-route-fab-close{display:none}
+.map-area #mapNavigationToggle.raafat-route-fab.is-active .raafat-route-fab-close{display:block}
+.map-area #mapNavigationToggle.raafat-route-fab.is-active .raafat-route-fab-arrow{display:none}
+.map-area.is-navigating .leaflet-bottom.leaflet-right{bottom:67px!important}
+.map-area .raafat-route-panel.raafat-route-compact{
+ box-sizing:border-box!important;
+ max-width:calc(100% - 70px)!important;
+ width:min(270px,calc(100% - 70px))!important;
+}
+.map-area .raafat-route-panel.raafat-route-compact .raafat-route-mini-status{
+ background:rgba(227,171,82,.11)!important;
+ border-radius:7px!important;
+ margin:0 10px 9px!important;
+ padding:5px 9px!important;
+ max-height:none!important;
+ color:#e5ceab!important;font-size:10px!important;
+ line-height:1.7!important;
+}
+.map-area .raafat-route-panel.raafat-route-compact .raafat-route-mini-status[hidden]{display:none!important}
+.map-area.is-navigating #mapNavigationToggle.raafat-route-fab{display:grid!important}
+@media(max-width:850px){
+ .map-area #mapNavigationToggle.raafat-route-fab{
+   right:9px!important;bottom:164px!important;
+   width:40px!important;height:40px!important;min-width:40px!important;
+   border-radius:12px!important;
+ }
+ .map-area:not(:has(.map-site-cta:not([hidden]))) #mapNavigationToggle.raafat-route-fab:not(.is-active){
+   bottom:106px!important;
+ }
+ .map-area #mapNavigationToggle.raafat-route-fab.is-active{
+   right:9px!important;bottom:12px!important;
+ }
+ .map-area.is-navigating .leaflet-bottom.leaflet-right{bottom:68px!important}
+ .map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+   top:9px!important;left:9px!important;
+   width:min(248px,calc(100% - 75px))!important;
+   max-width:calc(100% - 75px)!important;
+ }
+ .map-area .raafat-route-panel.raafat-route-compact .raafat-route-mini-head{
+   min-height:54px!important;padding:9px!important;gap:8px!important;
+ }
+ .map-area .raafat-route-panel.raafat-route-compact .raafat-route-mini-info strong{
+   font-size:11px!important;line-height:1.6!important;
+ }
+ .map-area .raafat-route-panel.raafat-route-compact .raafat-route-mini-icon{
+   width:28px;height:28px;flex-basis:28px;font-size:17px;
+ }
+ .map-area .raafat-route-panel.raafat-route-compact .raafat-route-mini-status{
+   font-size:9.5px!important;
+   margin:0 9px 7px!important;
+   padding:4px 7px!important;
+ }
+}
+@media(max-width:370px){
+ .map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+   width:min(220px,calc(100% - 75px))!important;
+ }
+}
