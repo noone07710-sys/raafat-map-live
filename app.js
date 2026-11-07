@@ -607,7 +607,7 @@ function render(){
  el("listing").innerHTML=sites.length ? sites.map(s=>
   '<button type="button" class="location-card '+(state.selected===s.id?'active':'')+'" data-site="'+escapeHtml(s.id)+'">'+
    '<div class="card-row"><strong>'+escapeHtml(s.name)+'</strong>'+badge(s)+'</div>'+
-   '<small>'+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
+   '<small><span class="listing-category-tag category-'+packageForSite(s)+'">فئة '+packageForSite(s)+'</span> '+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
    '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
   '</button>'
  ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'غيّر الفلاتر لعرض قطع أخرى.')+'</div>';
@@ -635,14 +635,17 @@ function renderMarkers(sites){
    const safeStatus = statuses[s.status] ? s.status : "available";
    const highlighted=state.selected===s.id;
    const bookingSelected=Boolean(bookingController?.isSelected(s.id));
+   const category=packageForSite(s);
    const marker=L.marker([s.latitude,s.longitude],{
      bubblingMouseEvents:false,
      icon:L.divIcon({
        className:"raafat-premium-site-icon",
-       html:'<div class="site-pin '+safeStatus+(highlighted?" selected":"")+(bookingSelected?" booking-picked":"")+'"><i class="vip-pin-aura" aria-hidden="true"></i><span></span></div>',
-       iconSize:[29,29],iconAnchor:[15,27]
+       html:'<div class="site-pin category-'+category+' '+safeStatus+(highlighted?" selected":"")+(bookingSelected?" booking-picked":"")+'">'+
+         '<i class="vip-pin-aura" aria-hidden="true"></i><span class="pin-category-letter">'+category+'</span>'+
+         '<i class="pin-status-dot" aria-hidden="true"></i></div>',
+       iconSize:[36,39],iconAnchor:[18,35]
      }),
-     title:"لوحة "+s.code+" — "+(statuses[s.status]||"")
+     title:"فئة "+category+" • لوحة "+s.code+" — "+(statuses[s.status]||"")
    });
    marker.on("click",()=>{
      if(bookingController?.handleSiteSelection(s.id))return;
@@ -814,7 +817,7 @@ async function renderDetail(){
    '</div>'+vipOverviewRadar(site)+
    '<h3 class="detail-name">'+escapeHtml(site.name)+'</h3>'+
    '<div class="detail-location">⌖ '+escapeHtml(site.governorate||"صلاح الدين")+' / '+escapeHtml(site.city)+(site.area?' / '+escapeHtml(site.area):"")+'</div>'+
-   '<div class="detail-status">'+badge(site)+(site.published?'':' <span class="draft">• غير منشور</span>')+'</div>'+
+   '<div class="detail-status"><span class="detail-category-tag category-'+packageForSite(site)+'">فئة '+packageForSite(site)+'</span> '+badge(site)+(site.published?'':' <span class="draft">• غير منشور</span>')+'</div>'+
    '<div class="spec-heading">المواصفات والتفاصيل</div>'+
    '<div class="detail-table">'+metaRows.map(([label,val])=>'<div class="detail-line"><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
    (site.description?'<div class="spec-heading">وصف الموقع</div><p class="detail-description">'+escapeHtml(site.description)+'</p>':"")+
