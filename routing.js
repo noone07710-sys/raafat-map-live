@@ -83,7 +83,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    if(!activeSite||!safePoint(point))return;
    const destination=coordinates(activeSite);
    const distance=meters(point,destination);
-   if(distance<=Math.max(25,Math.min(45,accuracy))&&accuracy<=80){
+   if(distance<=25&&accuracy<=35&&routePoints.length>=2&&closestOnRoute(point)?.remaining<65){
      if(!arrivalShown){
        arrivalShown=true;setStatus("وصلت إلى موقع القطعة تقريباً. تحقق من رمز اللوحة ومكانها الفعلي.");
        $("raafatRouteNext").textContent="وصلت إلى وجهتك ✓";
@@ -101,7 +101,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
      $("raafatRouteNext").textContent=instruction(next);
      const stepNode=steps.querySelector('[data-step-index="'+routeManeuvers.indexOf(next)+'"]');
      steps.querySelectorAll(".raafat-route-step").forEach(node=>node.classList.toggle("is-next",node===stepNode));
-   }else $("raafatRouteNext").textContent="تابع الطريق نحو القطعة";
+   }else $("raafatRouteNext").textContent="تابع المسار حتى موقع القطعة";
    if(snap.distance>Math.max(90,2*Math.min(accuracy,60))){
      if(!offRouteSince)offRouteSince=Date.now();
      else if(Date.now()-offRouteSince>10000&&Date.now()-requestTime>45000&&!abort){
@@ -126,6 +126,12 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
  const endpoint=String(window.RAAFAT_CONFIG?.routingApiUrl||"https://valhalla1.openstreetmap.de").replace(/\/+$/,"");
  const demo=/^https:\/\/valhalla\d?\.openstreetmap\.de$/i.test(endpoint);
  const setStatus=msg=>{status.textContent=msg;status.hidden=!msg;};
+ const navMapArea=map.getContainer().closest(".map-area");
+ const visibleNextTurn=(m,distanceMeters)=>{
+   const txt=instruction(m);
+   return distanceMeters>70 && /وصلت|وجهتك|الوجهة|arriv|destination/i.test(txt)
+     ?"تابع المسار حتى موقع القطعة":txt;
+ };
  const coordinates=site=>[Number(site.latitude),Number(site.longitude)];
  function cleanRoute(){
   abort?.abort();abort=null;requestId++;
@@ -199,7 +205,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    const maneuvers=routeManeuvers;
    steps.innerHTML=maneuvers.slice(0,60).map((m,i)=>
     '<li class="raafat-route-step" data-step-index="'+i+'"><span class="raafat-route-number">'+(i+1)+'</span><span><strong>'+esc(instruction(m))+'</strong><small>'+roadKm(m.length||0)+'</small></span></li>').join("")||'<li>اتبع الطريق المرسوم إلى الموقع المحدد.</li>';
-   $("raafatRouteNext").textContent=instruction(maneuvers.find(m=>![13,14,15].includes(Number(m.type)))||{type:10});
+   $("raafatRouteNext").textContent="تابع المسار حتى موقع القطعة";
    updateProgress(lastFix||from);
   }catch(err){
    if(index!==requestId||!activeSite)return;
