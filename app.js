@@ -476,8 +476,16 @@ function initializeMap(){
    revealFallbackIfReady();
  },14000);
  L.control.zoom({position:"bottomright"}).addTo(state.map);
+ const compactMap=window.matchMedia("(max-width:850px)").matches;
  state.markers=L.markerClusterGroup
-   ? L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:42,chunkedLoading:true,disableClusteringAtZoom:16})
+   ? L.markerClusterGroup({
+      showCoverageOnHover:false,
+      maxClusterRadius:compactMap?55:42,
+      chunkedLoading:true,
+      spiderfyOnMaxZoom:true,
+      zoomToBoundsOnClick:true,
+      disableClusteringAtZoom:compactMap?18:16
+     })
    : L.layerGroup();
  state.map.addLayer(state.markers);
  addPersistentCityLabels();
@@ -688,7 +696,10 @@ function renderMarkers(sites){
      if(state.selected===s.id){navigationController?.clear();clearSelectedSite();return;}
      selectSite(s.id);
    });
-   marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
+   // Mobile has a dedicated details panel; tooltips cover nearby map pins on touch.
+   if(!window.matchMedia("(max-width:850px)").matches){
+     marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
+   }
    state.markers.addLayer(marker);
    state.markerById.set(s.id,marker);
  }
