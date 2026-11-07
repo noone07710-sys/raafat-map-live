@@ -181,7 +181,8 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
  function stopWatch(){if(watchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;}
  function clear(){
   cleanRoute();stopWatch();if(arrowMarker&&map.hasLayer(arrowMarker))map.removeLayer(arrowMarker);arrowMarker=null;activeSite=null;starting=null;lastFix=null;lastPoint=null;choosing=false;following=true;offRouteSince=0;arrivalFixCount=0;arrivalShown=false;manualOrigin=false;
-  panel.hidden=true;$("raafatRouteChooseStart").hidden=true;
+  panel.hidden=true;navMapArea?.classList.remove("is-navigating");document.body.classList.remove("raafat-is-navigating");$("raafatRouteChooseStart").hidden=true;
+  window.setTimeout(()=>map.invalidateSize({pan:false}),100);
  }
  function setOrigin(point){
   if(!goodCoord(point))return;
@@ -259,6 +260,9 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
  function start(site){
   if(!map||!site)return;
   clear();activeSite=site;panel.hidden=false;following=true;
+  navMapArea?.classList.add("is-navigating");document.body.classList.add("raafat-is-navigating");
+  map.closePopup();map.eachLayer(layer=>{if(typeof layer.closeTooltip==="function")layer.closeTooltip();});
+  window.setTimeout(()=>map.invalidateSize({pan:false}),100);
   $("raafatRouteDestination").textContent=site.code+" • "+site.name;
   $("raafatRouteDistance").textContent="—";$("raafatRouteDuration").textContent="—";
   steps.innerHTML="";$("raafatRouteRemaining").textContent="—";$("raafatRouteNext").textContent="جاري تحديد البداية…";
