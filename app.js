@@ -44,6 +44,7 @@ const state = {
 let toastTimeout;
 let adminDashboard=null;
 let bookingController=null;
+let siteFormDirty=false;
 
 function toast(message){
  const box = el("toast");
@@ -604,6 +605,7 @@ function render(){
   '</button>'
  ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'غيّر الفلاتر لعرض قطع أخرى.')+'</div>';
  el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>{
+   if(bookingController?.handleSiteSelection(button.dataset.site))return;
    selectSite(button.dataset.site);
    // On a phone, show the actual site specifications instead of leaving
    // the visitor at the list after they select an advertising site.
@@ -624,15 +626,16 @@ function renderMarkers(sites){
    const L=window.L;
    const safeStatus = statuses[s.status] ? s.status : "available";
    const highlighted=state.selected===s.id;
+   const bookingSelected=Boolean(bookingController?.isSelected(s.id));
    const marker=L.marker([s.latitude,s.longitude],{
      icon:L.divIcon({
        className:"raafat-premium-site-icon",
-       html:'<div class="site-pin '+safeStatus+(highlighted?" selected":"")+'"><i class="vip-pin-aura" aria-hidden="true"></i><span></span></div>',
+       html:'<div class="site-pin '+safeStatus+(highlighted?" selected":"")+(bookingSelected?" booking-picked":"")+'"><i class="vip-pin-aura" aria-hidden="true"></i><span></span></div>',
        iconSize:[29,29],iconAnchor:[15,27]
      }),
      title:"لوحة "+s.code+" — "+(statuses[s.status]||"")
    });
-   marker.on("click",()=>selectSite(s.id));
+   marker.on("click",()=>{if(bookingController?.handleSiteSelection(s.id))return;selectSite(s.id);});
    marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
    state.markers.addLayer(marker);
    state.markerById.set(s.id,marker);
@@ -1027,6 +1030,7 @@ async function saveSite(event){
    const {data,error}=await query.select("id").single();
    if(error)throw error;
    const photoErrors=await uploadPhotos(data.id,files);
+   siteFormDirty=false;
    closeModal("siteModal");
    state.editorId=null;
    await loadSites();
@@ -1182,13 +1186,23 @@ function events(){
    },err=>toast("تعذر تحديد الموقع. تحقق من صلاحيات GPS وHTTPS: "+err.message),
    {enableHighAccuracy:true,maximumAge:0,timeout:20000});
  });
- document.querySelectorAll("[data-close]").forEach(button=>button.addEventListener("click",()=>closeModal(button.dataset.close)));
+ function requestCloseSiteModal(){
+   if(siteFormDirty&&!confirm("توجد بيانات قطعة غير محفوظة. هل تريد إغلاق النافذة وفقدانها؟"))return;
+   siteFormDirty=false;closeModal("siteModal");
+ }
+ el("siteForm").addEventListener("input",()=>{siteFormDirty=true;});
+ el("siteForm").addEventListener("change",()=>{siteFormDirty=true;});
+ document.querySelectorAll("[data-close]").forEach(button=>button.addEventListener("click",()=>{
+   if(button.dataset.close==="siteModal")requestCloseSiteModal();else closeModal(button.dataset.close);
+ }));
  document.querySelectorAll(".modal-backdrop").forEach(modal=>{
+   if(modal.id==="siteModal"||modal.id==="bookingModal")return;
    modal.addEventListener("click",e=>{if(e.target===modal)closeModal(modal.id)});
  });
  document.addEventListener("keydown",e=>{
    if(e.key==="Escape"){state.pick=false;el("mapPicking").hidden=true;
-   for(const id of ["loginModal","siteModal","passwordModal"])closeModal(id)}
+   for(const id of ["loginModal","passwordModal"])closeModal(id);
+   if(!el("siteModal").hidden)requestCloseSiteModal();}
  });
 }
 async function main(){
@@ -1210,6 +1224,7 @@ async function main(){
  }
  adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,loadSites,selectSite,applySettings:applySiteSettings});
  bookingController=setupBookings({db,getState:()=>state,toast});
+ document.addEventListener("raafat:booking-selection-changed",()=>render());
  setupAdminBookings({db,getState:()=>state,toast});
  initializeCatalogLayout();
  initializeMap();events();
