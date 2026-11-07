@@ -420,7 +420,7 @@ function startLiveLocationTracking(){
 function initializeMap(){
  if(!window.L){alertBanner("تعذر تحميل مكتبة الخريطة. تحقق من اتصال الإنترنت.");finishMapReveal();return;}
  const L=window.L;
- state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22,scrollWheelZoom:false})
+ state.map=L.map("map",{zoomControl:false,preferCanvas:true,minZoom:2,maxZoom:22,scrollWheelZoom:true,wheelPxPerZoomLevel:85})
    .setView(CITY_CENTERS["تكريت"],11);
  // Show the same detailed standard cartography visitors see on OpenStreetMap.
  // Keep labels and POIs intact; do not rewrite vector symbol layers.
