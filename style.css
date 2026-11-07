@@ -2658,3 +2658,53 @@ body.raafat-signature-map .map-area .map-reveal-brand{
  .raafat-loading-content{animation:none!important}
  .raafat-loading-track i{transform:translateX(90%)}
 }
+
+/* RAAFAT VIP BOOKINGS — 2026 */
+.booking-top-button{background:linear-gradient(135deg,#d9a85d,#f5d7a3 50%,#b98946)!important;color:#1b292b!important;border:1px solid #f3d7aa!important;box-shadow:0 9px 22px #b58a433b;letter-spacing:.1px}
+.booking-top-button span{padding-inline-start:8px}
+.booking-backdrop{position:fixed;inset:0;z-index:13000;background:rgba(2,15,20,.82);backdrop-filter:blur(12px);overflow-y:auto;padding:24px 12px;align-items:flex-start;justify-content:center}
+.booking-backdrop:not([hidden]){display:flex}
+.booking-backdrop[hidden]{display:none!important}
+.booking-open{overflow:hidden}
+.booking-modal{position:relative;max-width:770px;width:100%;margin:0 auto;background:linear-gradient(158deg,#112b34,#0c1e28);border:1px solid #977b50;border-radius:24px;box-shadow:0 38px 100px #0009;padding:0;overflow:visible;color:#edf4f2}
+.booking-modal-head{background:radial-gradient(circle at 0 0,#9370434f,transparent 60%),linear-gradient(145deg,#19363c,#10212d);padding:32px 34px 25px;border-radius:24px 24px 0 0;position:relative;border-bottom:1px solid #ad8d5a44}
+.booking-kicker{color:#e6bd7c;font-size:11px;letter-spacing:2px;font-weight:800}
+.booking-modal-head h2{color:#fff;font-size:clamp(23px,3vw,33px);margin:9px 0 6px}
+.booking-modal-head p{color:#c9d9d8;font-size:13px;margin:0}
+.booking-x{position:absolute;left:20px;top:20px;border:1px solid #d3c3a455;background:#102831;color:#fff;font-size:25px;width:36px;height:36px;border-radius:11px;cursor:pointer}
+.booking-form{padding:27px 34px 34px}
+.booking-step-title{display:flex;gap:12px;align-items:center;font-size:13px;font-weight:800;color:#e8c18a;letter-spacing:1px;margin:9px 0 17px}
+.booking-step-title span{letter-spacing:0;color:#fff;font-size:16px}
+.booking-step-title:not(:first-child){margin-top:30px;padding-top:21px;border-top:1px solid #ffffff19}
+.booking-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.booking-grid label{display:grid;gap:8px;color:#dee9e7;font-size:12px;font-weight:650}
+.booking-grid .input,.booking-success .input{width:100%;min-height:47px;padding:11px 13px;border:1px solid #48636b;border-radius:11px;background:#0c202b;color:#fff;outline:none}
+.booking-grid .input:focus{border-color:#e1b877;box-shadow:0 0 0 3px #e1b87725}
+.booking-wide{grid-column:1/-1}
+.booking-package-info{border:1px solid #a68a5e66;background:linear-gradient(130deg,#8f6c2a26,#0b2832);border-radius:13px;padding:16px 18px;margin-top:17px;color:#f3d5a1}
+.booking-package-info strong{display:block;font-size:16px}
+.booking-package-info p{color:#d6dfda;margin:8px 0 0;font-size:12px;line-height:1.9}
+.booking-inclusions{margin-top:12px;color:#dcece5;border:1px solid #ffffff20;border-radius:12px;padding:12px 16px}
+.booking-inclusions summary{cursor:pointer;font-weight:750;font-size:13px}
+.booking-inclusions div{padding-top:12px;line-height:2;color:#d3dcd9;font-size:12px}
+.booking-pricing{align-items:stretch}
+.booking-price-card{padding:15px 20px;border-radius:13px;border:1px solid #d7b97c88;background:linear-gradient(120deg,#74572b44,#132b34);display:flex;flex-direction:column;gap:5px}
+.booking-price-card small{color:#d8d8cc}.booking-price-card strong{font-family:Arial,sans-serif;font-size:29px;color:#f7d69b}
+.booking-price-card span{color:#e0ddd4;font-size:11px;line-height:1.7}
+.booking-legal,.booking-hint{color:#b9ccc9;line-height:1.9;font-size:12px;margin-top:18px}
+.booking-submit{width:100%;margin-top:14px;min-height:52px;background:linear-gradient(120deg,#e8ba76,#c5964d)!important;color:#15292e!important;font-weight:850!important;border-radius:12px!important}
+.booking-success{text-align:center;padding:34px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.booking-success[hidden]{display:none}
+.booking-success-icon{font-size:29px;color:#143727;background:#d5bb7c;border-radius:50%;display:grid;place-items:center;width:58px;height:58px}
+.booking-success h3{font-size:24px;color:#fff;margin:0}.booking-success p{line-height:1.85;color:#d3e2dd;margin:0}
+.booking-success>strong{font-family:Arial,sans-serif;font-size:23px;color:#efc585}
+.booking-success label{display:grid;gap:8px;text-align:right;width:100%;color:#e5e5da;font-size:12px}
+.booking-result-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.booking-track-card{position:relative;padding:35px;width:min(95vw,480px);margin:10vh auto;background:#112b34;color:#eef6f0;border:1px solid #d4b579;border-radius:19px}
+.booking-track-card h2{font-size:24px;margin:12px 0}.booking-track-card p{padding:5px 0;border-bottom:1px solid #ffffff13}
+.tracking-state{color:#f5d08a;background:#ffffff14;padding:14px;border-radius:10px;margin:12px 0;font-weight:800}
+.booking-notice-badge:not(:empty){font-size:10px;background:#e0b76e;color:#18313b;border-radius:30px;padding:2px 7px;margin-right:6px}
+.booking-admin-table td small{display:block;margin-top:4px;font-size:10px;opacity:.7}
+.booking-admin-table td button{background:transparent;border:1px solid #a88f67;border-radius:7px;padding:7px;color:#f4d59f;margin-top:6px;cursor:pointer}
+.booking-admin-table select{min-width:125px;max-width:160px}
+@media(max-width:620px){.booking-backdrop{padding:0}.booking-modal{border-radius:0;min-height:100dvh}.booking-modal-head{border-radius:0;padding:27px 20px 20px}.booking-form{padding:22px 18px 32px}.booking-grid{grid-template-columns:1fr}.booking-result-actions{flex-direction:column;width:100%}.booking-result-actions>*{width:100%;text-align:center}.booking-top-button{min-height:37px}.booking-success{padding:20px}}
