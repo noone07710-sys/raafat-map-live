@@ -1280,12 +1280,20 @@ async function main(){
  setupAdminBookings({db,getState:()=>state,toast});
  initializeCatalogLayout();
  initializeMap();events();
- if(state.map)navigationController=createRaafatNavigation({
-   map:state.map,
-   getSite:()=>state.sites.find(s=>s.id===state.selected),
-   getLocation:()=>state.lastLocation,
-   toast
- });
+ if(state.map){
+   try{
+     navigationController=createRaafatNavigation({
+       map:state.map,
+       getSite:()=>state.sites.find(s=>s.id===state.selected),
+       getLocation:()=>state.lastLocation,
+       toast
+     });
+   }catch(error){
+     console.error("Raafat navigation startup failed:",error);
+     // Keep the catalogue, map pins and scrolling usable even if routing fails.
+     navigationController=null;
+   }
+ }
  window.addEventListener("orientationchange",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),250));
  window.addEventListener("resize",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),100));
  if(!db){
