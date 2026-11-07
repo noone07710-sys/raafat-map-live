@@ -106,7 +106,11 @@
         <span class="live-location-status" id="locationStatus" aria-live="polite" hidden></span>
       </div>
       
-      <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
+      <div id="bookingMapPicker" class="booking-map-picker" hidden>
+ <div class="booking-map-picker-heading"><span class="booking-map-picker-icon">⌖</span><div><strong>اختيار القطع من الخارطة</strong><small>اضغط على علامات القطع المتاحة من نفس الفئة لإضافتها أو إزالتها</small></div></div>
+ <div class="booking-map-picker-footer"><strong id="bookingMapCount">0 قطعة محددة</strong><button id="bookingMapFinish" type="button">✓ إتمام الاختيار</button><button id="bookingMapCancel" type="button">رجوع</button></div>
+ </div>
+ <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="عرض جميع المواقع على الخريطة" title="عرض جميع المواقع">⌖</button>
       <div class="map-site-cta" id="mapSiteCTA" hidden>
         <div class="map-site-identity"><span class="map-site-eyebrow">الموقع المحدد <span id="mapSiteStatus" class="vip-site-state"></span></span><strong id="mapSiteTitle"></strong></div>
@@ -329,7 +333,13 @@
      <label>المحافظة<select class="input" id="bookingGovernorate"><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></label>
      <label>القضاء / المدينة<select class="input" id="bookingCity"></select></label>
      <label>فئة اللوحة<select class="input" id="bookingCategory"><option value="A">فئة A — 120 سم × 2 م</option><option value="B">فئة B — 2 × 3 م</option><option value="C">فئة C — 2.5 × 3.5 م</option><option value="D">فئة D — 3 × 4 م</option><option value="E">فئة E — لوحات الأسطح</option></select></label>
-     <label>القطعة المتاحة (اختياري)<select class="input" id="bookingSite"></select></label>
+     <label>اختيار سريع للقطعة (اختياري)<select class="input" id="bookingSite"></select></label>
+    </div>
+    <div class="booking-sites-picker">
+      <div class="booking-sites-header"><div><strong>حدد مواقع إعلانك على الخارطة</strong><p>يمكن اختيار عدة قطع من نفس الفئة حتى لو كانت في أقضية مختلفة من صلاح الدين وكركوك.</p></div>
+      <button type="button" class="booking-open-map" id="bookingChooseOnMap">⌖ اختيار من الخارطة</button></div>
+      <div class="booking-selected-sites" id="bookingSelectedSites" aria-live="polite"><span>لم تحدد أي قطعة بعد — يمكنك إرسال طلب عام أيضاً.</span></div>
+      <div class="booking-selection-actions"><span id="bookingSelectedCount">0 قطعة محددة</span><button type="button" id="bookingClearSites">مسح الاختيارات</button></div>
     </div>
     <div class="booking-package-cards" id="bookingPackageCards" role="group" aria-label="اختيار الباقة"></div>
     <div class="booking-package-info" id="bookingPackageInfo"></div>
@@ -337,8 +347,9 @@
     <div class="booking-step-title">03 <span>المدة والسعر</span></div>
     <div class="booking-grid booking-pricing">
      <label id="bookingDurationWrap">مدة الإعلان<select class="input" id="bookingDuration" required><option value="3">3 أشهر</option><option value="6">6 أشهر</option><option value="12">12 شهر</option></select></label>
-     <div class="booking-price-card"><small>سعر الباقة</small><strong id="bookingPrice"></strong><span id="bookingPriceNote"></span></div>
+     <div class="booking-price-card"><small id="bookingPriceLabel">السعر التقديري</small><strong id="bookingPrice"></strong><span id="bookingPriceNote"></span></div>
     </div>
+    <div class="booking-total-summary" id="bookingSummary"><span>عدد القطع: <b id="bookingSummaryCount">1 (طلب عام)</b></span><span>الإجمالي: <b id="bookingSummaryPrice">—</b></span></div>
     <p class="booking-legal">إرسال الطلب لا يعني تأكيد توفر القطعة أو الحجز النهائي. تتم المراجعة من قبل إدارة الشركة.</p>
     <button class="btn btn-primary booking-submit" id="bookingSend" type="submit">تأكيد إرسال طلب الحجز</button>
    </form>
