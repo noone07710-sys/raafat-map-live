@@ -3014,3 +3014,44 @@ select option{direction:rtl;text-align:right;padding:10px;line-height:1.8;backgr
  .vip-site-overview{padding:15px}
  .vip-site-action-grid{grid-template-columns:1fr}
 }
+
+
+/* Photo-safe hero: no excessive cropping, compact intentional empty state */
+.vip-site-hero.has-photo{height:230px;min-height:0!important;background:#092631}
+.vip-site-hero.has-photo .vip-site-hero-photo{position:absolute;inset:0;background:#071c25;overflow:hidden}
+.vip-site-hero.has-photo .detail-photo{height:100%!important;max-height:none!important}
+.vip-site-hero.has-photo .detail-photo img{
+ object-fit:contain!important;
+ object-position:center center!important;
+ max-width:100%;max-height:100%;
+ background:#091e27;
+}
+.vip-site-hero.no-photo{
+ height:208px;min-height:0!important;
+ background:linear-gradient(130deg,#0d2d37,#102b37);
+}
+.vip-site-hero.no-photo .vip-site-hero-fallback{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:20px 15px 54px;gap:5px;
+ background:radial-gradient(ellipse at 50% 24%,rgba(201,163,98,.16),transparent 72%),linear-gradient(140deg,#173942,#0c2632);
+}
+.vip-site-hero.no-photo .vip-site-hero-fallback img{
+ display:block;max-width:86px;max-height:76px;width:auto;height:auto;object-fit:contain;opacity:.62;filter:drop-shadow(0 5px 14px rgba(0,0,0,.24));
+}
+.vip-site-hero.no-photo .vip-site-hero-fallback strong{font-size:12px;color:#f8e6cb;letter-spacing:.1px}
+.vip-site-hero.no-photo .vip-site-hero-fallback small{font-size:10px;color:#a8c8c3}
+.vip-site-hero.no-photo .vip-site-hero-bottom{bottom:15px}
+.vip-site-hero.no-photo .vip-site-hero-bottom h3{font-size:19px!important}
+.vip-site-hero .vip-site-hero-shade{background:linear-gradient(to bottom,rgba(2,17,24,.37),transparent 36%,rgba(2,15,21,.88) 100%)}
+.vip-site-specification>summary{min-height:63px;align-items:center!important}
+.vip-site-specification .vip-spec-arrow{
+ display:grid!important;place-items:center!important;
+ width:32px!important;height:32px!important;
+ min-width:32px;flex:0 0 32px;
+ padding:0!important;margin:0!important;
+ border-radius:9px;line-height:0!important;
+ font-size:0!important;transform-origin:center center;
+}
+.vip-site-specification .vip-spec-chevron-svg{display:block;width:17px;height:17px;margin:0;transform:none}
+@media(max-width:850px){.vip-site-hero.has-photo{height:250px;min-height:0!important}.vip-site-hero.no-photo{height:205px;min-height:0!important}}
+@media(max-width:420px){.vip-site-hero.has-photo{height:210px}.vip-site-hero.no-photo{height:195px}}
