@@ -1,9 +1,9 @@
 // Customer booking and private tracking for Raafat advertising.
 const PACKAGES = Object.freeze({
- A:{size:"120 سم × 2 م",prices:{3:280,6:430,12:670}},
- B:{size:"2 × 3 م",prices:{3:520,6:760,12:1120}},
- C:{size:"2.5 × 3.5 م",prices:{3:760,6:1100,12:1800}},
- D:{size:"3 × 4 م",prices:{3:800,6:1300,12:2100}},
+ A:{size:"عرض ١٢٠ سم • ارتفاع ٢ م",prices:{3:280,6:430,12:670}},
+ B:{size:"عرض ٢ م • ارتفاع ٣ م",prices:{3:520,6:760,12:1120}},
+ C:{size:"عرض ٢٫٥ م • ارتفاع ٣٫٥ م",prices:{3:760,6:1100,12:1800}},
+ D:{size:"عرض ٣ م • ارتفاع ٤ م",prices:{3:800,6:1300,12:2100}},
  E:{size:"إعلانات الأسطح • تسعيرة المتر المربع",prices:{1:15,3:12,6:9,12:6}}
 });
 const REGIONS={"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","الدجيل","الضلوعية","الإسحاقي","يثرب","طوز خورماتو","آمرلي","سليمان بيك","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]};
@@ -51,6 +51,7 @@ export function setupBookings({db,getState,toast}){
    $("bookingPackageInfo").innerHTML=category.value==="E"
      ?'<strong>فئة E • لوحات الأسطح</strong><p>سعر المتر المربع شهرياً حسب المدة: شهر $15، 3 أشهر $12، 6 أشهر $9، 12 شهراً $6. الإجمالي = المساحة × السعر الشهري × عدد الأشهر.</p>'
      :'<strong>فئة '+category.value+' • '+safe(p.size)+'</strong><p>لوحات ضوئية، والسعر يشمل الإيجار والتصميم والطباعة والتبديل والصيانة • وجهان.</p>';
+   if(category.value!=="E"&&duration.value==="1")duration.value="3";
    duration.disabled=false;duration.required=true;
    $("bookingDurationWrap").hidden=false;
    $("bookingOneMonth").hidden=category.value!=="E";
@@ -202,6 +203,7 @@ export function setupBookings({db,getState,toast}){
        '<p>الفئة: '+safe(row.category)+' • المدة: '+safe(row.duration_months||"بعد الكشف")+'</p>'+
        '<p>القطع المختارة: '+requested.length+'</p>'+
        requested.map(s=>'<p>'+safe(s.code)+' • '+safe(s.name)+' — '+safe(s.governorate)+' / '+safe(s.city)+'</p>').join("")+
+       (row.category==='E'&&row.requested_area_m2?'<p>المساحة: '+safe(row.requested_area_m2)+' م²</p>':'')+
        '<p>الإجمالي: '+(row.quoted_price_usd?money(row.quoted_price_usd):"بعد الكشف")+'</p>':
        '<p>رابط المتابعة غير صالح أو غير متاح.</p>';
      $("bookingTracking").hidden=false;
@@ -256,7 +258,7 @@ export function setupAdminBookings({db,getState,toast}){
   count.textContent="جاري تحميل طلبات الحجز…";
   try{
    const {data,error}=await db.from("booking_requests")
-    .select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,status,created_at,tracking_token,booking_request_sites(site_id,site_code,site_name,governorate,city,unit_price_usd)")
+    .select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,requested_area_m2,status,created_at,tracking_token,booking_request_sites(site_id,site_code,site_name,governorate,city,unit_price_usd)")
     .order("created_at",{ascending:false}).limit(150);
    if(error)throw error;
    bookings=data||[];
@@ -273,7 +275,7 @@ export function setupAdminBookings({db,getState,toast}){
      '<td>'+safe(b.company_name)+'<small>'+safe(b.governorate)+' / '+safe(b.city)+'</small></td>'+
      '<td><strong>فئة '+safe(b.category)+'</strong> • '+safe(b.duration_months||"كشف موقع")+' أشهر'+
      '<div class="booking-admin-sites">'+(chips||'<span class="booking-admin-site">'+safe(b.site_code||"بدون قطعة محددة")+'</span>')+'</div>'+
-     '<small>'+countText+'</small><div class="booking-admin-total">'+(b.quoted_price_usd?money(b.quoted_price_usd):"بعد الكشف")+'</div>'+
+     '<small>'+countText+(b.category==='E'&&b.requested_area_m2?' • المساحة: '+safe(b.requested_area_m2)+' م²':'')+'</small><div class="booking-admin-total">'+(b.quoted_price_usd?money(b.quoted_price_usd):"بعد الكشف")+'</div>'+
      requested.map(s=>s.site_id?'<a class="booking-admin-map-link" href="'+safe(location.origin+location.pathname+'#site='+encodeURIComponent(s.site_id))+'" target="_blank" rel="noopener noreferrer">⌖ '+safe(s.site_code)+'</a>':"").join(" ")+
      '</td>'+
      '<td>'+safe(labels[b.status]||b.status)+'</td>'+
