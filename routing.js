@@ -23,27 +23,38 @@ function decodePolyline6(encoded){
  }
  return coordinates;
 }
+// Valhalla maneuver types per official route API; do not reuse OSRM numbering.
+const DESTINATION_TYPES=new Set([4,5,6]);
+const START_TYPES=new Set([1,2,3]);
 const instruction=(m)=>{
- const text=String(m.instruction||"").trim();
- if(text&&/[؀-ۿ]/.test(text))return text;
- const road=m.street_names?.[0]||m.begin_street_names?.[0]||"الطريق";
- const typ=Number(m.type);
- const actions={
-  0:"ابدأ باتجاه "+road,1:"تابع باتجاه "+road,2:"اتجه قليلاً إلى اليمين",3:"انعطف يميناً إلى "+road,
-  4:"انعطف بحدة يميناً إلى "+road,5:"استدر للخلف إلى اليمين",6:"استدر للخلف إلى اليسار",
-  7:"انعطف بحدة يساراً إلى "+road,8:"انعطف يساراً إلى "+road,9:"اتجه قليلاً إلى اليسار",
-  10:"تابع مباشرةً على "+road,11:"ادخل الدوار",12:"اخرج من الدوار",13:"وصلت إلى الوجهة",
-  14:"وصلت إلى الوجهة",15:"وصلت إلى الوجهة",16:"واصل السير",17:"ادخل الطريق السريع",
-  18:"اخرج من الطريق السريع"
+ const type=Number(m?.type);
+ const road=String(m?.street_names?.[0]||m?.begin_street_names?.[0]||"").trim();
+ const onRoad=road?" إلى "+road:"";
+ const phrases={
+  0:"تابع المسار",1:"ابدأ المسار",2:"ابدأ باتجاه اليمين",3:"ابدأ باتجاه اليسار",
+  4:"الوجهة أمامك",5:"الوجهة على يمينك",6:"الوجهة على يسارك",
+  7:"واصل على الطريق",8:"تابع بشكل مستقيم",9:"انحرف قليلاً إلى اليمين",
+  10:"انعطف يميناً",11:"انعطف يميناً بحدة",12:"استدر إلى الخلف يميناً",
+  13:"استدر إلى الخلف يساراً",14:"انعطف يساراً بحدة",15:"انعطف يساراً",
+  16:"انحرف قليلاً إلى اليسار",17:"تابع على المنحدر",
+  18:"اسلك المنحدر الأيمن",19:"اسلك المنحدر الأيسر",
+  20:"اسلك المخرج الأيمن",21:"اسلك المخرج الأيسر",
+  22:"تابع بشكل مستقيم",23:"التزم باليمين",24:"التزم باليسار",
+  25:"اندمج مع الطريق",26:"ادخل الدوار",27:"اخرج من الدوار",
+  28:"اتجه نحو العبّارة",29:"غادر العبّارة",
+  37:"اندمج من اليمين",38:"اندمج من اليسار"
  };
- return actions[typ]||"تابع عبر "+road;
+ const phrase=phrases[type]||"تابع المسار";
+ // Do not tell users they have arrived until GPS independently verifies arrival.
+ if(DESTINATION_TYPES.has(type))return phrase;
+ return (START_TYPES.has(type)||type===7||type===8||type===22||type===25)?phrase+(road?" على "+road:""):phrase+onRoad;
 };
 export function createRaafatNavigation({map,getSite,getLocation,toast}){
  const panel=$("raafatRoutePanel"),steps=$("raafatRouteSteps"),status=$("raafatRouteStatus");
  let routeLayer=null,originMarker=null,targetMarker=null,activeSite=null,starting=null;
  let choosing=false,requestId=0,abort=null,watchId=null,lastFix=null,lastRequested=null,requestTime=0;
- let routePoints=[],routeManeuvers=[],totalRouteMeters=0,routeSeconds=0,lastPoint=null,lastBearing=0;
- let arrowMarker=null,following=true,offRouteSince=0,arrivalShown=false,manualOrigin=false,routeMode="auto";
+ let routePoints=[],routeManeuvers=[],routeOffsets=[],totalRouteMeters=0,routeSeconds=0,lastPoint=null,lastBearing=0;
+ let arrowMarker=null,following=true,offRouteSince=0,arrivalShown=false,arrivalFixCount=0,manualOrigin=false,routeMode="auto";
  const meters=(a,b)=>map.distance(a,b);
  const bearing=(a,b)=>{
    const lat1=a[0]*Math.PI/180,lat2=b[0]*Math.PI/180,delta=(b[1]-a[1])*Math.PI/180;
@@ -77,38 +88,67 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    }
    let remaining=meters(routePoints[index],routePoints[index+1])*(1-t);
    for(let i=index+1;i<routePoints.length-1;i++)remaining+=meters(routePoints[i],routePoints[i+1]);
-   return {distance:best,remaining,index};
+   return {distance:best,remaining,index,t,progress:Math.max(0,totalRouteMeters-remaining)};
  }
  function updateProgress(point,accuracy=25){
    if(!activeSite||!safePoint(point))return;
    const destination=coordinates(activeSite);
-   const distance=meters(point,destination);
-   if(distance<=25&&accuracy<=35&&routePoints.length>=2&&closestOnRoute(point)?.remaining<65){
-     if(!arrivalShown){
-       arrivalShown=true;setStatus("وصلت إلى موقع القطعة تقريباً. تحقق من رمز اللوحة ومكانها الفعلي.");
-       $("raafatRouteNext").textContent="وصلت إلى وجهتك ✓";
+   const straightDistance=meters(point,destination);
+   const goodAccuracy=Number.isFinite(accuracy)&&accuracy>=0&&accuracy<=35;
+   const snap=closestOnRoute(point);
+   const routeDistance=snap?.remaining??Infinity;
+   const onRoute=snap&&snap.distance<=Math.max(35,Math.min(accuracy*1.5,70));
+   // A single noisy GPS fix must never claim arrival. Require two consecutive good fixes.
+   if(goodAccuracy&&straightDistance<=25&&onRoute&&routeDistance<=45){
+     arrivalFixCount++;
+     if(arrivalFixCount>=2&&!arrivalShown){
+       arrivalShown=true;
+       $("raafatRouteNext").textContent="وصلت إلى موقع القطعة ✓";
        $("raafatRouteRemaining").textContent="0 م";
+       setStatus("تحقق من موقع اللوحة ورمزها أمامك.");
      }
+   }else arrivalFixCount=0;
+   if(arrivalShown)return;
+   if(!snap||!routePoints.length){
+     $("raafatRouteNext").textContent="جاري تحديد مسارك…";
      return;
    }
-   if(!routePoints.length)return;
-   const snap=closestOnRoute(point);
-   if(!snap)return;
-   $("raafatRouteRemaining").textContent=roadKm(snap.remaining/1000);
-   $("raafatRouteDuration").textContent=durationLabel(routeSeconds*Math.min(1,snap.remaining/Math.max(1,totalRouteMeters)));
-   const next=routeManeuvers.find(m=>Number(m.begin_shape_index)>snap.index+1&&![13,14,15].includes(Number(m.type)));
-   if(next){
-     $("raafatRouteNext").textContent=instruction(next);
-     const stepNode=steps.querySelector('[data-step-index="'+routeManeuvers.indexOf(next)+'"]');
-     steps.querySelectorAll(".raafat-route-step").forEach(node=>node.classList.toggle("is-next",node===stepNode));
-   }else $("raafatRouteNext").textContent="تابع المسار حتى موقع القطعة";
+   if(!goodAccuracy||snap.distance>Math.max(100,accuracy*2.5)){
+     $("raafatRouteNext").textContent="جاري التحقق من موقعك على الطريق…";
+     $("raafatRouteRemaining").textContent=roadKm(routeDistance/1000);
+   }else{
+     $("raafatRouteRemaining").textContent=roadKm(routeDistance/1000);
+     $("raafatRouteDuration").textContent=durationLabel(routeSeconds*Math.max(0,Math.min(1,routeDistance/Math.max(1,totalRouteMeters))));
+     // Next maneuver must be ahead on the actual geometry, not merely the next array item.
+     let next=null,nextIndex=-1,nextMeters=Infinity;
+     for(let i=0;i<routeManeuvers.length;i++){
+       const m=routeManeuvers[i],type=Number(m.type);
+       if(START_TYPES.has(type)||DESTINATION_TYPES.has(type)||type===0)continue;
+       const shapeIndex=Number(m.begin_shape_index);
+       if(!Number.isInteger(shapeIndex)||shapeIndex<0||shapeIndex>=routeOffsets.length)continue;
+       const distanceToTurn=routeOffsets[shapeIndex]-snap.progress;
+       if(distanceToTurn< -Math.max(12,Math.min(accuracy,30)))continue;
+       next=m;nextIndex=i;nextMeters=Math.max(0,distanceToTurn);break;
+     }
+     if(next){
+       const remainingText=roadKm(nextMeters/1000);
+       $("raafatRouteNext").textContent=(nextMeters>12?"بعد "+remainingText+" • ":"الآن • ")+instruction(next);
+       steps.querySelectorAll(".raafat-route-step").forEach(node=>node.classList.toggle("is-next",node.dataset.stepIndex===String(nextIndex)));
+     }else{
+       $("raafatRouteNext").textContent=routeDistance<=120?"اقتربت من موقع القطعة":"تابع الطريق باتجاه موقع القطعة";
+       steps.querySelectorAll(".raafat-route-step").forEach(node=>node.classList.remove("is-next"));
+     }
+   }
    if(snap.distance>Math.max(90,2*Math.min(accuracy,60))){
      if(!offRouteSince)offRouteSince=Date.now();
      else if(Date.now()-offRouteSince>10000&&Date.now()-requestTime>45000&&!abort){
-       offRouteSince=0;setStatus("خرجت عن الطريق المحدد؛ جاري حساب طريق جديد…");
+       offRouteSince=0;setStatus("خرجت عن الطريق، جاري تحديث المسار…");
        void planRoute(point,true);
-     }else setStatus("يبدو أنك بعيد عن المسار. سيتم تحديث الطريق عند استمرار الانحراف.");
-   }else offRouteSince=0;
+     }
+   }else{
+     offRouteSince=0;
+     if(!abort)setStatus("");
+   }
  }
  function updateGPS(point,accuracy=25,heading=null){
    if(!activeSite||!goodCoord(point))return;
@@ -136,11 +176,11 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
  function cleanRoute(){
   abort?.abort();abort=null;requestId++;
   for(const l of [routeLayer,originMarker,targetMarker])if(l&&map.hasLayer(l))map.removeLayer(l);
-  routeLayer=originMarker=targetMarker=null;lastRequested=null;routePoints=[];routeManeuvers=[];totalRouteMeters=0;
+  routeLayer=originMarker=targetMarker=null;lastRequested=null;routePoints=[];routeManeuvers=[];routeOffsets=[];totalRouteMeters=0;
  }
  function stopWatch(){if(watchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;}
  function clear(){
-  cleanRoute();stopWatch();if(arrowMarker&&map.hasLayer(arrowMarker))map.removeLayer(arrowMarker);arrowMarker=null;activeSite=null;starting=null;lastFix=null;lastPoint=null;choosing=false;following=true;offRouteSince=0;manualOrigin=false;
+  cleanRoute();stopWatch();if(arrowMarker&&map.hasLayer(arrowMarker))map.removeLayer(arrowMarker);arrowMarker=null;activeSite=null;starting=null;lastFix=null;lastPoint=null;choosing=false;following=true;offRouteSince=0;arrivalFixCount=0;arrivalShown=false;manualOrigin=false;
   panel.hidden=true;$("raafatRouteChooseStart").hidden=true;
  }
  function setOrigin(point){
@@ -173,7 +213,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
   if(!goodCoord(dest))return;
   cleanRoute();
   requestTime=Date.now();lastRequested=from.slice();setOrigin(from);
-  if(!isReroute){following=true;offRouteSince=0;arrivalShown=false;}
+  if(!isReroute){following=true;offRouteSince=0;arrivalShown=false;arrivalFixCount=0;}
   targetMarker=window.L.circleMarker(dest,{radius:10,color:"#fff",weight:3,fillColor:"#edbd76",fillOpacity:1,interactive:false}).addTo(map);
   setStatus("جاري حساب الطريق على شبكة الشوارع…");
   steps.innerHTML="";
@@ -195,7 +235,9 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    routePoints=points;
    routeManeuvers=Array.isArray(leg.maneuvers)?leg.maneuvers:[];
    routeSeconds=Number(summary.time||leg.summary?.time||0);
-   totalRouteMeters=points.reduce((sum,p,i)=>i?sum+meters(points[i-1],p):0,0);
+   routeOffsets=[0];
+   for(let i=1;i<points.length;i++)routeOffsets[i]=routeOffsets[i-1]+meters(points[i-1],points[i]);
+   totalRouteMeters=routeOffsets[routeOffsets.length-1]||0;
    routeLayer=window.L.polyline(points,{color:"#f4b95e",opacity:.97,weight:6,lineCap:"round",lineJoin:"round",interactive:false}).addTo(map);
    if(!isReroute)map.fitBounds(routeLayer.getBounds(),{padding:[65,65],maxZoom:16});
    $("raafatRouteDistance").textContent=roadKm(summary.length||leg.summary?.length||0);
@@ -205,7 +247,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
    const maneuvers=routeManeuvers;
    steps.innerHTML=maneuvers.slice(0,60).map((m,i)=>
     '<li class="raafat-route-step" data-step-index="'+i+'"><span class="raafat-route-number">'+(i+1)+'</span><span><strong>'+esc(instruction(m))+'</strong><small>'+roadKm(m.length||0)+'</small></span></li>').join("")||'<li>اتبع الطريق المرسوم إلى الموقع المحدد.</li>';
-   $("raafatRouteNext").textContent="تابع المسار حتى موقع القطعة";
+   $("raafatRouteNext").textContent="جاري تحديد الانعطاف القادم…";
    updateProgress(lastFix||from);
   }catch(err){
    if(index!==requestId||!activeSite)return;
