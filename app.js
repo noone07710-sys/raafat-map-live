@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 import { fetchRaafatMapStyle } from "./brand-map.js";
 import { createGoogleMapLayer } from "./google-basemap.js";
 import { createAdminDashboard } from "./admin-dashboard.js";
+import { setupBookings, setupAdminBookings, packageForSite } from "./booking.js";
 // The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -42,6 +43,7 @@ const state = {
 };
 let toastTimeout;
 let adminDashboard=null;
+let bookingController=null;
 
 function toast(message){
  const box = el("toast");
@@ -792,7 +794,7 @@ async function renderDetail(){
    '<div class="spec-heading">المواصفات والتفاصيل</div>'+
    '<div class="detail-table">'+metaRows.map(([label,val])=>'<div class="detail-line"><span>'+escapeHtml(label)+'</span><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
    (site.description?'<div class="spec-heading">وصف الموقع</div><p class="detail-description">'+escapeHtml(site.description)+'</p>':"")+
-   '<div class="detail-actions"><a class="btn btn-primary" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="بدء الملاحة إلى القطعة المحددة">↗ اتجه إلى القطعة</a>'+
+   '<div class="detail-actions"><button class="btn btn-primary" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"?'disabled title="هذه القطعة غير متاحة"':'')+'>✦ احجز الآن • فئة '+packageForSite(site)+'</button><a class="btn btn-ghost" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="بدء الملاحة إلى القطعة المحددة">↗ اتجه إلى القطعة</a>'+
    (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">طلب عرض سعر</a>':
    '<button type="button" class="btn btn-ghost" id="copyInquiry">نسخ بيانات للاستفسار</button>')+
    '<button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button>'+
@@ -933,6 +935,8 @@ function openEditor(site=null){
  el("photoInfo").textContent=site?"الصور القديمة ستبقى. الصور الجديدة تُضاف عند الحفظ.":"الصور الجديدة تُرفع بعد حفظ موقع القطعة.";
  const get=(field,defaultValue="") => site?.[field]??defaultValue;
  el("fCode").value=get("code");
+ el("fPackageClass").value=site?packageForSite(site):"auto";
+ updatePackageHint();
  el("fName").value=get("name");
  el("fGovernorate").value=get("governorate","صلاح الدين");
  renderAdminCities(get("city"));
@@ -952,8 +956,18 @@ function openEditor(site=null){
  el("fPublished").checked=Boolean(get("published",false));
  openModal("siteModal");
 }
+function updatePackageHint(){
+ const site={width_m:Number(el("fWidth").value),height_m:Number(el("fHeight").value)};
+ const found=packageForSite(site);
+ const selected=el("fPackageClass").value;
+ el("fPackageHint").textContent="الفئة حسب القياس: "+(found||"—")+(selected!=="auto"&&selected!==found?" • القياس لا يطابق الفئة المختارة":"")+" • رمز القطعة يقبل أرقاماً فقط عند اختيار فئة.";
+}
 function sitePayload(){
- const code=el("fCode").value.trim();
+ const requestedClass=el("fPackageClass").value;
+ const measuredClass=packageForSite({width_m:Number(el("fWidth").value),height_m:Number(el("fHeight").value)});
+ if(requestedClass!=="auto"&&requestedClass!==measuredClass)throw Error("القياس لا يتطابق مع فئة "+requestedClass+". عدّل القياس أو اختر فئة صحيحة.");
+ const rawCode=el("fCode").value.trim();
+ const code=requestedClass!=="auto"&&/^\d+$/.test(rawCode)?requestedClass+"-"+rawCode:rawCode;
  const name=el("fName").value.trim();
  const governorate=el("fGovernorate").value;
  const city=el("fCity").value.trim();
@@ -1146,6 +1160,7 @@ function events(){
  el("manageDashboard").addEventListener("click",()=>adminDashboard?.open());
  el("logoutButton").addEventListener("click",()=>void signOut());
  el("siteForm").addEventListener("submit",saveSite);
+ ["fWidth","fHeight","fPackageClass"].forEach(id=>el(id).addEventListener("input",updatePackageHint));
  el("loginForm").addEventListener("submit",signIn);
  el("changePasswordButton").addEventListener("click",()=>{if(state.staff)openModal("passwordModal")});
  el("changePasswordForm").addEventListener("submit",changeAdminPassword);
@@ -1193,6 +1208,8 @@ async function main(){
    });
  }
  adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,loadSites,selectSite,applySettings:applySiteSettings});
+ bookingController=setupBookings({db,getState:()=>state,toast});
+ setupAdminBookings({db,getState:()=>state,toast});
  initializeCatalogLayout();
  initializeMap();events();
  window.addEventListener("orientationchange",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),250));
