@@ -3352,3 +3352,30 @@ body:not(.booking-open):not(.dashboard-open){overflow-x:hidden!important;overflo
 .map-area.is-navigating .raafat-route-panel.raafat-route-compact{
  box-sizing:border-box!important;z-index:1200!important;
 }
+
+/* Clean navigation mode: hide browsing pins/controls, preserve route and moving GPS arrow */
+body.raafat-is-navigating .map-area .map-site-cta,
+body.raafat-is-navigating .map-area .map-chip,
+body.raafat-is-navigating .map-area .vip-map-actions,
+body.raafat-is-navigating .map-area .live-location-control,
+body.raafat-is-navigating .map-area .map-home,
+body.raafat-is-navigating .map-area .vip-district-beacon,
+body.raafat-is-navigating .map-area .leaflet-tooltip-pane,
+body.raafat-is-navigating .map-area .leaflet-popup-pane,
+body.raafat-is-navigating .map-area .raafat-premium-site-icon,
+body.raafat-is-navigating .map-area .leaflet-marker-pane > :not(.raafat-route-direction-icon){
+ display:none!important;
+}
+body.raafat-is-navigating .main-layout>.panel{display:none!important}
+@media(min-width:851px){
+ body.raafat-is-navigating .main-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+ body.raafat-is-navigating .main-layout>.map-area{grid-column:1!important;width:100%!important;height:calc(100dvh - 84px)!important;min-height:480px}
+}
+@media(max-width:850px){
+ body.raafat-is-navigating .main-layout>.map-area{height:calc(100svh - 75px)!important;min-height:390px}
+}
+body.raafat-is-navigating .map-area .raafat-route-panel.raafat-route-compact{
+ display:block!important;top:16px!important;left:16px!important;
+ width:min(290px,calc(100% - 32px))!important;
+}
+body.raafat-is-navigating .map-area .raafat-route-panel.raafat-route-compact[hidden]{display:none!important}
