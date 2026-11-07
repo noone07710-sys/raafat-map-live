@@ -37,6 +37,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     });
     document.querySelectorAll("[data-dash-panel]").forEach(panel=>panel.hidden=panel.dataset.dashPanel!==tab);
     if(tab==="inventory")renderInventory();
+    if(tab==="bookings")document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
     if(tab==="staff"&&!staffLoaded)void loadStaff();
     if(tab==="settings")loadSettingsForm();
   }
