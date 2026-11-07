@@ -120,16 +120,24 @@
  </div>
  <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home" id="mapHome" aria-label="عرض جميع المواقع على الخريطة" title="عرض جميع المواقع"><svg class="raafat-target-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1.75v4M12 18.25v4M1.75 12h4M18.25 12h4"/></svg></button>
-      <div id="raafatRoutePanel" class="raafat-route-panel" role="region" aria-label="ملاحة رأفت الداخلية" hidden>
-        <div class="raafat-route-head"><div><small>RAAFAT • NAVIGATION</small><strong>الاتجاهات داخل الخريطة</strong><span id="raafatRouteDestination"></span></div><button id="raafatRouteClose" type="button" aria-label="إنهاء الملاحة">×</button></div>
-        <div class="raafat-route-modes" role="group" aria-label="نوع الطريق"><button type="button" data-route-mode="auto" aria-pressed="true">🚗 بالسيارة</button><button type="button" data-route-mode="pedestrian" aria-pressed="false">🚶 مشياً</button></div>
-        <div class="raafat-route-stats"><div><small>المسافة على الطريق</small><strong id="raafatRouteDistance">—</strong></div><div><small>زمن الرحلة التقريبي</small><strong id="raafatRouteDuration">—</strong></div></div>
-        <div class="raafat-route-guidance"><span class="raafat-route-guidance-symbol" aria-hidden="true">➤</span><div><small>الانعطاف التالي</small><strong id="raafatRouteNext">جاري تحديد المسار…</strong></div><span class="raafat-route-remaining">المتبقي <b id="raafatRouteRemaining">—</b></span></div>
-        <p class="raafat-route-status" id="raafatRouteStatus" aria-live="polite"></p>
-        <small class="raafat-route-gps" id="raafatRouteGpsAccuracy"></small>
-        <div class="raafat-route-actions"><button id="raafatRouteMyLocation" type="button">◎ موقعي</button><button id="raafatRouteChooseStart" type="button">⌖ اختر البداية</button><button id="raafatRouteRefresh" type="button">↻ تحديث المسار</button><button id="raafatRouteRecenter" type="button">⊙ اتبعني</button></div>
-        <details class="raafat-route-instructions" open><summary>تعليمات الطريق والانعطافات</summary><ol id="raafatRouteSteps"></ol></details>
-        <p class="raafat-route-warning">حساب الطريق يرسل إحداثيات البداية والوجهة إلى مزوّد مسارات خارجي. المسافة والوقت تقديريان وليسا بيانات حركة مرور مباشرة. تحقّق من اللوحات المرورية، ولا تستخدم الشاشة أثناء القيادة.</p>
+      <div id="raafatRoutePanel" class="raafat-route-panel raafat-route-compact" role="region" aria-label="ملاحة رأفت" hidden>
+        <div class="raafat-route-mini-head">
+          <span class="raafat-route-mini-icon" aria-hidden="true">➤</span>
+          <div class="raafat-route-mini-info">
+            <strong id="raafatRouteNext">جارٍ تحديد الطريق…</strong>
+            <small><span id="raafatRouteRemaining">—</span> متبقية للوصول</small>
+          </div>
+          <button id="raafatRouteClose" type="button" class="raafat-route-mini-close" title="إنهاء الملاحة" aria-label="إنهاء الملاحة">×</button>
+        </div>
+        <p id="raafatRouteStatus" class="raafat-route-mini-status" role="status" aria-live="polite">جاري تحديد موقعك…</p>
+        <button id="raafatRouteChooseStart" class="raafat-route-mini-manual" type="button" hidden>تحديد نقطة البداية يدوياً</button>
+        <div class="raafat-route-hidden-data" hidden>
+          <span id="raafatRouteDestination"></span><span id="raafatRouteDistance"></span><span id="raafatRouteDuration"></span>
+          <span id="raafatRouteGpsAccuracy"></span><ol id="raafatRouteSteps"></ol>
+          <button id="raafatRouteRefresh" type="button"></button>
+          <button id="raafatRouteMyLocation" type="button"></button>
+          <button id="raafatRouteRecenter" type="button"></button>
+        </div>
       </div>
       <div class="map-site-cta" id="mapSiteCTA" hidden>
         <div class="map-site-identity"><span class="map-site-eyebrow">الموقع المحدد <span id="mapSiteStatus" class="vip-site-state"></span></span><strong id="mapSiteTitle"></strong></div>
