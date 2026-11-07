@@ -3271,3 +3271,56 @@ body:not(.booking-open):not(.dashboard-open){overflow-x:hidden!important;overflo
   width:min(300px,calc(100% - 18px))!important;
  }
 }
+
+
+/* 2026-11-07: uncluttered map while navigating */
+.map-area.is-navigating .map-site-cta,
+.map-area.is-navigating .live-location-control,
+.map-area.is-navigating .map-chip,
+.map-area.is-navigating .vip-map-actions{
+ display:none!important;
+}
+.map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+ top:14px!important;left:14px!important;
+ width:min(300px,calc(100% - 28px))!important;
+ max-width:300px!important;
+}
+.map-area.is-navigating .leaflet-control-zoom{opacity:.9}
+.map-area.is-navigating .raafat-route-mini-head{min-height:58px!important;padding:9px 11px!important}
+.map-area.is-navigating .raafat-route-mini-status{max-height:48px;overflow:hidden}
+@media(max-width:520px){
+ .map-area.is-navigating .raafat-route-panel.raafat-route-compact{top:12px!important;left:9px!important;width:min(290px,calc(100% - 18px))!important}
+}
+/* Billboard imagery is the content; never position labels on top of it. */
+.vip-site-detail .vip-site-hero.has-photo{
+ height:220px!important;min-height:220px!important;
+ background:#081d27!important;
+}
+.vip-site-detail .vip-site-hero.has-photo .vip-site-hero-photo{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ position:absolute!important;inset:0!important;
+ height:100%!important;width:100%!important;padding:10px!important;
+ overflow:hidden!important;
+}
+.vip-site-detail .vip-site-hero.has-photo .vip-site-hero-photo>a{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ position:relative!important;
+ width:100%!important;height:100%!important;overflow:hidden!important;
+}
+.vip-site-detail .vip-site-hero.has-photo .vip-site-hero-photo>a>img{
+ display:block!important;width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center!important;
+ transform:none!important;
+}
+.vip-site-detail .vip-site-hero.has-photo .vip-site-hero-top,
+.vip-site-detail .vip-site-hero.has-photo .vip-site-hero-bottom,
+.vip-site-detail .vip-site-hero.has-photo .vip-site-hero-shade{
+ display:none!important;
+}
+.vip-site-detail .vip-site-hero.no-photo{height:160px!important;min-height:160px!important}
+.vip-site-detail .vip-site-hero.no-photo .vip-site-hero-bottom{display:none!important}
+.vip-site-detail .vip-site-hero.no-photo .vip-site-hero-fallback{padding:20px!important}
+@media(max-width:420px){
+ .vip-site-detail .vip-site-hero.has-photo{height:185px!important;min-height:185px!important}
+}
