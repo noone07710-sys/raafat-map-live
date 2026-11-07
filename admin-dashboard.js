@@ -6,7 +6,7 @@
 export function createAdminDashboard({db,getState,toast,openEditor,loadSites,selectSite,applySettings}) {
   const $=id=>document.getElementById(id);
   const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const cities=["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","الدجيل","الضلوعية","الإسحاقي","يثرب","طوز خورماتو","آمرلي","سليمان بيك","كركوك","الحويجة","داقوق","الدبس"];
+  const cities=["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","كركوك","الحويجة","داقوق","الدبس"];
   const labels={available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
   const roles={admin:"مدير كامل",editor:"محرر مواقع"};
   const chosen=new Set();
