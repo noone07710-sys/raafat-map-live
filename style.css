@@ -3055,3 +3055,28 @@ select option{direction:rtl;text-align:right;padding:10px;line-height:1.8;backgr
 .vip-site-specification .vip-spec-chevron-svg{display:block;width:17px;height:17px;margin:0;transform:none}
 @media(max-width:850px){.vip-site-hero.has-photo{height:250px;min-height:0!important}.vip-site-hero.no-photo{height:205px;min-height:0!important}}
 @media(max-width:420px){.vip-site-hero.has-photo{height:210px}.vip-site-hero.no-photo{height:195px}}
+
+
+/* Photo gallery fix: mainImage is an <a><img>, not a .detail-photo wrapper.
+   Target the real DOM structure to prevent inherited object-fit:cover zoom. */
+.vip-site-hero.has-photo .vip-site-hero-photo{
+ position:absolute!important;inset:0!important;
+ display:grid!important;place-items:center!important;
+ overflow:hidden!important;background:#0a232c!important;
+}
+.vip-site-hero.has-photo .vip-site-hero-photo>a{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;height:100%!important;max-width:100%!important;
+ position:relative;z-index:0;
+}
+.vip-site-hero.has-photo .vip-site-hero-photo>a>img{
+ display:block!important;
+ width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:50% 50%!important;
+ transform:none!important;scale:1!important;
+ filter:none!important;
+}
+.vip-site-hero.has-photo .vip-site-hero-shade{
+ background:linear-gradient(to bottom,rgba(2,13,22,.3),transparent 26%,transparent 63%,rgba(2,13,22,.78))!important;
+}
