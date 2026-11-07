@@ -6,5 +6,7 @@ window.RAAFAT_CONFIG = {
   // Add only a Google Maps JavaScript browser key restricted to this website.
   // Leave blank until Google Cloud billing, referrers and usage quotas are set.
   googleMapsApiKey: "",
+  // Valhalla demo endpoint is suitable for trial use only. For full production, use a dedicated Valhalla service URL.
+  routingApiUrl: "https://valhalla1.openstreetmap.de",
   whatsappNumber: ""
 };
