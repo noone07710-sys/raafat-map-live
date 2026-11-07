@@ -49,7 +49,7 @@ const instruction=(m)=>{
  if(DESTINATION_TYPES.has(type))return phrase;
  return (START_TYPES.has(type)||type===7||type===8||type===22||type===25)?phrase+(road?" على "+road:""):phrase+onRoad;
 };
-export function createRaafatNavigation({map,getSite,getLocation,toast}){
+export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=()=>{}}){
  const panel=$("raafatRoutePanel"),steps=$("raafatRouteSteps"),status=$("raafatRouteStatus");
  let routeLayer=null,originMarker=null,targetMarker=null,activeSite=null,starting=null;
  let choosing=false,requestId=0,abort=null,watchId=null,lastFix=null,lastRequested=null,requestTime=0;
@@ -105,7 +105,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
        arrivalShown=true;
        $("raafatRouteNext").textContent="وصلت إلى موقع القطعة ✓";
        $("raafatRouteRemaining").textContent="0 م";
-       setStatus("تحقق من موقع اللوحة ورمزها أمامك.");
+       setStatus("تأكد من رمز القطعة عند الوصول.");
      }
    }else arrivalFixCount=0;
    if(arrivalShown)return;
@@ -114,9 +114,11 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
      return;
    }
    if(!goodAccuracy||snap.distance>Math.max(100,accuracy*2.5)){
-     $("raafatRouteNext").textContent="جاري التحقق من موقعك على الطريق…";
+     $("raafatRouteNext").textContent="جاري ضبط موقعك…";
+     if(!abort)setStatus("دقة GPS ضعيفة حالياً");
      $("raafatRouteRemaining").textContent=roadKm(routeDistance/1000);
    }else{
+     if(!abort)setStatus("");
      $("raafatRouteRemaining").textContent=roadKm(routeDistance/1000);
      $("raafatRouteDuration").textContent=durationLabel(routeSeconds*Math.max(0,Math.min(1,routeDistance/Math.max(1,totalRouteMeters))));
      // Next maneuver must be ahead on the actual geometry, not merely the next array item.
@@ -261,6 +263,7 @@ export function createRaafatNavigation({map,getSite,getLocation,toast}){
   if(!map||!site)return;
   clear();activeSite=site;panel.hidden=false;following=true;
   navMapArea?.classList.add("is-navigating");document.body.classList.add("raafat-is-navigating");
+  onChange();
   map.closePopup();map.eachLayer(layer=>{if(typeof layer.closeTooltip==="function")layer.closeTooltip();});
   window.setTimeout(()=>map.invalidateSize({pan:false}),100);
   $("raafatRouteDestination").textContent=site.code+" • "+site.name;
