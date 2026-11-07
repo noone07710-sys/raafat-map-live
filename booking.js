@@ -28,6 +28,12 @@ export function setupBookings({db,getState,toast}){
   sites.innerHTML='<option value="">بدون تحديد قطعة — يحددها الفريق لاحقاً</option>'+inventory.map(s=>'<option value="'+safe(s.id)+'">'+safe(s.code+" — "+s.name)+'</option>').join("");
   if(inventory.some(s=>s.id===selected))sites.value=selected;
  };
+ const packageCards=$("bookingPackageCards");
+ function renderCards(){
+  packageCards.innerHTML=Object.entries(PACKAGES).map(([key,p])=>
+   '<button type="button" class="booking-tier-card '+(category.value===key?"selected":"")+'" data-tier="'+key+'" aria-pressed="'+(category.value===key)+'"><span class="booking-tier-top">RAAFAT <b>'+key+'</b></span><strong>فئة '+key+'</strong><small>'+p.size+'</small><span class="booking-tier-bottom">'+(key==="E"?"السعر بعد الكشف":"لوحة ضوئية • وجهان")+'</span></button>').join("");
+  packageCards.querySelectorAll("[data-tier]").forEach(btn=>btn.addEventListener("click",()=>{category.value=btn.dataset.tier;writePackage()}));
+ }
  const writePackage=()=>{
   const p=PACKAGES[category.value];
   $("bookingPackageInfo").innerHTML=category.value==="E"
@@ -37,7 +43,7 @@ export function setupBookings({db,getState,toast}){
   duration.required=category.value!=="E";
   $("bookingDurationWrap").hidden=category.value==="E";
   duration.value="3";
-  writePrice();writeSites();
+  writePrice();writeSites();renderCards();
  };
  const writePrice=()=>{
   const p=PACKAGES[category.value].prices[duration.value];
@@ -168,6 +174,7 @@ export function setupAdminBookings({db,getState,toast}){
   }));
  }
  document.addEventListener("raafat:bookings-tab",()=>void load());
+ setInterval(()=>{if(getState().staff&&!$("adminDashboard").hidden)void load()},60000);
  $("dashBookingRefresh").addEventListener("click",()=>void load());
  return {load};
 }
