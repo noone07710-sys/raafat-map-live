@@ -4,7 +4,7 @@ const PACKAGES = Object.freeze({
  B:{size:"2 × 3 م",prices:{3:520,6:760,12:1120}},
  C:{size:"2.5 × 3.5 م",prices:{3:760,6:1100,12:1800}},
  D:{size:"3 × 4 م",prices:{3:800,6:1300,12:2100}},
- E:{size:"لوحات أسطح وبنايات",prices:{}}
+ E:{size:"إعلانات الأسطح • تسعيرة المتر المربع",prices:{1:15,3:12,6:9,12:6}}
 });
 const REGIONS={"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","الدجيل","الضلوعية","الإسحاقي","يثرب","طوز خورماتو","آمرلي","سليمان بيك","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]};
 const $=id=>document.getElementById(id);
@@ -21,7 +21,7 @@ export function packageForSite(site){
 
 export function setupBookings({db,getState,toast}){
  const countries=$("bookingGovernorate"),cities=$("bookingCity"),sites=$("bookingSite"),category=$("bookingCategory"),duration=$("bookingDuration");
- const modal=$("bookingModal"),bar=$("bookingMapPicker"),chosen=new Map();
+ const modal=$("bookingModal"),bar=$("bookingMapPicker"),chosen=new Map(),eArea=$("bookingEArea");
  let busy=false,selecting=false,dirty=false,currentCategory='A';
  const available=s=>s?.published&&s.status==="available";
  const inventory=()=>getState().sites||[];
@@ -43,20 +43,37 @@ export function setupBookings({db,getState,toast}){
    $("bookingPackageCards").innerHTML=Object.entries(PACKAGES).map(([key,p])=>
      '<button type="button" class="booking-tier-card '+(category.value===key?"selected":"")+'" data-tier="'+key+'" aria-pressed="'+(category.value===key)+'">'+
      '<span class="booking-tier-top">RAAFAT <b>'+key+'</b></span><strong>فئة '+key+'</strong><small>'+safe(p.size)+'</small>'+
-     '<span class="booking-tier-bottom">'+(key==="E"?"السعر بعد الكشف":"لوحة ضوئية • وجهان")+'</span></button>').join("");
+     '<span class="booking-tier-bottom">'+(key==="E"?"من $6 / م² شهرياً":"لوحة ضوئية • وجهان")+'</span></button>').join("");
    $("bookingPackageCards").querySelectorAll("[data-tier]").forEach(btn=>btn.addEventListener("click",()=>changeCategory(btn.dataset.tier)));
  }
  function writePackage(){
    const p=PACKAGES[category.value];
    $("bookingPackageInfo").innerHTML=category.value==="E"
-     ?'<strong>فئة E • لوحات الأسطح</strong><p>تخضع للكشف الميداني وتوفر الموقع، وتحدد التكلفة بعد مراجعة الإدارة.</p>'
+     ?'<strong>فئة E • لوحات الأسطح</strong><p>سعر المتر المربع شهرياً حسب المدة: شهر $15، 3 أشهر $12، 6 أشهر $9، 12 شهراً $6. الإجمالي = المساحة × السعر الشهري × عدد الأشهر.</p>'
      :'<strong>فئة '+category.value+' • '+safe(p.size)+'</strong><p>لوحات ضوئية، والسعر يشمل الإيجار والتصميم والطباعة والتبديل والصيانة • وجهان.</p>';
-   duration.disabled=category.value==="E";
-   duration.required=category.value!=="E";
-   $("bookingDurationWrap").hidden=category.value==="E";
+   duration.disabled=false;duration.required=true;
+   $("bookingDurationWrap").hidden=false;
+   $("bookingOneMonth").hidden=category.value!=="E";
+   $("bookingOneMonth").disabled=category.value!=="E";
+   $("bookingEAreaWrap").hidden=category.value!=="E";
+   updateEAreaField();
    renderCards();
    writeSites();
    renderSelection();
+ }
+ function updateEAreaField(){
+   const isE=category.value==="E";
+   const selectedCount=picked().length;
+   $("bookingEAreaWrap").hidden=!isE||selectedCount>0;
+   eArea.required=isE&&selectedCount===0;
+ }
+ function categoryTotal(){
+   const arr=picked(),term=Number(duration.value),rate=PACKAGES[category.value].prices[term];
+   if(!rate)return null;
+   if(category.value!=="E")return rate*Math.max(arr.length,1);
+   const area=arr.length?arr.reduce((n,site)=>n+Number(site.width_m)*Number(site.height_m),0):Number(eArea.value);
+   if(!Number.isFinite(area)||area<=0)return null;
+   return Math.ceil(area*rate*term);
  }
  function changeCategory(key){
    if(key===currentCategory)return;
@@ -74,12 +91,14 @@ export function setupBookings({db,getState,toast}){
    $("bookingSelectedCount").textContent=arr.length+" قطعة محددة";
    $("bookingMapCount").textContent=arr.length+" قطعة محددة";
    $("bookingSummaryCount").textContent=arr.length?String(arr.length):"1 (طلب عام)";
-   const unit=PACKAGES[category.value].prices[duration.value];
-   $("bookingPriceLabel").textContent=arr.length>1?"السعر الإجمالي لـ "+arr.length+" قطع":"سعر الباقة";
-   $("bookingPrice").textContent=unit?money(unit*Math.max(arr.length,1)):"بعد الكشف";
-   $("bookingSummaryPrice").textContent=unit?money(unit*Math.max(arr.length,1)):"يحدد لاحقاً";
-   $("bookingPriceNote").textContent=arr.length>1&&unit?
-     "سعر القطعة "+money(unit)+" × "+arr.length+" قطع • تأكيد التوفر بعد مراجعة الإدارة.":
+   updateEAreaField();
+   const unit=PACKAGES[category.value].prices[duration.value],total=categoryTotal();
+   $("bookingPriceLabel").textContent=category.value==="E"?"الإجمالي حسب المساحة":arr.length>1?"السعر الإجمالي لـ "+arr.length+" قطع":"سعر الباقة";
+   $("bookingPrice").textContent=total===null?"أدخل المساحة بالمتر المربع":money(total);
+   $("bookingSummaryPrice").textContent=total===null?"أدخل المساحة":money(total);
+   $("bookingPriceNote").textContent=category.value==="E"?
+     "سعر المتر المربع "+money(unit||0)+" شهرياً × "+duration.value+" أشهر × المساحة المحددة. التأكيد بعد مراجعة الإدارة.":
+     arr.length>1&&unit?"سعر القطعة "+money(unit)+" × "+arr.length+" قطع • تأكيد التوفر بعد مراجعة الإدارة.":
      "الأسعار تشمل الخدمات المبينة، والتأكيد النهائي بعد مراجعة الإدارة.";
    writeSites();
    document.dispatchEvent(new CustomEvent("raafat:booking-selection-changed"));
@@ -145,18 +164,19 @@ export function setupBookings({db,getState,toast}){
  async function submit(event){
    event.preventDefault();if(busy||!db)return;
    const selected=picked();
+   if(category.value==="E"&&!selected.length&&(!Number.isFinite(Number(eArea.value))||Number(eArea.value)<=0)){toast("أدخل مساحة إعلان الأسطح بالمتر المربع.");eArea.focus();return;}
    const payload={
      p_customer_name:$("bookingName").value.trim(),
      p_phone:$("bookingPhone").value.replace(/\D/g,""),
      p_company_name:$("bookingCompany").value.trim(),
      p_governorate:countries.value,p_city:cities.value,p_category:category.value,
-     p_duration_months:category.value==="E"?null:Number(duration.value),
-     p_site_ids:selected.map(s=>s.id)
+     p_duration_months:Number(duration.value),
+     p_site_ids:selected.map(s=>s.id),p_e_area_m2:category.value==="E"&&!selected.length?Number(eArea.value):null
    };
    if(!/^\d{11}$/.test(payload.p_phone)){toast("رقم الهاتف يجب أن يكون 11 رقماً بالضبط.");return}
    busy=true;$("bookingSend").disabled=true;$("bookingSend").textContent="جاري إرسال الطلب…";
    try{
-     const {data,error}=await db.rpc("submit_booking_request_multi",payload);
+     const {data,error}=await db.rpc("submit_booking_request_v2",payload);
      if(error)throw error;
      const result=data?.[0];if(!result)throw Error("لم ترجع قاعدة البيانات رقم الحجز");
      $("bookingForm").hidden=true;$("bookingResult").hidden=false;
@@ -204,6 +224,7 @@ export function setupBookings({db,getState,toast}){
  cities.addEventListener("change",()=>{dirty=true;writeSites();});
  category.addEventListener("change",event=>changeCategory(event.target.value));
  duration.addEventListener("change",()=>{dirty=true;renderSelection();});
+ eArea.addEventListener("input",()=>{dirty=true;renderSelection();});
  sites.addEventListener("change",()=>{if(sites.value)addOrRemove(sites.value);sites.value="";});
  $("bookingForm").addEventListener("input",()=>{dirty=true;});
  $("bookingForm").addEventListener("submit",submit);
