@@ -3,6 +3,7 @@ import { fetchRaafatMapStyle } from "./brand-map.js";
 import { createGoogleMapLayer } from "./google-basemap.js";
 import { createAdminDashboard } from "./admin-dashboard.js";
 import { setupBookings, setupAdminBookings, packageForSite } from "./booking.js";
+import { createRaafatNavigation } from "./routing.js";
 // The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -44,6 +45,7 @@ const state = {
 let toastTimeout;
 let adminDashboard=null;
 let bookingController=null;
+let navigationController=null;
 let siteFormDirty=false;
 
 function toast(message){
@@ -114,11 +116,8 @@ function revealFallbackIfReady(){
    window.setTimeout(finishMapReveal,4500);
  }
 }
-function directionsToSite(site){
- if(!site||!validCoords(Number(site.latitude),Number(site.longitude)))return "";
- const coordinates=Number(site.latitude)+","+Number(site.longitude);
- return "https://www.google.com/maps/dir/?api=1&destination="+
-   encodeURIComponent(coordinates)+"&travelmode=driving&dir_action=navigate";
+function canNavigateToSite(site){
+ return Boolean(site&&validCoords(Number(site.latitude),Number(site.longitude)));
 }
 /**
  * Only one curated regional beacon appears within the viewport at a time.
@@ -389,6 +388,7 @@ function startLiveLocationTracking(){
      state.gpsAccuracy.setLatLng(point).setRadius(Math.min(accuracy,15000));
    }
    state.lastLocation=point;
+   navigationController?.onLiveLocation(point);
    updateVipDirectLink();
    if(state.followLocation){
      if(firstFix){
@@ -467,7 +467,8 @@ function initializeMap(){
      toast("تم تحديد الإحداثيات؛ راجعها قبل الحفظ.");
      return;
    }
-   if(bookingController?.isSelecting())return;
+   if(navigationController?.handleMapClick(event.latlng))return;
+   if(bookingController?.isSelecting()||navigationController?.isActive())return;
    clearSelectedSite();
  });
  el("mapHome").addEventListener("click",()=>zoomAll(true));
@@ -483,6 +484,10 @@ function initializeMap(){
    }
  });
  window.addEventListener("pagehide",stopLiveLocationTracking,{once:true});
+ el("mapSiteDirections").addEventListener("click",()=>{
+   const site=state.sites.find(s=>s.id===state.selected);
+   if(site)navigationController?.start(site);
+ });
  el("mapSiteDetails").addEventListener("click",()=>{
    el("siteDetails").scrollIntoView({behavior:"smooth",block:"nearest"});
  });
@@ -649,7 +654,7 @@ function renderMarkers(sites){
    });
    marker.on("click",()=>{
      if(bookingController?.handleSiteSelection(s.id))return;
-     if(state.selected===s.id){clearSelectedSite();return;}
+     if(state.selected===s.id){navigationController?.clear();clearSelectedSite();return;}
      selectSite(s.id);
    });
    marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
@@ -688,19 +693,18 @@ function updateMapSiteCTA(){
  const card=el("mapSiteCTA");
  const site=state.sites.find(s=>s.id===state.selected);
  if(!site){card.hidden=true;updateVipDirectLink();return;}
- const link=directionsToSite(site);
- if(!link){card.hidden=true;return;}
+ if(!canNavigateToSite(site)){card.hidden=true;return;}
  const label=el("mapSiteStatus");
  label.textContent="• "+(statuses[site.status]||site.status);
  label.className="vip-site-state "+(statuses[site.status]?site.status:"available");
  el("mapSiteTitle").textContent=site.code+" · "+site.name;
- el("mapSiteDirections").href=link;
- el("mapSiteDirections").setAttribute("aria-label","الاتجاهات إلى "+site.name);
+ el("mapSiteDirections").setAttribute("aria-label","فتح الملاحة داخل الموقع إلى "+site.name);
  card.hidden=false;
  updateVipDirectLink();
 }
 function clearSelectedSite(){
  if(!state.selected)return;
+ navigationController?.clear();
  state.selected=null;
  state.galleryIndex=0;
  state.vipDirectLinkEnabled=false;
@@ -784,7 +788,7 @@ async function renderDetail(){
  }
  const phone=String(state.siteSettings?.whatsapp_number||config.whatsappNumber||"").replace(/\D/g,"");
  const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent((state.siteSettings?.contact_message||"مرحباً، أود الاستفسار عن موقع إعلاني.")+"\nالقطعة: "+site.code+" - "+site.name):null;
- const directionsUrl=directionsToSite(site);
+ const routeIsAvailable=canNavigateToSite(site);
  const photos=Array.isArray(site.site_photos)?site.site_photos:[];
  const imageLinks=await Promise.all(photos.map(p=>photoUrl(p.storage_path)));
  if(state.selected!==requestId)return;
@@ -838,7 +842,7 @@ async function renderDetail(){
       '</div>'+
       '<div class="vip-site-action-stack">'+
         '<button class="btn btn-primary vip-site-book-button" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"?'disabled title="هذه القطعة غير متاحة"':'')+'>✦ احجز الموقع الإعلاني <span>←</span></button>'+
-        '<div class="vip-site-action-grid"><a class="btn btn-ghost" href="'+directionsUrl+'" target="_blank" rel="noopener noreferrer" aria-label="الاتجاهات إلى هذه القطعة">⌖ الاتجاهات</a>'+
+        '<div class="vip-site-action-grid"><button type="button" class="btn btn-ghost" id="raafatStartDirections" aria-label="الاتجاهات الداخلية إلى هذه القطعة">⌖ الاتجاهات</button>'+
           (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">◈ الاستفسار واتساب</a>':
           '<button type="button" class="btn btn-ghost" id="copyInquiry">⧉ نسخ للاستفسار</button>')+'</div>'+
       '</div>'+
@@ -853,6 +857,7 @@ async function renderDetail(){
     '</div>'+
    '</article>';
  el("siteDetails").innerHTML=html;
+ el("raafatStartDirections")?.addEventListener("click",()=>{if(routeIsAvailable)navigationController?.start(site);else toast("إحداثيات القطعة غير صالحة.")});
  el("vipDirectRoute")?.addEventListener("click",()=>{
    if(!state.lastLocation){
      toast("لازم تضغط «موقعي الحالي» وتسمح للموقع أولاً. هذا خط مستقيم توضيحي وليس مسار قيادة.");
@@ -1275,6 +1280,12 @@ async function main(){
  setupAdminBookings({db,getState:()=>state,toast});
  initializeCatalogLayout();
  initializeMap();events();
+ if(state.map)navigationController=createRaafatNavigation({
+   map:state.map,
+   getSite:()=>state.sites.find(s=>s.id===state.selected),
+   getLocation:()=>state.lastLocation,
+   toast
+ });
  window.addEventListener("orientationchange",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),250));
  window.addEventListener("resize",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),100));
  if(!db){
