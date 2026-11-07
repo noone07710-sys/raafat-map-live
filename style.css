@@ -3163,3 +3163,41 @@ body:not(.booking-open):not(.dashboard-open){overflow-x:hidden!important;overflo
 .map-reveal,.map-reveal::before,.map-reveal::after{pointer-events:none!important}
 .map-area .raafat-route-panel[hidden],.map-area .booking-map-picker[hidden]{display:none!important}
 .map-area .map-site-cta[hidden]{display:none!important}
+
+
+/* Moving GPS guidance and accessible navigation updates */
+.raafat-route-direction-icon{background:transparent!important;border:0!important;pointer-events:none!important}
+.raafat-route-direction-icon .raafat-navigation-arrow{
+ display:block;width:44px;height:44px;
+ border-radius:50%;
+ filter:drop-shadow(0 2px 8px rgba(0,0,0,.8));
+ transition:transform .4s ease-out;
+}
+.raafat-route-direction-icon .raafat-navigation-arrow svg{display:block;margin:2px}
+.raafat-route-guidance{
+ display:flex;align-items:center;gap:9px;
+ margin:12px 13px 0;padding:12px 9px;
+ background:linear-gradient(125deg,#214953,#143a41);
+ border:1px solid #b5dfdb43;border-radius:12px;
+}
+.raafat-route-guidance-symbol{
+ display:grid;place-items:center;
+ width:33px;height:33px;min-width:33px;
+ border-radius:10px;color:#112f37;background:#f3cf8a;font-size:23px;
+}
+.raafat-route-guidance>div{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.raafat-route-guidance>div small{color:#b6d0ca;font-size:10px}
+.raafat-route-guidance>div strong{color:#fff;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.raafat-route-remaining{display:flex;flex-direction:column;align-items:center;gap:4px;color:#b7ccc7;font-size:9px;text-align:center;min-width:67px}
+.raafat-route-remaining b{color:#f6d38e;font-size:13px}
+.raafat-route-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
+.raafat-route-actions button{font-size:11px}
+.raafat-route-step.is-next{border-color:#e9c081;background:#285058;box-shadow:inset 3px 0 0 #e4be7c}
+.raafat-route-panel{touch-action:pan-y;overscroll-behavior:contain}
+@media(max-width:520px){.raafat-route-panel{max-height:min(62svh,480px);top:65px}.raafat-route-actions button{font-size:11px}}
+
+
+.raafat-route-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 14px 0}
+.raafat-route-modes button{border:1px solid #6c918d75;border-radius:10px;background:#183d46;color:#cadbd5;min-height:39px;font-size:12px;font-weight:750;cursor:pointer}
+.raafat-route-modes button[aria-pressed="true"]{background:linear-gradient(115deg,#e7bf80,#c89650);color:#173138;border-color:#f3d398}
+.raafat-route-modes button:focus-visible{outline:2px solid #fff;outline-offset:2px}
