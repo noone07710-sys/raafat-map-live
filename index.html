@@ -89,12 +89,20 @@
         <button id="vipCoverage" class="vip-tool-button" type="button" title="استعراض جميع المدن" aria-label="استعراض المدن الثمانية"><span aria-hidden="true">◎</span> شبكة المناطق</button>
         <button id="vipLegendToggle" class="vip-tool-button vip-legend-button" type="button" aria-expanded="false" aria-controls="vipLegend"><span aria-hidden="true">◈</span> دليل الألوان</button>
         <div class="vip-legend" id="vipLegend" hidden>
-          <strong>حالات المواقع الإعلانية</strong>
+          <strong>فئات اللوحات الإعلانية</strong>
+          <div class="map-category-legend">
+            <div><span class="legend-category category-A">A</span><span>١٢٠ سم × ٢ م</span></div>
+            <div><span class="legend-category category-B">B</span><span>٢ × ٣ م</span></div>
+            <div><span class="legend-category category-C">C</span><span>٢٫٥ × ٣٫٥ م</span></div>
+            <div><span class="legend-category category-D">D</span><span>٣ × ٤ م</span></div>
+            <div><span class="legend-category category-E">E</span><span>إعلانات الأسطح</span></div>
+          </div>
+          <strong class="legend-status-heading">حالة توفر القطعة • النقطة الصغيرة</strong>
           <div><i class="vip-legend-dot available"></i><span>متاحة</span></div>
           <div><i class="vip-legend-dot reserved"></i><span>محجوزة</span></div>
           <div><i class="vip-legend-dot booked"></i><span>مؤجرة</span></div>
           <div><i class="vip-legend-dot maintenance"></i><span>صيانة</span></div>
-          <small>العلامات الذهبية تشير إلى مراكز المدن، وليست مواقع اللوحات.</small>
+          <small>الحرف واللون يحددان الفئة، والنقطة الصغيرة تحدد حالة التوفر. العلامات الذهبية الكبيرة تشير لمراكز المدن.</small>
         </div>
       </div>
       <div class="live-location-control" id="liveLocationControl" role="group" aria-label="تحديد موقعك الحالي">
