@@ -22,6 +22,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     $("dashSettingsTab").hidden=!isAdmin();
     $("dashSessionRole").textContent=(state.user?.email||"حساب موظف")+" • "+(roles[state.staffRole]||"موظف");
     switchTab("overview");
+    document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
   }
   function close(){
     $("adminDashboard").hidden=true;
