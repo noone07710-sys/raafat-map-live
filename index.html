@@ -42,7 +42,7 @@
   <main class="main-layout">
     <aside class="panel browse">
       <h1 class="catalog-title" id="catalogTitle">المواقع الإعلانية</h1>
-      <div class="coverage-box" id="cityChipsWrap"><div class="coverage-head"><span>المدن</span></div><div class="city-chips" id="cityChips"></div></div>
+      <div class="coverage-box" id="cityChipsWrap"><div class="coverage-head"><span>المحافظات والمدن</span></div><div class="city-chips" id="cityChips"></div></div>
       <div class="alert" id="systemAlert" hidden role="status"></div>
       <div class="stats" id="catalogStats" aria-label="إحصائيات المواقع">
         <div class="stat"><strong id="allCount">—</strong><span>إجمالي القطع</span></div>
@@ -332,7 +332,13 @@
     <div class="booking-grid">
      <label>المحافظة<select class="input" id="bookingGovernorate"><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></label>
      <label>القضاء / المدينة<select class="input" id="bookingCity"></select></label>
-     <label>فئة اللوحة<select class="input" id="bookingCategory"><option value="A">فئة A — 120 سم × 2 م</option><option value="B">فئة B — 2 × 3 م</option><option value="C">فئة C — 2.5 × 3.5 م</option><option value="D">فئة D — 3 × 4 م</option><option value="E">فئة E — لوحات الأسطح</option></select></label>
+     <label>فئة اللوحة<select class="input" id="bookingCategory" aria-label="فئة اللوحة">
+<option value="A">الفئة A — العرض ١٢٠ سم، الارتفاع ٢ متر</option>
+<option value="B">الفئة B — العرض ٢ متر، الارتفاع ٣ متر</option>
+<option value="C">الفئة C — العرض ٢٫٥ متر، الارتفاع ٣٫٥ متر</option>
+<option value="D">الفئة D — العرض ٣ متر، الارتفاع ٤ متر</option>
+<option value="E">الفئة E — إعلانات الأسطح (بالمتر المربع)</option>
+</select></label>
      <label>اختيار سريع للقطعة (اختياري)<select class="input" id="bookingSite"></select></label>
     </div>
     <div class="booking-sites-picker">
@@ -346,7 +352,8 @@
     <details class="booking-inclusions"><summary>ماذا تتضمن الباقة؟</summary><div>الإيجار • التصميم • الطباعة • الصيانة • التبديل • وجهان • لوحات ضوئية للفئات A–D</div></details>
     <div class="booking-step-title">03 <span>المدة والسعر</span></div>
     <div class="booking-grid booking-pricing">
-     <label id="bookingDurationWrap">مدة الإعلان<select class="input" id="bookingDuration" required><option value="3">3 أشهر</option><option value="6">6 أشهر</option><option value="12">12 شهر</option></select></label>
+     <label id="bookingEAreaWrap" class="booking-e-area" hidden>المساحة المطلوبة لفئة E (م²) <input class="input" id="bookingEArea" type="number" inputmode="decimal" min="0.01" max="100000" step="0.01" placeholder="مثال: 24"><small>عند اختيار قطع من الخارطة تُحسب مساحتها تلقائياً.</small></label>
+     <label id="bookingDurationWrap">مدة الإعلان<select class="input" id="bookingDuration" required><option value="1" id="bookingOneMonth" hidden disabled>شهر واحد (فئة E)</option><option value="3">3 أشهر</option><option value="6">6 أشهر</option><option value="12">12 شهر</option></select></label>
      <div class="booking-price-card"><small id="bookingPriceLabel">السعر التقديري</small><strong id="bookingPrice"></strong><span id="bookingPriceNote"></span></div>
     </div>
     <div class="booking-total-summary" id="bookingSummary"><span>عدد القطع: <b id="bookingSummaryCount">1 (طلب عام)</b></span><span>الإجمالي: <b id="bookingSummaryPrice">—</b></span></div>
