@@ -46,7 +46,14 @@ jobs:
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
-          cp assets/raafat-logo.png _site/assets/raafat-logo.png
+          if [ -f assets/raafat-logo.png ]; then
+            cp assets/raafat-logo.png _site/assets/raafat-logo.png
+          elif [ -f "e85b3bef-3d06-423e-a284-c3d8681964bf (1).png" ]; then
+            cp "e85b3bef-3d06-423e-a284-c3d8681964bf (1).png" _site/assets/raafat-logo.png
+          else
+            echo "The original Raafat logo file is missing" >&2
+            exit 1
+          fi
           touch _site/.nojekyll
 
       - name: Configure GitHub Pages
