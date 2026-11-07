@@ -2708,3 +2708,14 @@ body.raafat-signature-map .map-area .map-reveal-brand{
 .booking-admin-table td button{background:transparent;border:1px solid #a88f67;border-radius:7px;padding:7px;color:#f4d59f;margin-top:6px;cursor:pointer}
 .booking-admin-table select{min-width:125px;max-width:160px}
 @media(max-width:620px){.booking-backdrop{padding:0}.booking-modal{border-radius:0;min-height:100dvh}.booking-modal-head{border-radius:0;padding:27px 20px 20px}.booking-form{padding:22px 18px 32px}.booking-grid{grid-template-columns:1fr}.booking-result-actions{flex-direction:column;width:100%}.booking-result-actions>*{width:100%;text-align:center}.booking-top-button{min-height:37px}.booking-success{padding:20px}}
+
+.booking-package-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:19px}
+.booking-tier-card{display:flex;flex-direction:column;align-items:flex-start;text-align:right;gap:8px;min-height:151px;padding:13px 12px;border:1px solid #4b6770;border-radius:13px;background:linear-gradient(155deg,#183d44,#0a202c);color:#d8e8e1;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.booking-tier-card:hover,.booking-tier-card:focus-visible{transform:translateY(-3px);border-color:#d9b879;box-shadow:0 10px 22px #0005}
+.booking-tier-card.selected{border:2px solid #eec786;background:linear-gradient(135deg,#65512f,#173b43 55%,#0e2430);box-shadow:0 0 0 3px #ddaa5522}
+.booking-tier-top{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;font:700 9px Arial,sans-serif;color:#d7b981;letter-spacing:.8px}
+.booking-tier-top b{font-size:19px;color:#fff}
+.booking-tier-card>strong{font-size:16px;color:#fff}.booking-tier-card>small{font-size:11px;color:#d6dfd9;line-height:1.5}
+.booking-tier-bottom{font-size:10px;color:#f1c586;margin-top:auto;line-height:1.6}
+@media(max-width:700px){.booking-package-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:400px){.booking-package-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
