@@ -31,6 +31,7 @@
     </div>
     <nav class="header-actions" aria-label="الإجراءات">
       <span class="admin-tag" id="staffTag" hidden>إدارة</span>
+      <button class="btn btn-primary booking-top-button" id="bookNow" type="button">احجز الآن <span aria-hidden="true">✦</span></button>
       <button class="btn btn-primary" id="manageDashboard" type="button" hidden>لوحة التحكم</button>
       <button class="btn btn-ghost" id="newSite" hidden>+ إضافة موقع</button>
       <button class="btn btn-ghost" id="loginButton" hidden>دخول الإدارة</button>
@@ -141,6 +142,7 @@
      <nav class="admin-dashboard-tabs" aria-label="أقسام لوحة التحكم">
        <button type="button" data-dash-tab="overview" class="active" aria-selected="true">نظرة عامة</button>
        <button type="button" data-dash-tab="inventory" aria-selected="false">إدارة القطع</button>
+       <button type="button" data-dash-tab="bookings" aria-selected="false">طلبات الحجز <span id="dashBookingBadge" class="booking-notice-badge"></span></button>
        <button type="button" data-dash-tab="staff" id="dashStaffTab" aria-selected="false">الموظفون والصلاحيات</button>
        <button type="button" data-dash-tab="settings" id="dashSettingsTab" aria-selected="false">إعدادات الموقع</button>
      </nav>
@@ -192,7 +194,12 @@
          </table></div>
          <p id="dashInventoryCount" class="admin-note"></p>
        </section>
-       <section class="admin-tab-panel" data-dash-panel="staff" hidden>
+       <section class="admin-tab-panel" data-dash-panel="bookings" hidden>
+ <div class="admin-section-heading"><div><h3>إشعارات وطلبات الحجز</h3><p>الطلبات الواردة من الموقع، مراجعتها واعتمادها أو رفضها</p></div><button type="button" class="admin-link" id="dashBookingRefresh">تحديث الطلبات</button></div>
+ <p id="dashBookingCount" class="admin-note">جاري تحميل الطلبات…</p>
+ <div class="admin-table-scroll"><table class="admin-data-table booking-admin-table"><thead><tr><th>المرجع والتاريخ</th><th>الزبون</th><th>الجهة والمنطقة</th><th>الباقة والقطعة</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="dashBookingRows"></tbody></table></div>
+ </section>
+ <section class="admin-tab-panel" data-dash-panel="staff" hidden>
          <div class="admin-section-heading"><div><h3>إدارة المستخدمين والصلاحيات</h3><p>أنشئ حساب مدير أو محرر جديداً، وحدد من يمكنه تعديل المواقع</p></div></div>
          <div class="admin-widget-grid">
            <form id="dashStaffForm" class="admin-widget admin-staff-form">
@@ -278,6 +285,7 @@
    <p class="hint">القطع غير المنشورة لا تظهر للزبائن. تأكد من الإحداثيات قبل اختيار «نشر».</p>
    <form id="siteForm">
     <div class="form-grid">
+      <div class="span2"><label for="fPackageClass">فئة الباقة المرتبطة بالقياس</label><select class="input" id="fPackageClass"><option value="auto">تحديد تلقائي حسب القياس</option><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="hint small-hint" id="fPackageHint">تتحدد الفئة تلقائياً من العرض والارتفاع.</div></div>
       <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
       <div><label for="fName">اسم الموقع *</label><input class="input" id="fName" required maxlength="140" placeholder="شارع رئيسي — تقاطع..."></div>
       <div><label for="fGovernorate">المحافظة *</label><select class="input" id="fGovernorate" required><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></div>
@@ -306,5 +314,42 @@
    </form>
   </div>
  </div>
+ <div class="modal-backdrop booking-backdrop" id="bookingModal" hidden>
+  <div class="modal wide booking-modal" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
+   <div class="booking-modal-head"><div class="booking-kicker">RAAFAT • RESERVATIONS</div><h2 id="bookingTitle">طلب حجز موقع إعلاني</h2><p>صلاح الدين بالكامل وكركوك • اختر الباقة والموقع وقدّم طلبك</p><button type="button" id="bookingClose" class="booking-x" aria-label="إغلاق">×</button></div>
+   <form id="bookingForm" class="booking-form">
+    <div class="booking-step-title">01 <span>بيانات الزبون والجهة</span></div>
+    <div class="booking-grid">
+     <label>اسم الزبون الكامل *<input class="input" id="bookingName" required minlength="2" maxlength="120" autocomplete="name" placeholder="الاسم الثلاثي"></label>
+     <label>رقم الهاتف (11 رقماً) *<input class="input" id="bookingPhone" type="tel" inputmode="numeric" dir="ltr" pattern="[0-9]{11}" minlength="11" maxlength="11" required autocomplete="tel" placeholder="07XXXXXXXXX"></label>
+     <label class="booking-wide">اسم الجهة / الشركة *<input class="input" id="bookingCompany" required minlength="2" maxlength="150" placeholder="مثال: رز محمود / شركة الرافدين"></label>
+    </div>
+    <div class="booking-step-title">02 <span>الموقع الإعلاني</span></div>
+    <div class="booking-grid">
+     <label>المحافظة<select class="input" id="bookingGovernorate"><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></label>
+     <label>القضاء / المدينة<select class="input" id="bookingCity"></select></label>
+     <label>فئة اللوحة<select class="input" id="bookingCategory"><option value="A">فئة A — 120 سم × 2 م</option><option value="B">فئة B — 2 × 3 م</option><option value="C">فئة C — 2.5 × 3.5 م</option><option value="D">فئة D — 3 × 4 م</option><option value="E">فئة E — لوحات الأسطح</option></select></label>
+     <label>القطعة المتاحة (اختياري)<select class="input" id="bookingSite"></select></label>
+    </div>
+    <div class="booking-package-info" id="bookingPackageInfo"></div>
+    <details class="booking-inclusions"><summary>ماذا تتضمن الباقة؟</summary><div>الإيجار • التصميم • الطباعة • الصيانة • التبديل • وجهان • لوحات ضوئية للفئات A–D</div></details>
+    <div class="booking-step-title">03 <span>المدة والسعر</span></div>
+    <div class="booking-grid booking-pricing">
+     <label id="bookingDurationWrap">مدة الإعلان<select class="input" id="bookingDuration" required><option value="3">3 أشهر</option><option value="6">6 أشهر</option><option value="12">12 شهر</option></select></label>
+     <div class="booking-price-card"><small>سعر الباقة</small><strong id="bookingPrice"></strong><span id="bookingPriceNote"></span></div>
+    </div>
+    <p class="booking-legal">إرسال الطلب لا يعني تأكيد توفر القطعة أو الحجز النهائي. تتم المراجعة من قبل إدارة الشركة.</p>
+    <button class="btn btn-primary booking-submit" id="bookingSend" type="submit">تأكيد إرسال طلب الحجز</button>
+   </form>
+   <div id="bookingResult" class="booking-success" hidden>
+    <span class="booking-success-icon">✓</span><h3>شكراً لثقتك بشركة رأفت!</h3>
+    <p id="bookingResultMessage"></p><small>رقم طلبك</small><strong id="bookingReference"></strong>
+    <label>رابط متابعة طلب الحجز<input class="input" id="bookingResultLink" dir="ltr" readonly></label>
+    <div class="booking-result-actions"><button type="button" class="btn btn-ghost" id="bookingCopy">نسخ رابط الطلب</button><a class="btn btn-primary" id="bookingWhatsApp" target="_blank" rel="noopener noreferrer">إرسال التفاصيل إلى واتساب الإدارة</a></div>
+    <p class="booking-hint">إذا لم يكن رقم واتساب الإدارة مضبوطاً، ستفتح شاشة اختيار جهة الاتصال في واتساب. الإرسال ليس تلقائياً.</p>
+   </div>
+  </div>
+ </div>
+ <div class="modal-backdrop booking-backdrop" id="bookingTracking" hidden><div class="modal booking-track-card" role="dialog" aria-modal="true"><button id="bookingTrackClose" class="booking-x" aria-label="إغلاق">×</button><div class="booking-kicker">RAAFAT • TRACKING</div><h2>متابعة طلب الحجز</h2><div id="bookingTrackingContent">جاري تحميل تفاصيل الطلب…</div></div></div>
  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 </body></html>
