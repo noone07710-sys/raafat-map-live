@@ -3587,3 +3587,20 @@ body .map-area.is-navigating #mapHome.raafat-gps-locate{
    left:9px!important;bottom:10px!important;
  }
 }
+
+
+/* GPS feedback only for permission/accuracy problems, not a second toolbar. */
+body .map-area .raafat-location-announcer:not([hidden]){
+ position:absolute;z-index:1180;
+ bottom:17px;left:62px;right:auto;
+ pointer-events:none;max-width:min(210px,calc(100% - 130px));
+ border:1px solid #d0a97865;border-radius:9px;
+ background:rgba(9,40,49,.95);color:#f7e2b8;
+ padding:7px 10px;font-size:10px;line-height:1.7;
+ box-shadow:0 7px 17px #0004;
+}
+@media(max-width:850px){
+ body .map-area .raafat-location-announcer:not([hidden]){bottom:92px;left:56px;max-width:min(180px,calc(100% - 122px))}
+ body .map-area:not(:has(.map-site-cta:not([hidden]))) .raafat-location-announcer:not([hidden]){bottom:16px}
+ body .map-area.is-navigating .raafat-location-announcer:not([hidden]){bottom:16px}
+}
