@@ -2874,3 +2874,76 @@ select option{direction:rtl;text-align:right;padding:10px;line-height:1.8;backgr
  display:block!important;width:17px;height:17px;
  margin:0!important;transform:none!important;
 }
+
+
+/* RAAFAT category-first map pins: A–E shapes/colors, independent availability indicator */
+.raafat-premium-site-icon .site-pin{
+ --category-start:#6de1c1;--category-end:#149c83;
+ width:35px!important;height:35px!important;
+ border-radius:12px 12px 12px 4px!important;
+ background:linear-gradient(145deg,var(--category-start),var(--category-end))!important;
+ display:block!important;
+ border:2px solid rgba(255,255,255,.90)!important;
+ box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 0 2px rgba(255,255,255,.08)!important;
+ transform:rotate(-45deg);
+ position:relative;
+ isolation:isolate;
+}
+.raafat-premium-site-icon .site-pin.category-A,.category-A{--category-start:#6de1c1;--category-end:#149c83}
+.raafat-premium-site-icon .site-pin.category-B,.category-B{--category-start:#7bbafa;--category-end:#376dd0}
+.raafat-premium-site-icon .site-pin.category-C,.category-C{--category-start:#e2b4ff;--category-end:#9460ca}
+.raafat-premium-site-icon .site-pin.category-D,.category-D{--category-start:#ffcf8b;--category-end:#d98538}
+.raafat-premium-site-icon .site-pin.category-E,.category-E{--category-start:#f4a8b7;--category-end:#c74c7b}
+.raafat-premium-site-icon .site-pin .pin-category-letter{
+ display:grid!important;place-items:center!important;
+ position:absolute!important;inset:0!important;
+ transform:rotate(45deg)!important;
+ border:0!important;background:transparent!important;box-shadow:none!important;
+ border-radius:0!important;color:#112730!important;
+ width:auto!important;height:auto!important;
+ font:900 15px/1 Arial,sans-serif!important;
+ text-shadow:0 1px rgba(255,255,255,.3);
+}
+.raafat-premium-site-icon .site-pin .pin-status-dot{
+ position:absolute;z-index:5;top:-7px;right:-6px;
+ width:11px;height:11px;border-radius:50%;border:2px solid #fff;
+ background:#35d7a0;
+ box-shadow:0 1px 6px rgba(0,0,0,.6);transform:rotate(45deg);
+ pointer-events:none;
+}
+.raafat-premium-site-icon .site-pin.reserved .pin-status-dot{background:#f1a447}
+.raafat-premium-site-icon .site-pin.booked .pin-status-dot{background:#73b5ed}
+.raafat-premium-site-icon .site-pin.maintenance .pin-status-dot{background:#df7775}
+.raafat-premium-site-icon .site-pin.selected{
+ border-color:#fff3cb!important;
+ box-shadow:0 0 0 5px rgba(245,202,122,.36),0 0 25px rgba(249,203,119,.55),0 7px 22px rgba(2,22,22,.51)!important;
+}
+.raafat-premium-site-icon .site-pin.booking-picked{
+ box-shadow:0 0 0 5px #f6d08d77,0 0 22px #f2b553bf!important;
+}
+.raafat-premium-site-icon .site-pin.booking-picked::after{
+ transform:rotate(45deg);
+ right:-11px;top:-11px;inset-inline-end:auto;
+}
+.vip-legend{max-height:min(76vh,460px);overflow-y:auto;scrollbar-width:thin}
+.vip-legend .map-category-legend{display:grid;grid-template-columns:1fr;gap:7px;margin:8px 0 14px}
+.vip-legend .map-category-legend>div{
+ display:flex;flex-direction:row;align-items:center;gap:10px;
+ margin:0!important;font-size:11px!important;
+}
+.legend-category{
+ display:grid;place-items:center;
+ width:25px;height:25px;flex:0 0 25px;
+ color:#102832;font:900 12px Arial,sans-serif;
+ border-radius:8px;border:1px solid rgba(255,255,255,.55);
+ background:linear-gradient(135deg,var(--category-start),var(--category-end));
+}
+.vip-legend .legend-status-heading{display:block;margin:12px 0 9px;padding-top:11px;border-top:1px solid rgba(190,210,199,.2);font-size:11px!important}
+.listing-category-tag,.detail-category-tag{
+ --category-start:#6de1c1;--category-end:#149c83;
+ display:inline-flex;align-items:center;justify-content:center;
+ background:linear-gradient(135deg,var(--category-start),var(--category-end));
+ border:1px solid #ffffff62;color:#102832;font:800 10px Arial,sans-serif;
+ padding:4px 8px;border-radius:7px;vertical-align:middle;
+}
+.detail-status{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
