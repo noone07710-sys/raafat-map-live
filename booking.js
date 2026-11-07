@@ -138,6 +138,7 @@ export function setupBookings({db,getState,toast}){
  $("bookingTracking").addEventListener("click",e=>{if(e.target===$("bookingTracking"))$("bookingTracking").hidden=true});
  window.addEventListener("hashchange",hashTrack);
  hashTrack();
+ if(new URLSearchParams(location.search).get("booking")==="1")openBooking();
  return {openBooking};
 }
 export function setupAdminBookings({db,getState,toast}){
