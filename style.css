@@ -3324,3 +3324,31 @@ body:not(.booking-open):not(.dashboard-open){overflow-x:hidden!important;overflo
 @media(max-width:420px){
  .vip-site-detail .vip-site-hero.has-photo{height:185px!important;min-height:185px!important}
 }
+
+
+/* Navigation is a map-first mode, not the billboard browsing dashboard. */
+@media(min-width:851px){
+ .main-layout:has(>.map-area.is-navigating){
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ .main-layout:has(>.map-area.is-navigating)>.panel{
+  display:none!important;
+ }
+ .main-layout:has(>.map-area.is-navigating)>.map-area{
+  grid-column:1!important;grid-row:1!important;
+  width:100%!important;min-width:0!important;
+  height:calc(100dvh - 84px)!important;
+ }
+}
+@media(max-width:850px){
+ .main-layout:has(>.map-area.is-navigating)>.panel{
+  display:none!important;
+ }
+ .main-layout:has(>.map-area.is-navigating)>.map-area{
+  height:calc(100svh - 75px)!important;
+  min-height:390px!important;max-height:none!important;
+ }
+}
+.map-area.is-navigating .raafat-route-panel.raafat-route-compact{
+ box-sizing:border-box!important;z-index:1200!important;
+}
