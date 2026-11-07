@@ -502,7 +502,7 @@ function zoomAll(defaultOnly=false){
      return;
    }
    if(!city&&governorate==="صلاح الدين"){
-     const bounds=window.L.latLngBounds(REGIONS["صلاح الدين"].map(name=>CITY_CENTERS[name]));
+     const bounds=window.L.latLngBounds(REGIONS["صلاح الدين"].map(name=>CITY_CENTERS[name]).filter(Boolean));
      state.map.fitBounds(bounds,{padding:[50,58],maxZoom:10,animate:true});
      return;
    }
@@ -558,14 +558,17 @@ function renderFilters(){
  el("sizeFilter").value=dims.some(([key])=>key===selectedSize)?selectedSize:"";
 }
 function renderCityChips(){
- const active=el("cityFilter").value;
+ const active=el("cityFilter").value,activeGov=el("governorateFilter").value;
  const parts=[];
  for(const [gov,cities] of Object.entries(REGIONS)){
-   for(const city of cities){
-     const count=state.sites.filter(s=>s.governorate===gov&&s.city===city).length;
-     parts.push('<button class="city-chip '+(active===city?'active':'')+'" type="button" data-city="'+escapeHtml(city)+'" data-governorate="'+escapeHtml(gov)+'" title="'+escapeHtml(gov)+'">'+
-       '<span>'+escapeHtml(city)+'</span><b>'+count+'</b></button>');
-   }
+   const total=state.sites.filter(s=>s.governorate===gov).length;
+   const open=activeGov===gov;
+   parts.push('<details class="region-group" data-region="'+escapeHtml(gov)+'" '+(open?'open':'')+'>'+
+     '<summary><span class="region-group-title"><span class="region-group-icon">⌖</span><strong>محافظة '+escapeHtml(gov)+'</strong></span><span class="region-group-trailing"><b>'+total+' قطعة</b><span class="region-arrow">⌄</span></span></summary>'+
+     '<div class="region-group-cities">'+cities.map(city=>{
+      const count=state.sites.filter(s=>s.governorate===gov&&s.city===city).length;
+      return '<button class="city-chip '+(active===city?'active':'')+'" type="button" data-city="'+escapeHtml(city)+'" data-governorate="'+escapeHtml(gov)+'"><span>'+escapeHtml(city)+'</span><b>'+count+'</b></button>';
+     }).join('')+'</div></details>');
  }
  el("cityChips").innerHTML=parts.join("");
  el("cityChips").querySelectorAll("[data-city]").forEach(btn=>btn.addEventListener("click",()=>{
