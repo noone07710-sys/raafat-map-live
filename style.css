@@ -3550,3 +3550,40 @@ body.raafat-is-navigating .main-layout>.map-area{
    width:min(220px,calc(100% - 75px))!important;
  }
 }
+
+
+/* Final single GPS locator: bottom left, always accessible even in route mode. */
+.raafat-location-announcer[hidden]{display:none!important}
+body .map-area #mapHome.raafat-gps-locate{
+ display:grid!important;place-items:center!important;
+ width:42px!important;height:42px!important;min-width:42px;
+ padding:0!important;border-radius:12px!important;
+ left:12px!important;right:auto!important;
+ box-shadow:0 5px 18px rgba(0,13,20,.3)!important;
+}
+body .map-area #mapHome.raafat-gps-locate.is-tracking{
+ border:1px solid #5dd5ff!important;
+ box-shadow:0 0 0 3px rgba(79,191,238,.19),0 6px 18px rgba(0,13,20,.3)!important;
+}
+body .map-area #mapHome.raafat-gps-locate.is-tracking .raafat-target-icon{
+ stroke:#60d5ff!important;
+}
+body.raafat-is-navigating .map-area #mapHome.raafat-gps-locate,
+body .map-area.is-navigating #mapHome.raafat-gps-locate{
+ display:grid!important;
+ left:12px!important;bottom:12px!important;
+ z-index:1170!important;
+}
+@media(max-width:850px){
+ body .map-area #mapHome.raafat-gps-locate{
+   left:9px!important;width:40px!important;height:40px!important;min-width:40px;
+   bottom:84px!important;
+ }
+ body .map-area:not(:has(.map-site-cta:not([hidden]))) #mapHome.raafat-gps-locate{
+   bottom:10px!important;
+ }
+ body.raafat-is-navigating .map-area #mapHome.raafat-gps-locate,
+ body .map-area.is-navigating #mapHome.raafat-gps-locate{
+   left:9px!important;bottom:10px!important;
+ }
+}
