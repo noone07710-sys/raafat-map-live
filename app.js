@@ -312,14 +312,18 @@ async function installRaafatPremiumMap(){
  * Supabase, the URL, or any external application.
  * Tracking starts exclusively after a visitor presses "موقعي الحالي".
  */
+let locationFreshnessTimer=null;
 function updateLiveLocationUI(message=""){
  const tracking=state.locationWatchId!==null;
+ const age=Date.now()-Number(state.gpsFixTime||0);
+ const live=Boolean(tracking&&state.gpsFixTime&&age>=0&&age<=12000&&Number(state.gpsFixAccuracy)<=150);
  const button=el("mapHome");
  if(button){
    button.classList.toggle("is-tracking",tracking);
    button.classList.toggle("is-following",tracking&&state.followLocation);
+   button.classList.toggle("is-realtime",live);
    button.setAttribute("aria-pressed",String(tracking));
-   button.title=tracking?"توسيط موقعي — GPS نشط":"تحديد موقعي على الخارطة";
+   button.title=live?"REALTIME • موقعك يتحدث ±"+Math.round(state.gpsFixAccuracy)+" م":tracking?"GPS يعمل • بانتظار إشارة حديثة":"تحديد موقعي على الخارطة";
    button.setAttribute("aria-label",button.title);
  }
  const status=el("locationStatus");
@@ -329,6 +333,8 @@ function updateLiveLocationUI(message=""){
  }
 }
 function stopLiveLocationTracking(){
+ if(locationFreshnessTimer!==null){clearInterval(locationFreshnessTimer);locationFreshnessTimer=null;}
+ state.gpsFixTime=0;state.gpsFixAccuracy=Infinity;
  state.locationGeneration++;
  if(state.locationWatchId!==null && navigator.geolocation){
    navigator.geolocation.clearWatch(state.locationWatchId);
@@ -396,7 +402,9 @@ function startLiveLocationTracking(){
      state.gpsAccuracy.setLatLng(point).setRadius(Math.min(accuracy,15000));
    }
    state.lastLocation=point;
-   navigationController?.onLiveLocation(point,accuracy,coords.heading);
+   state.gpsFixTime=Number(position.timestamp);
+   state.gpsFixAccuracy=accuracy;
+   navigationController?.onLiveLocation(point,accuracy,coords.heading,coords.speed,Number(position.timestamp));
    updateVipDirectLink();
    if(state.followLocation){
      if(firstFix)state.map.flyTo(point,Math.max(16,state.map.getZoom()),{animate:true,duration:.65});
@@ -404,10 +412,11 @@ function startLiveLocationTracking(){
      state.followLocation=false;
    }
    const formatted=accuracy>=1000?"±"+(accuracy/1000).toFixed(1)+" كم":"±"+Math.round(accuracy)+" م";
-   updateLiveLocationUI("موقع مباشر • الدقة "+formatted);
+   updateLiveLocationUI("");
  };
  const onError=error=>{
    if(generation!==state.locationGeneration)return;
+   state.gpsFixTime=0;
    const message=error.code===1?
       "السماح بالموقع مرفوض. فعّله من إعدادات المتصفح.":
       error.code===2?"تعذّر تحديد الموقع. تأكد من تشغيل GPS.":"ننتظر إشارة الموقع من الجهاز…";
@@ -417,8 +426,15 @@ function startLiveLocationTracking(){
  };
  try{
    state.locationWatchId=navigator.geolocation.watchPosition(onPosition,onError,{
-     enableHighAccuracy:true,maximumAge:1000,timeout:20000
+     enableHighAccuracy:true,maximumAge:0,timeout:20000
    });
+   if(locationFreshnessTimer!==null)clearInterval(locationFreshnessTimer);
+   locationFreshnessTimer=setInterval(()=>{
+     if(state.locationWatchId===null)return;
+     const age=Date.now()-Number(state.gpsFixTime||0);
+     const stale=!state.gpsFixTime||age>12000||age < -5000;
+     updateLiveLocationUI(stale?"بانتظار تحديث GPS":state.gpsFixAccuracy>150?"إشارة الموقع غير دقيقة — انتقل لمكان مفتوح":"");
+   },4000);
    updateLiveLocationUI("بانتظار إشارة الموقع…");
  }catch(error){
    stopLiveLocationTracking();
