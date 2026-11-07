@@ -2779,3 +2779,38 @@ body.raafat-signature-map .map-area .map-reveal-brand{
 .booking-map-picker-footer button{padding:8px}
 .booking-total-summary{flex-direction:column}
 }
+
+
+/* Clear grouped service areas and native select controls */
+.city-chips{display:flex!important;flex-direction:column!important;gap:10px!important;grid-template-columns:none!important}
+.region-group{display:block;overflow:hidden;border:1px solid rgba(195,164,107,.32);background:linear-gradient(130deg,#15383b,#0d292e);border-radius:14px}
+.region-group>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;cursor:pointer;min-height:58px;padding:13px 14px;color:#f1f5ed;user-select:none}
+.region-group>summary::-webkit-details-marker{display:none}
+.region-group-title,.region-group-trailing{display:flex;align-items:center;gap:9px}
+.region-group-title strong{font-size:14px;line-height:1.6}
+.region-group-icon{background:#e5bc7960;color:#ffdc9c;border-radius:9px;padding:6px 9px}
+.region-group-trailing b{font-size:11px;font-weight:700;padding:5px 9px;background:#183f43;border-radius:9px;color:#e6c68d;white-space:nowrap}
+.region-arrow{display:inline-flex;align-items:center;justify-content:center;color:#eac588;width:23px;height:23px;border-radius:8px;border:1px solid #d3ae6840;transition:transform .2s ease}
+.region-group[open] .region-arrow{transform:rotate(180deg)}
+.region-group[open]>summary{border-bottom:1px solid #b6976042}
+.region-group-cities{padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.region-group-cities .city-chip{min-width:0;min-height:43px;line-height:1.55;padding:9px!important}
+.region-group-cities .city-chip span{min-width:0;overflow-wrap:anywhere}
+@media(min-width:900px){.region-group-cities{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* A consistent inset chevron; never let browser arrow touch the edge. */
+select,select.input,.admin-dashboard select,.modal select,.booking-modal select{
+ -webkit-appearance:none!important;appearance:none!important;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23e4bd7e' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;
+ background-repeat:no-repeat!important;
+ background-position:left 13px center!important;
+ background-size:17px 17px!important;
+ padding-left:43px!important;padding-right:14px!important;
+ text-overflow:ellipsis;min-width:0;cursor:pointer;
+}
+select:focus-visible,select.input:focus-visible{outline:2px solid #e1b777;outline-offset:2px}
+select option{direction:rtl;text-align:right;padding:10px;line-height:1.8;background:#102c34;color:#f3f7f1}
+.booking-modal .booking-grid label{min-width:0}
+#bookingCategory{font-size:13px!important;font-weight:650;direction:rtl;text-align:right;line-height:1.7;unicode-bidi:plaintext}
+#bookingCategory option{direction:rtl;unicode-bidi:plaintext;font-size:13px}
+.booking-e-area small{display:block;color:#bfd2ce;font-size:11px;line-height:1.9;font-weight:400}
+.booking-tier-card .booking-tier-bottom{line-height:1.8}
