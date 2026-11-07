@@ -3201,3 +3201,73 @@ body:not(.booking-open):not(.dashboard-open){overflow-x:hidden!important;overflo
 .raafat-route-modes button{border:1px solid #6c918d75;border-radius:10px;background:#183d46;color:#cadbd5;min-height:39px;font-size:12px;font-weight:750;cursor:pointer}
 .raafat-route-modes button[aria-pressed="true"]{background:linear-gradient(115deg,#e7bf80,#c89650);color:#173138;border-color:#f3d398}
 .raafat-route-modes button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+
+/* Compact, non-blocking GPS guidance instead of a full route sidebar. */
+.map-area .raafat-route-panel.raafat-route-compact{
+ position:absolute!important;
+ top:68px!important;
+ left:12px!important;
+ right:auto!important;
+ bottom:auto!important;
+ width:min(320px,calc(100% - 24px))!important;
+ min-width:0!important;
+ height:auto!important;
+ max-height:initial!important;
+ padding:0!important;
+ overflow:visible!important;
+ z-index:1120!important;
+ border:1px solid rgba(245,205,133,.7)!important;
+ border-radius:14px!important;
+ background:rgba(9,35,43,.97)!important;
+ backdrop-filter:blur(10px);
+ box-shadow:0 10px 28px rgba(0,0,0,.35)!important;
+ pointer-events:auto;
+}
+.raafat-route-compact .raafat-route-mini-head{
+ display:flex!important;align-items:center!important;gap:10px;
+ min-height:64px;padding:11px 11px!important;
+}
+.raafat-route-compact .raafat-route-mini-icon{
+ display:grid;place-items:center;flex:0 0 32px;
+ width:32px;height:32px;border-radius:10px;
+ background:#d6a863;color:#0f3037;font-size:22px;
+}
+.raafat-route-compact .raafat-route-mini-info{
+ display:flex;flex:1;min-width:0;flex-direction:column;gap:4px;
+ overflow-wrap:anywhere;
+}
+.raafat-route-compact .raafat-route-mini-info strong{
+ color:#fff;font-size:12px;line-height:1.65;font-weight:800;
+}
+.raafat-route-compact .raafat-route-mini-info small{
+ font-size:11px;color:#f0c98a;line-height:1.5;
+}
+.raafat-route-compact .raafat-route-mini-close{
+ flex:0 0 30px;display:grid;place-items:center;
+ width:30px;height:30px;min-width:30px;
+ border:1px solid rgba(210,229,222,.22);
+ border-radius:8px;background:rgba(255,255,255,.08);
+ color:#fff;font-size:21px;line-height:1;
+ cursor:pointer;
+}
+.raafat-route-compact .raafat-route-mini-status{
+ margin:0 11px 10px!important;
+ font-size:10px;line-height:1.8;
+ color:#cfe4de;
+}
+.raafat-route-compact .raafat-route-mini-manual{
+ display:block;min-height:30px;margin:0 11px 10px;
+ padding:5px 8px;border:1px solid #a5875b;
+ border-radius:7px;background:rgba(217,170,103,.12);
+ color:#e7c68b;font-size:10px;cursor:pointer;
+}
+.raafat-route-compact .raafat-route-mini-status[hidden],
+.raafat-route-compact .raafat-route-mini-manual[hidden],
+.raafat-route-compact .raafat-route-hidden-data[hidden]{display:none!important}
+@media(max-width:520px){
+ .map-area .raafat-route-panel.raafat-route-compact{
+  top:67px!important;left:9px!important;
+  width:min(300px,calc(100% - 18px))!important;
+ }
+}
