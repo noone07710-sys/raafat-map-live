@@ -459,12 +459,16 @@ function initializeMap(){
  state.map.addLayer(state.markers);
  addPersistentCityLabels();
  state.map.on("click",event=>{
-   if(!state.pick)return;
-   const {lat,lng}=event.latlng;
-   el("fCoords").value=lat.toFixed(7)+", "+lng.toFixed(7);
-   state.pick=false;el("mapPicking").hidden=true;
-   openModal("siteModal");
-   toast("تم تحديد الإحداثيات؛ راجعها قبل الحفظ.");
+   if(state.pick){
+     const {lat,lng}=event.latlng;
+     el("fCoords").value=lat.toFixed(7)+", "+lng.toFixed(7);
+     state.pick=false;el("mapPicking").hidden=true;
+     openModal("siteModal");
+     toast("تم تحديد الإحداثيات؛ راجعها قبل الحفظ.");
+     return;
+   }
+   if(bookingController?.isSelecting())return;
+   clearSelectedSite();
  });
  el("mapHome").addEventListener("click",()=>zoomAll(true));
  // Consent is requested only by the location button, never during page load.
@@ -564,7 +568,7 @@ function renderCityChips(){
    const total=state.sites.filter(s=>s.governorate===gov).length;
    const open=activeGov===gov;
    parts.push('<details class="region-group" data-region="'+escapeHtml(gov)+'" '+(open?'open':'')+'>'+
-     '<summary><span class="region-group-title"><span class="region-group-icon">⌖</span><strong>محافظة '+escapeHtml(gov)+'</strong></span><span class="region-group-trailing"><b>'+total+' قطعة</b><span class="region-arrow">⌄</span></span></summary>'+
+     '<summary><span class="region-group-title"><span class="region-group-icon" aria-hidden="true">◈</span><strong>محافظة '+escapeHtml(gov)+'</strong></span><span class="region-group-trailing"><b>'+total+' قطعة</b><span class="region-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></span></summary>'+
      '<div class="region-group-cities">'+cities.map(city=>{
       const count=state.sites.filter(s=>s.governorate===gov&&s.city===city).length;
       return '<button class="city-chip '+(active===city?'active':'')+'" type="button" data-city="'+escapeHtml(city)+'" data-governorate="'+escapeHtml(gov)+'"><span>'+escapeHtml(city)+'</span><b>'+count+'</b></button>';
@@ -609,6 +613,7 @@ function render(){
  ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'غيّر الفلاتر لعرض قطع أخرى.')+'</div>';
  el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>{
    if(bookingController?.handleSiteSelection(button.dataset.site))return;
+   if(state.selected===button.dataset.site){clearSelectedSite();return;}
    selectSite(button.dataset.site);
    // On a phone, show the actual site specifications instead of leaving
    // the visitor at the list after they select an advertising site.
@@ -631,6 +636,7 @@ function renderMarkers(sites){
    const highlighted=state.selected===s.id;
    const bookingSelected=Boolean(bookingController?.isSelected(s.id));
    const marker=L.marker([s.latitude,s.longitude],{
+     bubblingMouseEvents:false,
      icon:L.divIcon({
        className:"raafat-premium-site-icon",
        html:'<div class="site-pin '+safeStatus+(highlighted?" selected":"")+(bookingSelected?" booking-picked":"")+'"><i class="vip-pin-aura" aria-hidden="true"></i><span></span></div>',
@@ -638,7 +644,11 @@ function renderMarkers(sites){
      }),
      title:"لوحة "+s.code+" — "+(statuses[s.status]||"")
    });
-   marker.on("click",()=>{if(bookingController?.handleSiteSelection(s.id))return;selectSite(s.id);});
+   marker.on("click",()=>{
+     if(bookingController?.handleSiteSelection(s.id))return;
+     if(state.selected===s.id){clearSelectedSite();return;}
+     selectSite(s.id);
+   });
    marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
    state.markers.addLayer(marker);
    state.markerById.set(s.id,marker);
@@ -685,6 +695,14 @@ function updateMapSiteCTA(){
  el("mapSiteDirections").setAttribute("aria-label","الاتجاهات إلى "+site.name);
  card.hidden=false;
  updateVipDirectLink();
+}
+function clearSelectedSite(){
+ if(!state.selected)return;
+ state.selected=null;
+ state.galleryIndex=0;
+ state.vipDirectLinkEnabled=false;
+ if(!state.staff && location.hash.startsWith("#site="))history.replaceState(null,"",location.pathname+location.search);
+ render();
 }
 function selectSite(id){
  const site=state.sites.find(s=>s.id===id);
