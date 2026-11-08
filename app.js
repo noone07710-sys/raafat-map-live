@@ -443,7 +443,8 @@ function startLiveLocationTracking(){
      if(state.locationWatchId===null)return;
      const age=Date.now()-Number(state.gpsFixTime||0);
      const stale=!state.gpsFixTime||age>12000||age < -5000;
-     updateLiveLocationUI(stale?"بانتظار تحديث GPS":state.gpsFixAccuracy>150?"إشارة الموقع غير دقيقة — انتقل لمكان مفتوح":"");
+      if(stale)updateVipDirectLink();
+      updateLiveLocationUI(stale?"بانتظار تحديث GPS":state.gpsFixAccuracy>150?"إشارة الموقع غير دقيقة — انتقل لمكان مفتوح":"");
    },4000);
    updateLiveLocationUI("بانتظار إشارة الموقع…");
  }catch(error){
@@ -724,11 +725,11 @@ function renderMarkers(sites){
      icon:L.divIcon({
        className:"raafat-premium-site-icon",
        html:'<div class="site-pin category-'+category+' '+safeStatus+(highlighted?" selected":"")+(bookingSelected?" booking-picked":"")+'">'+
-         '<i class="vip-pin-aura" aria-hidden="true"></i><span class="pin-category-letter">'+category+'</span>'+
+         '<i class="vip-pin-aura" aria-hidden="true"></i><span class="pin-category-letter">'+(category==="custom"?"◆":category)+'</span>'+
          '<i class="pin-status-dot" aria-hidden="true"></i></div>',
        iconSize:[36,39],iconAnchor:[18,35]
      }),
-     title:"فئة "+category+" • لوحة "+s.code+" — "+(statuses[s.status]||"")
+     title:(category==="custom"?"قياس خاص":"فئة "+category)+" • لوحة "+s.code+" — "+(statuses[s.status]||"")
    });
    marker.on("click",()=>{
      state.followLocation=false;
@@ -926,12 +927,12 @@ async function renderDetail(){
     '<div class="vip-site-hero '+(photosAvailable.length?'has-photo':'no-photo')+'">'+
       photoHero+
       '<div class="vip-site-hero-shade"></div>'+
-      '<div class="vip-site-hero-top"><span class="vip-detail-ref">RAAFAT / '+safeCode+'</span><span class="vip-detail-class category-'+category+'">CLASS '+category+'</span></div>'+
+      '<div class="vip-site-hero-top"><span class="vip-detail-ref">RAAFAT / '+safeCode+'</span><span class="vip-detail-class category-'+category+'">'+(category==="custom"?"SPECIAL":"CLASS "+category)+'</span></div>'+
       '<div class="vip-site-hero-bottom"><span class="vip-hero-caption">موقع إعلاني معتمد</span><h3>'+safeName+'</h3><p>'+safeArea+'</p></div>'+
     '</div>'+
     (thumbnails?'<div class="vip-site-gallery">'+thumbnails+'</div>':'')+
     '<div class="vip-site-overview">'+
-      '<div class="vip-site-status-row"><span class="detail-category-tag category-'+category+'">فئة '+category+'</span>'+badge(site)+(site.published?'':'<span class="draft">غير منشورة</span>')+'</div>'+
+      '<div class="vip-site-status-row"><span class="detail-category-tag category-'+category+'">'+(category==="custom"?"قياس خاص":"فئة "+category)+'</span>'+badge(site)+(site.published?'':'<span class="draft">غير منشورة</span>')+'</div>'+
       '<div class="vip-site-intro"><span class="vip-section-eyebrow">ADVERTISING LOCATION</span><h4>'+safeName+'</h4><p>'+safeArea+'</p></div>'+
       '<div class="vip-site-metric-grid">'+
         '<div class="vip-site-metric"><small>قياس اللوحة</small><strong dir="ltr">'+dims+' <em>م</em></strong></div>'+
@@ -940,7 +941,7 @@ async function renderDetail(){
         '<div class="vip-site-metric"><small>نوع الإعلان</small><strong>'+safeType+'</strong></div>'+
       '</div>'+
       '<div class="vip-site-action-stack">'+
-        '<button class="btn btn-primary vip-site-book-button" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"?'disabled title="هذه القطعة غير متاحة"':'')+'>✦ احجز الموقع الإعلاني <span>←</span></button>'+
+        '<button class="btn btn-primary vip-site-book-button" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"||category==="custom"?'disabled title="'+(category==="custom"?"القطعة تحتاج تسعيراً خاصاً":"هذه القطعة غير متاحة")+'"':'')+'>✦ احجز الموقع الإعلاني <span>←</span></button>'+
         '<div class="vip-site-action-grid"><button type="button" class="btn btn-ghost" id="raafatStartDirections" aria-label="الاتجاهات الداخلية إلى هذه القطعة">⌖ الاتجاهات</button>'+
           (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">◈ الاستفسار واتساب</a>':
           '<button type="button" class="btn btn-ghost" id="copyInquiry">⧉ نسخ للاستفسار</button>')+'</div>'+
