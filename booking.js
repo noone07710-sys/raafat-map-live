@@ -317,7 +317,7 @@ export function setupAdminBookings({db,getState,toast}){
      '<td><strong>فئة '+safe(b.category)+'</strong> • '+safe(b.duration_months||"كشف موقع")+' أشهر'+
      '<div class="booking-admin-sites">'+(chips||'<span class="booking-admin-site">'+safe(b.site_code||"بدون قطعة محددة")+'</span>')+'</div>'+
      '<small>'+countText+(b.category==='E'&&b.requested_area_m2?' • المساحة: '+safe(b.requested_area_m2)+' م²':'')+'</small><div class="booking-admin-total">'+(b.quoted_price_usd?money(b.quoted_price_usd):"بعد الكشف")+'</div>'+
-     requested.map(s=>s.site_id?'<a class="booking-admin-map-link" href="'+safe(location.origin+location.pathname+'#site='+encodeURIComponent(s.site_id))+'" target="_blank" rel="noopener noreferrer">⌖ '+safe(s.site_code)+'</a>':"").join(" ")+
+     requested.map(s=>s.site_id?'<a class="booking-admin-map-link" href="'+safe(location.origin+location.pathname+'#site='+encodeURIComponent(s.site_id))+'" target="_blank" rel="noopener noreferrer"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> '+safe(s.site_code)+'</a>':"").join(" ")+
      '</td>'+
      '<td>'+safe(labels[b.status]||b.status)+'</td>'+
      '<td><select class="input" data-booking-status="'+safe(b.id)+'" '+(b.status==="completed"?"disabled":"")+'>'+

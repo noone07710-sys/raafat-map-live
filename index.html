@@ -31,7 +31,7 @@
     </div>
     <nav class="header-actions" aria-label="الإجراءات">
       <span class="admin-tag" id="staffTag" hidden>إدارة</span>
-      <button class="btn btn-primary booking-top-button" id="bookNow" type="button">احجز الآن <span aria-hidden="true">✦</span></button>
+      <button class="btn btn-primary booking-top-button" id="bookNow" type="button"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="3"/><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17m-12 5 2.3 2.2 4.6-4.8"/></svg><span class="raafat-book-label">احجز الآن</span></button>
       <button class="btn btn-primary" id="manageDashboard" type="button" hidden>لوحة التحكم</button>
       <button class="btn btn-ghost" id="newSite" hidden>+ إضافة موقع</button>
       <button class="btn btn-ghost" id="loginButton" hidden>دخول الإدارة</button>
@@ -66,15 +66,15 @@
       <select class="input" id="typeFilter"><option value="">جميع الأنواع</option><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="building">على بناية / واجهة مبنى</option><option value="sidewalk">لوحة رصيف</option><option value="other">أخرى</option></select>
       <label class="input-label" for="sizeFilter">القياس (متر)</label>
       <select class="input" id="sizeFilter"><option value="">جميع القياسات</option></select>
-      <button class="clear-filters" type="button" id="clearFilters">↻ مسح الفلاتر وعرض الكل</button>
+      <button class="clear-filters" type="button" id="clearFilters"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10a8 8 0 1 1 2.3 7M4 4v6h6"/></svg><span>مسح الفلاتر وعرض الكل</span></button>
         </div>
       </details>
       <div class="list-heading raafat-list-heading">
         <strong>المساحات المعروضة</strong><span id="showingCount">—</span>
       </div>
       <div class="listing-quick-actions" role="group" aria-label="خيارات سريعة للمواقع الإعلانية">
-        <button id="showAvailableOnly" class="listing-quick-button" type="button" aria-pressed="false">✓ المتاحة فقط</button>
-        <button id="sortByNearest" class="listing-quick-button" type="button" aria-pressed="false" title="الترتيب حسب المسافة المباشرة وليس مسافة القيادة">⌖ الأقرب إليّ</button>
+        <button id="showAvailableOnly" class="listing-quick-button" type="button" aria-pressed="false"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"/></svg><span>المتاحة فقط</span></button>
+        <button id="sortByNearest" class="listing-quick-button" type="button" aria-pressed="false" title="الترتيب حسب المسافة المباشرة وليس مسافة القيادة"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>الأقرب إليّ</span></button>
       </div>
       <div id="listing" class="listing" aria-live="polite"><div class="empty">جاري تحميل المواقع...</div></div>
     </aside>
@@ -92,8 +92,8 @@
       </div>
       <div class="map-chip"><span class="live-dot"></span><span>المواقع الإعلانية</span><strong id="mapCount">0</strong><span class="map-region-label" id="mapRegionLabel" hidden></span></div>
       <div class="vip-map-actions" role="group" aria-label="أدوات الخريطة">
-        <button id="vipCoverage" class="vip-tool-button" type="button" title="استعراض جميع المدن" aria-label="استعراض المدن الثمانية"><span aria-hidden="true">◎</span> شبكة المناطق</button>
-        <button id="vipLegendToggle" class="vip-tool-button vip-legend-button" type="button" aria-expanded="false" aria-controls="vipLegend"><span aria-hidden="true">◈</span> دليل الألوان</button>
+        <button id="vipCoverage" class="vip-tool-button" type="button" title="استعراض جميع المدن" aria-label="استعراض المدن الثمانية"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z"/><path d="M9 3v15M15 6v15"/></svg> شبكة المناطق</button>
+        <button id="vipLegendToggle" class="vip-tool-button vip-legend-button" type="button" aria-expanded="false" aria-controls="vipLegend"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/></svg> دليل الألوان</button>
         <div class="vip-legend" id="vipLegend" hidden>
           <strong>فئات اللوحات الإعلانية</strong>
           <div class="map-category-legend">
@@ -113,7 +113,7 @@
       </div>
       <span id="locationStatus" class="raafat-location-announcer" role="status" aria-live="polite" hidden></span>
       <div id="bookingMapPicker" class="booking-map-picker" hidden>
- <div class="booking-map-picker-heading"><span class="booking-map-picker-icon">⌖</span><div><strong>اختيار القطع من الخارطة</strong><small>اضغط على علامات القطع المتاحة من نفس الفئة لإضافتها أو إزالتها</small></div></div>
+ <div class="booking-map-picker-heading"><span class="booking-map-picker-icon" aria-hidden="true"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><div><strong>اختيار القطع من الخارطة</strong><small>اضغط على علامات القطع المتاحة من نفس الفئة لإضافتها أو إزالتها</small></div></div>
  <div class="booking-map-picker-footer"><strong id="bookingMapCount">0 قطعة محددة</strong><button id="bookingMapFinish" type="button">✓ إتمام الاختيار</button><button id="bookingMapCancel" type="button">إلغاء الاختيار</button></div>
  </div>
  <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
@@ -124,7 +124,7 @@
       </button>
       <div id="raafatRoutePanel" class="raafat-route-panel raafat-route-compact" role="region" aria-label="ملاحة رأفت" hidden>
         <div class="raafat-route-mini-head">
-          <span class="raafat-route-mini-icon" aria-hidden="true">➤</span>
+          <span class="raafat-route-mini-icon" aria-hidden="true"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 16 16-12-5 16-3.2-7-7.8 3Z"/></svg></span>
           <div class="raafat-route-mini-info">
             <span class="raafat-route-realtime" id="raafatRouteRealtime" data-state="waiting" aria-label="حالة تحديث GPS"><span class="raafat-live-dot" aria-hidden="true"></span><span id="raafatRouteRealtimeText">بانتظار GPS</span></span>
             <strong id="raafatRouteNext">جارٍ تحديد الطريق…</strong>
@@ -335,7 +335,7 @@
       <div><label for="fLighting">الإنارة</label><select class="input" id="fLighting"><option value="false">غير مضاءة</option><option value="true">مضاءة</option></select></div>
       <div><label for="fFacing">اتجاه مواجهة الإعلان</label><input class="input" id="fFacing" maxlength="140" placeholder="مثلاً: باتجاه مركز المدينة"></div>
       <div><label for="fMaterial">نوع خامة اللوحة</label><input class="input" id="fMaterial" maxlength="140" placeholder="فينيل، فلكس، LED..."></div>
-      <div class="span2"><label for="fCoords">الإحداثيات (Latitude, Longitude) *</label><input class="input coordinate" id="fCoords" dir="ltr" placeholder="34.60, 43.68" required><div class="coordinate-buttons"><button class="btn btn-ghost" id="pickMap" type="button">⌖ تحديد على الخريطة</button><button class="btn btn-ghost" id="getGPS" type="button">◎ موقعي الحالي GPS</button></div><div class="hint small-hint">يمكن لصق إحداثيات Google Maps. GPS يحتاج HTTPS وموافقة الموقع.</div></div>
+      <div class="span2"><label for="fCoords">الإحداثيات (Latitude, Longitude) *</label><input class="input coordinate" id="fCoords" dir="ltr" placeholder="34.60, 43.68" required><div class="coordinate-buttons"><button class="btn btn-ghost" id="pickMap" type="button"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>تحديد على الخريطة</span></button><button class="btn btn-ghost" id="getGPS" type="button"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>موقعي الحالي GPS</span></button></div><div class="hint small-hint">يمكن لصق إحداثيات Google Maps. GPS يحتاج HTTPS وموافقة الموقع.</div></div>
       <div class="span2 section-caption">معلومات إضافية تظهر للزبون ضمن تفاصيل الموقع</div>
       <div class="span2"><label for="fDescription">تفاصيل إضافية</label><textarea class="input" id="fDescription" maxlength="2000" rows="3"></textarea></div>
       <div class="span2"><label for="fPhotos">صور القطعة (حتى 5 ميغابايت للصورة)</label><input class="input" id="fPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple><div id="photoInfo" class="hint small-hint">بعد الحفظ تُرفع الصور إلى التخزين الخاص بالشركة.</div></div>
@@ -373,7 +373,7 @@
     </div>
     <div class="booking-sites-picker">
       <div class="booking-sites-header"><div><strong>حدد مواقع إعلانك على الخارطة</strong><p>يمكن اختيار عدة قطع من نفس الفئة حتى لو كانت في أقضية مختلفة من صلاح الدين وكركوك.</p></div>
-      <button type="button" class="booking-open-map" id="bookingChooseOnMap">⌖ اختيار من الخارطة</button></div>
+      <button type="button" class="booking-open-map" id="bookingChooseOnMap"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>اختيار من الخارطة</span></button></div>
       <div class="booking-selected-sites" id="bookingSelectedSites" aria-live="polite"><span>لم تحدد أي قطعة بعد — يمكنك إرسال طلب عام أيضاً.</span></div>
       <div class="booking-selection-actions"><span id="bookingSelectedCount">0 قطعة محددة</span><button type="button" id="bookingClearSites">مسح الاختيارات</button></div>
     </div>

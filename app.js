@@ -8,6 +8,10 @@ import { createRaafatNavigation } from "./routing.js";
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
 const COMPANY = "شركة رأفت للدعاية والإعلان والتجارة العامة";
+/* Stable self-contained SVG iconography (independent of installed fonts). */
+const RAAFAT_UI_ICONS=Object.freeze({"pin":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"2.5\"/></svg>","calendar":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3.5\" y=\"5.5\" width=\"17\" height=\"15\" rx=\"3\"/><path d=\"M7.5 3.5v4M16.5 3.5v4M3.5 10h17m-12 5 2.3 2.2 4.6-4.8\"/></svg>","arrow":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 12H6m6-6-6 6 6 6\"/></svg>","route":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m4 16 16-12-5 16-3.2-7-7.8 3Z\"/></svg>","message":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 11.5a8.5 8.5 0 0 1-12 7.6L3 21l1.9-5A8.5 8.5 0 1 1 20 11.5Z\"/><path d=\"M8.5 11.8h7\"/></svg>","copy":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"8\" y=\"8\" width=\"12\" height=\"12\" rx=\"2\"/><path d=\"M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2\"/></svg>","direct":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"5\" cy=\"19\" r=\"2.5\"/><circle cx=\"19\" cy=\"5\" r=\"2.5\"/><path d=\"m7.5 16.5 9-9\" stroke-dasharray=\"3 3\"/></svg>","close":"<svg class=\"raafat-ui-svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.85\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 6l12 12M18 6 6 18\"/></svg>"});
+const raafatIcon=name=>'<span class="raafat-inline-icon" aria-hidden="true">'+(RAAFAT_UI_ICONS[name]||"")+'</span>';
+
 const types = {billboard:"بيلبورد",unipole:"يوني بول",led:"شاشة LED",bridge:"إعلان جسر",wall:"جدارية",building:"على بناية / واجهة مبنى",sidewalk:"لوحة رصيف",other:"أخرى"};
 const REGIONS = Object.freeze({"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]});
 
@@ -634,7 +638,7 @@ function renderCityChips(){
    const total=state.sites.filter(s=>s.governorate===gov).length;
    const open=activeGov===gov;
    parts.push('<details class="region-group" data-region="'+escapeHtml(gov)+'" '+(open?'open':'')+'>'+
-     '<summary><span class="region-group-title"><span class="region-group-icon" aria-hidden="true">◈</span><strong>محافظة '+escapeHtml(gov)+'</strong></span><span class="region-group-trailing"><b>'+total+' قطعة</b><span class="region-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></span></summary>'+
+     '<summary><span class="region-group-title"><span class="region-group-icon" aria-hidden="true">'+RAAFAT_UI_ICONS.pin+'</span><strong>محافظة '+escapeHtml(gov)+'</strong></span><span class="region-group-trailing"><b>'+total+' قطعة</b><span class="region-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></span></summary>'+
      '<div class="region-group-cities">'+cities.map(city=>{
       const count=state.sites.filter(s=>s.governorate===gov&&s.city===city).length;
       return '<button class="city-chip '+(active===city?'active':'')+'" type="button" data-city="'+escapeHtml(city)+'" data-governorate="'+escapeHtml(gov)+'"><span>'+escapeHtml(city)+'</span><b>'+count+'</b></button>';
@@ -941,17 +945,17 @@ async function renderDetail(){
         '<div class="vip-site-metric"><small>نوع الإعلان</small><strong>'+safeType+'</strong></div>'+
       '</div>'+
       '<div class="vip-site-action-stack">'+
-        '<button class="btn btn-primary vip-site-book-button" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"||category==="custom"?'disabled title="'+(category==="custom"?"القطعة تحتاج تسعيراً خاصاً":"هذه القطعة غير متاحة")+'"':'')+'>✦ احجز الموقع الإعلاني <span>←</span></button>'+
-        '<div class="vip-site-action-grid"><button type="button" class="btn btn-ghost" id="raafatStartDirections" aria-label="الاتجاهات الداخلية إلى هذه القطعة">⌖ الاتجاهات</button>'+
-          (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">◈ الاستفسار واتساب</a>':
-          '<button type="button" class="btn btn-ghost" id="copyInquiry">⧉ نسخ للاستفسار</button>')+'</div>'+
+        '<button class="btn btn-primary vip-site-book-button" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"||category==="custom"?'disabled title="'+(category==="custom"?"القطعة تحتاج تسعيراً خاصاً":"هذه القطعة غير متاحة")+'"':'')+'>'+raafatIcon("calendar")+'<strong class="raafat-site-book-text">احجز الموقع الإعلاني</strong>'+raafatIcon("arrow")+'</button>'+
+        '<div class="vip-site-action-grid"><button type="button" class="btn btn-ghost" id="raafatStartDirections" aria-label="الاتجاهات الداخلية إلى هذه القطعة">'+raafatIcon("route")+'<span>الاتجاهات</span></button>'+
+          (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">'+raafatIcon("message")+'<span>استفسار واتساب</span></a>':
+          '<button type="button" class="btn btn-ghost" id="copyInquiry">'+raafatIcon("copy")+'<span>نسخ للاستفسار</span></button>')+'</div>'+
       '</div>'+
       '<details class="vip-site-specification"><summary><span><b>المواصفات الكاملة</b><small>العنوان والأبعاد والتجهيزات</small></span><span class="vip-spec-arrow" aria-hidden="true"><svg class="vip-spec-chevron-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>'+
         '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
       '</details>'+
       (site.description?'<div class="vip-site-description"><span class="vip-section-eyebrow">ABOUT THE LOCATION</span><strong>وصف الموقع</strong><p>'+escapeHtml(site.description)+'</p></div>':"")+
-      '<div class="vip-site-secondary-actions"><button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button>'+
-      '<button type="button" class="btn btn-ghost vip-direct-route-button" id="vipDirectRoute" title="خط مستقيم تقريبي وليس مسار قيادة">◌ خط مباشر من موقعي</button></div>'+
+      '<div class="vip-site-secondary-actions"><button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">'+raafatIcon("copy")+'<span>نسخ رابط القطعة</span></button>'+
+      '<button type="button" class="btn btn-ghost vip-direct-route-button" id="vipDirectRoute" title="خط مستقيم تقريبي وليس مسار قيادة">'+raafatIcon("direct")+'<span>خط مباشر من موقعي</span></button></div>'+
       (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button>'+(state.staffRole==="admin"?'<button type="button" class="btn danger" id="deleteSite">حذف القطعة</button>':"")+'</div>':"")+
       (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"")+
     '</div>'+
@@ -966,7 +970,7 @@ async function renderDetail(){
    }
    state.vipDirectLinkEnabled=!state.vipDirectLinkEnabled;
    updateVipDirectLink();
-   el("vipDirectRoute").textContent=state.vipDirectLinkEnabled?"× إخفاء الخط المباشر":"◌ خط مباشر من موقعي (ليس مساراً)";
+   el("vipDirectRoute").innerHTML=raafatIcon(state.vipDirectLinkEnabled?"close":"direct")+'<span>'+(state.vipDirectLinkEnabled?"إخفاء الخط المباشر":"خط مباشر من موقعي (ليس مساراً)")+'</span>';
    if(state.vipDirectLinkEnabled){
      toast("ظهر خط مستقيم تقريبي؛ استخدم زر الاتجاهات لمسار القيادة الحقيقي.");
    }
