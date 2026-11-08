@@ -3827,3 +3827,41 @@ body .map-area #mapHome.raafat-gps-locate.is-realtime::after{
    font-size:8px!important;
  }
 }
+
+
+/* Customer discovery shortcuts — kept in the catalog, never on top of the map. */
+.listing-quick-actions{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;margin:9px 0 14px;
+}
+.listing-quick-button{
+ display:flex;align-items:center;justify-content:center;
+ min-height:38px;padding:7px 10px;gap:6px;
+ border:1px solid rgba(138,185,163,.34);
+ border-radius:11px;background:rgba(18,60,56,.86);
+ color:#d8ece3;font:700 11px/1.6 "IBM Plex Sans Arabic",sans-serif;
+ cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;
+ touch-action:manipulation;
+}
+.listing-quick-button:hover{
+ background:rgba(30,82,72,.96);border-color:rgba(246,199,128,.65);
+}
+.listing-quick-button[aria-pressed="true"]{
+ color:#152e2c;border-color:#f0ce97;
+ background:linear-gradient(130deg,#f8dba8,#d8aa65);
+ box-shadow:inset 0 1px rgba(255,255,255,.25);
+}
+.listing-quick-button:focus-visible{
+ outline:2px solid #ffdfb0;outline-offset:2px;
+}
+.listing-straight-distance{
+ display:inline-block;margin-top:7px;font-size:10px!important;
+ color:#e9d4aa!important;font-weight:600;
+}
+@media(max-width:380px){
+ .listing-quick-actions{gap:6px}
+ .listing-quick-button{font-size:10px;padding:6px 7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .listing-quick-button{transition:none}
+}
