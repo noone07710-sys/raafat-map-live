@@ -38,6 +38,39 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Validate JavaScript and essential UI controls
+        shell: bash
+        run: |
+          node --check app.js
+          node --check routing.js
+          node --check booking.js
+          node --check admin-dashboard.js
+          node --check brand-map.js
+          node --check google-basemap.js
+          node --check config.js
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const required = [
+            'map', 'mapHome', 'mapNavigationToggle', 'raafatRoutePanel',
+            'raafatRouteRealtime', 'raafatRouteNext', 'raafatRouteClose',
+            'raafatRouteChooseStart', 'raafatRouteRemaining',
+            'vipLegendToggle', 'mapSiteCTA', 'listing',
+            'showAvailableOnly', 'sortByNearest'
+          ];
+          const missing = required.filter(id => !html.includes('id="' + id + '"'));
+          if (missing.length) throw new Error('Missing essential UI elements: ' + missing.join(', '));
+          const css = fs.readFileSync('style.css', 'utf8');
+          let depth = 0;
+          for (const char of css) {
+            if (char === '{') depth++;
+            else if (char === '}') depth--;
+            if (depth < 0) throw new Error('Unbalanced CSS closing brace');
+          }
+          if (depth !== 0) throw new Error('Unbalanced CSS opening brace');
+          console.log('Raafat static checks passed');
+          NODE
+
       - name: Prepare public site only
         shell: bash
         run: |
