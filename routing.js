@@ -383,8 +383,8 @@ export function createRaafatNavigation({map,getSite,getLocation,hasSharedGps=()=
   if(manualOrigin){
     manualOrigin=false;cleanRoute();lastFix=null;lastAccuracy=Infinity;activateGPS();return;
   }
-  if(lastFix&&lastAccuracy<=MAX_GUIDANCE_ACCURACY){
-    map.setView(lastFix,Math.max(16,map.getZoom()),{animate:true});
+  if(lastFix&&lastAccuracy<=MAX_GUIDANCE_ACCURACY&&Date.now()-lastFixTime<=10000){
+     map.setView(lastFix,Math.max(16,map.getZoom()),{animate:true});
   }else activateGPS();
  }
  panel.querySelectorAll("[data-route-mode]").forEach(btn=>btn.addEventListener("click",()=>{
@@ -403,7 +403,12 @@ export function createRaafatNavigation({map,getSite,getLocation,hasSharedGps=()=
   else activateGPS();
  });
  $("raafatRouteMyLocation").addEventListener("click",()=>{following=true;manualOrigin=false;lastFix=null;activateGPS();});
- $("raafatRouteRecenter").addEventListener("click",()=>{following=true;if(lastFix)map.setView(lastFix,Math.max(16,map.getZoom()),{animate:true});});
+ $("raafatRouteRecenter").addEventListener("click",()=>{
+    following=true;
+    if(lastFix&&lastAccuracy<=MAX_GUIDANCE_ACCURACY&&Date.now()-lastFixTime<=10000)
+      map.setView(lastFix,Math.max(16,map.getZoom()),{animate:true});
+    else activateGPS();
+  });
  map.on("dragstart",()=>{if(activeSite)following=false;});
  return {start,clear,recenter,handleMapClick,isActive:()=>Boolean(activeSite),onLiveLocation};
 }

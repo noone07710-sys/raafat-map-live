@@ -3865,3 +3865,10 @@ body .map-area #mapHome.raafat-gps-locate.is-realtime::after{
 @media(prefers-reduced-motion:reduce){
  .listing-quick-button{transition:none}
 }
+
+/* Small isolated pagination style for the booking administration table. */
+.admin-booking-pager{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0 16px;flex-wrap:wrap}
+.admin-booking-pager[hidden]{display:none}
+.admin-booking-pager span{font-size:13px;direction:rtl;unicode-bidi:isolate}
+.admin-booking-pager button{min-width:90px}
+.admin-booking-pager button:disabled{opacity:.45;cursor:not-allowed}

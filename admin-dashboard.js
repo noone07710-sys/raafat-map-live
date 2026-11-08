@@ -20,6 +20,9 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     document.body.classList.add("dashboard-open");
     $("dashStaffTab").hidden=!isAdmin();
     $("dashSettingsTab").hidden=!isAdmin();
+    document.querySelector('[data-dash-tab="bookings"]').hidden=!isAdmin();
+    for(const id of ["dashApplyStatus","dashBulkPublish","dashBulkHide"])$(id).hidden=!isAdmin();
+    $("dashBulkStatus").disabled=!isAdmin();
     $("dashSessionRole").textContent=(state.user?.email||"حساب موظف")+" • "+(roles[state.staffRole]||"موظف");
     switchTab("overview");
     document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
@@ -29,7 +32,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     document.body.classList.remove("dashboard-open");
   }
   function switchTab(tab){
-    if(["staff","settings"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
+    if(["staff","settings","bookings"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
     activeTab=tab;
     document.querySelectorAll("[data-dash-tab]").forEach(btn=>{
       const selected=btn.dataset.dashTab===tab;
@@ -72,7 +75,8 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
   }
   function renderInventory(){
     const state=getState(),items=matchingSites();
-    for(const id of [...chosen])if(!state.sites.some(s=>s.id===id))chosen.delete(id);
+    const visibleIds=new Set(items.map(s=>s.id));
+    for(const id of [...chosen])if(!visibleIds.has(id))chosen.delete(id);
     $("dashInventoryRows").innerHTML=items.length?items.map(s=>
       '<tr><td><input type="checkbox" data-dash-check="'+escape(s.id)+'" aria-label="تحديد '+escape(s.code)+'" '+(chosen.has(s.id)?"checked":"")+'></td>'+
       '<td><strong>'+escape(s.code)+'</strong></td>'+
@@ -112,8 +116,10 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     }));
   }
   async function bulkUpdate(patch,description){
-    const ids=[...chosen];
-    if(!ids.length){toast("حدد قطعة واحدة على الأقل.");return;}
+    if(!isAdmin()&&("status" in patch||"published" in patch)){toast("هذا الإجراء للمدير فقط.");return;}
+    const visibleIds=new Set(matchingSites().map(s=>s.id));
+    const ids=[...chosen].filter(id=>visibleIds.has(id));
+    if(!ids.length){toast("حدد قطعة ظاهرة واحدة على الأقل.");return;}
     if(!confirm("تأكيد "+description+" لعدد "+ids.length+" قطعة؟"))return;
     try{
       const {error}=await db.from("sites").update(patch).in("id",ids);
@@ -128,7 +134,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     const items=getState().sites;
     if(!items.length){toast("لا توجد بيانات لتصديرها.");return;}
     const cols=[
-      ["code","الرمز"],["name","اسم الموقع"],["governorate","المحافظة"],
+      ["code","الرمز"],["name","اسم الموقع"],["package_class","الفئة المحددة"],["governorate","المحافظة"],
       ["city","المدينة"],["area","المنطقة"],["street","الشارع"],
       ["landmark","أقرب معلم"],["type","نوع الإعلان"],["status","الحالة"],
       ["width_m","العرض"],["height_m","الارتفاع"],["faces","الأوجه"],
@@ -264,9 +270,9 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     $("dashExport").addEventListener("click",exportCsv);
     $("dashChangePassword").addEventListener("click",()=>{close();$("changePasswordButton").click()});
     $("dashRefresh").addEventListener("click",async()=>{await loadSites();render();toast("تم تحديث البيانات.")});
-    $("dashInventorySearch").addEventListener("input",renderInventory);
-    $("dashInventoryStatus").addEventListener("change",renderInventory);
-    $("dashInventoryPublication").addEventListener("change",renderInventory);
+    for(const [id,event] of [["dashInventorySearch","input"],["dashInventoryStatus","change"],["dashInventoryPublication","change"]]){
+      $(id).addEventListener(event,()=>{chosen.clear();renderInventory();});
+    }
     $("dashSelectAll").addEventListener("change",event=>{
       for(const s of matchingSites())event.target.checked?chosen.add(s.id):chosen.delete(s.id);
       renderInventory();

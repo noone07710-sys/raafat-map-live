@@ -114,7 +114,7 @@
       <span id="locationStatus" class="raafat-location-announcer" role="status" aria-live="polite" hidden></span>
       <div id="bookingMapPicker" class="booking-map-picker" hidden>
  <div class="booking-map-picker-heading"><span class="booking-map-picker-icon">⌖</span><div><strong>اختيار القطع من الخارطة</strong><small>اضغط على علامات القطع المتاحة من نفس الفئة لإضافتها أو إزالتها</small></div></div>
- <div class="booking-map-picker-footer"><strong id="bookingMapCount">0 قطعة محددة</strong><button id="bookingMapFinish" type="button">✓ إتمام الاختيار</button><button id="bookingMapCancel" type="button">رجوع</button></div>
+ <div class="booking-map-picker-footer"><strong id="bookingMapCount">0 قطعة محددة</strong><button id="bookingMapFinish" type="button">✓ إتمام الاختيار</button><button id="bookingMapCancel" type="button">إلغاء الاختيار</button></div>
  </div>
  <div id="mapPicking" class="map-pick" hidden>اضغط على الخريطة لتحديد الإحداثيات <button id="cancelPick" type="button">إلغاء</button></div>
       <button class="map-home raafat-gps-locate" id="mapHome" type="button" aria-label="تحديد موقعي على الخارطة" title="تحديد موقعي" aria-pressed="false"><svg class="raafat-target-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 1.75v4M12 18.25v4M1.75 12h4M18.25 12h4"/></svg></button>
@@ -319,7 +319,7 @@
    <p class="hint">القطع غير المنشورة لا تظهر للزبائن. تأكد من الإحداثيات قبل اختيار «نشر».</p>
    <form id="siteForm">
     <div class="form-grid">
-      <div class="span2"><label for="fPackageClass">فئة الباقة المرتبطة بالقياس</label><select class="input" id="fPackageClass"><option value="auto">تحديد تلقائي حسب القياس</option><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="hint small-hint" id="fPackageHint">تتحدد الفئة تلقائياً من العرض والارتفاع.</div></div>
+      <div class="span2"><label for="fPackageClass">فئة الباقة المرتبطة بالقياس</label><select class="input" id="fPackageClass"><option value="auto">تحديد تلقائي للمقاسات القياسية</option><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="hint small-hint" id="fPackageHint">تتحدد الفئة تلقائياً من العرض والارتفاع.</div></div>
       <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
       <div><label for="fName">اسم الموقع *</label><input class="input" id="fName" required maxlength="140" placeholder="شارع رئيسي — تقاطع..."></div>
       <div><label for="fGovernorate">المحافظة *</label><select class="input" id="fGovernorate" required><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></div>
