@@ -44,6 +44,24 @@ jobs:
           for file in app.js routing.js booking.js admin-dashboard.js brand-map.js google-basemap.js config.js; do
             node --input-type=module --check < "$file"
           done
+          node --input-type=module <<'MODULE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const code = fs.readFileSync('booking.js', 'utf8');
+          const { packageForSite } = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'));
+          for (const [w,h,expected] of [[1.2,2,'A'],[2,3,'B'],[2.5,3.5,'C'],[3,4,'D']]) {
+            assert.equal(packageForSite({width_m:w,height_m:h}), expected);
+          }
+          assert.equal(packageForSite({width_m:5,height_m:5}), null, 'Unknown sizes must not become rooftop E');
+          assert.equal(packageForSite({width_m:5,height_m:5,package_class:'E'}), 'E');
+          const app=fs.readFileSync('app.js','utf8');
+          const admin=fs.readFileSync('admin-dashboard.js','utf8');
+          assert.match(code,/clearOnEmptyMap/);
+          assert.match(code,/\.eq\("status",booking\.status\)/);
+          assert.match(app,/if\(currentRequest!==siteLoadSequence\)return/);
+          assert.match(admin,/visibleIds\.has\(id\)/);
+          console.log('Booking, navigation and inventory regression contracts passed');
+          MODULE
           node <<'NODE'
           const fs = require('node:fs');
           const html = fs.readFileSync('index.html', 'utf8');
