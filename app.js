@@ -19,7 +19,7 @@ const CITY_CENTERS = Object.freeze({
   "الشرقاط":[35.5172,43.2281],
   "العلم":[34.709,43.6951],
   "بلد":[34.01485,44.14574],
-  "كركوك":[35.4719,44.3954]
+  "كركوك":[35.4719,44.3954],"الحويجة":[35.32332,43.78241],"داقوق":[35.13792,44.44638],"الدبس":[35.67482,44.07067]
 });
 const sizeKey = s => Number(s.width_m)+"x"+Number(s.height_m);
 const statuses = { available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
@@ -509,7 +509,8 @@ function initializeMap(){
      return;
    }
    if(navigationController?.handleMapClick(event.latlng))return;
-   if(bookingController?.isSelecting()||navigationController?.isActive())return;
+   if(bookingController?.isSelecting()){bookingController.clearOnEmptyMap();return;}
+    if(navigationController?.isActive())return;
    clearSelectedSite();
  });
  // The only visible GPS control is the bottom crosshair.
@@ -563,7 +564,7 @@ function zoomAll(defaultOnly=false){
      state.map.fitBounds(bounds,{padding:[50,58],maxZoom:10,animate:true});
      return;
    }
-   const focus=CITY_CENTERS[city]||CITY_CENTERS["كركوك"];
+   const focus=CITY_CENTERS[city]||CITY_CENTERS[governorate==="صلاح الدين"?"تكريت":"كركوك"];
    const zoom=city?14:12;
    state.map.setView(focus,zoom);
    return;
@@ -683,7 +684,7 @@ function render(){
  el("listing").innerHTML=sites.length ? sites.map(s=>
   '<button type="button" class="location-card '+(state.selected===s.id?'active':'')+'" data-site="'+escapeHtml(s.id)+'">'+
    '<div class="card-row"><strong>'+escapeHtml(s.name)+'</strong>'+badge(s)+'</div>'+
-   '<small><span class="listing-category-tag category-'+packageForSite(s)+'">فئة '+packageForSite(s)+'</span> '+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
+   '<small><span class="listing-category-tag category-'+(packageForSite(s)||"custom")+'">'+(packageForSite(s)?"فئة "+packageForSite(s):"قياس خاص")+'</span> '+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
    '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
    (position?'<small class="listing-straight-distance">≈ '+format(straightLineMeters(s,position)/1000)+' كم بخط مستقيم</small>':'')+
   '</button>'
@@ -717,7 +718,7 @@ function renderMarkers(sites){
    const safeStatus = statuses[s.status] ? s.status : "available";
    const highlighted=state.selected===s.id;
    const bookingSelected=Boolean(bookingController?.isSelected(s.id));
-   const category=packageForSite(s);
+   const category=packageForSite(s)||"custom";
    const marker=L.marker([s.latitude,s.longitude],{
      bubblingMouseEvents:false,
      icon:L.divIcon({
@@ -754,7 +755,9 @@ function renderMarkers(sites){
 function updateVipDirectLink(){
  if(!state.map)return;
  const site=state.sites.find(s=>s.id===state.selected);
- if(!state.vipDirectLinkEnabled||!site||!state.lastLocation){
+  const age=Date.now()-Number(state.gpsFixTime||0);
+  const accurateGps=age>=0&&age<=15000&&Number.isFinite(state.gpsFixAccuracy)&&state.gpsFixAccuracy<=150;
+  if(!state.vipDirectLinkEnabled||!site||!state.lastLocation||!accurateGps){
    if(state.vipDirectLink){
      state.map.removeLayer(state.vipDirectLink);
      state.vipDirectLink=null;
@@ -872,7 +875,7 @@ function vipOverviewRadar(site){
    '<div class="vip-overview-sweep" aria-hidden="true"></div>'+markers+
    '<span class="vip-overview-site" style="left:'+sx+'%;top:'+sy+'%" aria-hidden="true"></span>'+
    '</div><div class="vip-overview-foot"><span><i></i> موقع القطعة</span>'+
-   '<span>مراكز المدن • ٨ مواقع</span></div></section>';
+   '<span>مراكز المدن • '+places.length+' مواقع</span></div></section>';
 }
 
 async function renderDetail(){
@@ -907,7 +910,7 @@ async function renderDetail(){
    ["عدد الأوجه",site.faces],["الإنارة",site.lighting?"مضاءة":"غير مضاءة"],
    ["اتجاه مواجهة الإعلان",site.facing||"—"],["الخامة / المادة",site.material||"—"]
  ];
- const category=packageForSite(site);
+ const category=packageForSite(site)||"custom";
  const dims=format(site.width_m)+" × "+format(site.height_m);
  const statusText=statuses[site.status]||site.status;
  const areaText=[site.governorate||"صلاح الدين",site.city,site.area].filter(Boolean).join(" • ");
@@ -948,14 +951,15 @@ async function renderDetail(){
       (site.description?'<div class="vip-site-description"><span class="vip-section-eyebrow">ABOUT THE LOCATION</span><strong>وصف الموقع</strong><p>'+escapeHtml(site.description)+'</p></div>':"")+
       '<div class="vip-site-secondary-actions"><button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">⧉ نسخ رابط القطعة</button>'+
       '<button type="button" class="btn btn-ghost vip-direct-route-button" id="vipDirectRoute" title="خط مستقيم تقريبي وليس مسار قيادة">◌ خط مباشر من موقعي</button></div>'+
-      (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button><button type="button" class="btn danger" id="deleteSite">حذف القطعة</button></div>':"")+
+      (state.staff?'<div class="admin-actions"><button type="button" class="btn btn-ghost" id="editSite">تعديل البيانات</button>'+(state.staffRole==="admin"?'<button type="button" class="btn danger" id="deleteSite">حذف القطعة</button>':"")+'</div>':"")+
       (state.staff&&photos.length?'<div class="photo-management"><div class="spec-heading">إدارة صور القطعة</div>'+photos.map((photo,i)=>'<button class="btn btn-ghost" type="button" data-remove-photo="'+escapeHtml(photo.id)+'">حذف صورة '+(i+1)+'</button>').join("")+'</div>':"")+
     '</div>'+
    '</article>';
  el("siteDetails").innerHTML=html;
  el("raafatStartDirections")?.addEventListener("click",()=>{if(routeIsAvailable)navigationController?.start(site);else toast("إحداثيات القطعة غير صالحة.")});
  el("vipDirectRoute")?.addEventListener("click",()=>{
-   if(!state.lastLocation){
+   const age=Date.now()-Number(state.gpsFixTime||0);
+   if(!state.lastLocation||age<0||age>15000||state.gpsFixAccuracy>150){
      toast("لازم تضغط «موقعي الحالي» وتسمح للموقع أولاً. هذا خط مستقيم توضيحي وليس مسار قيادة.");
      return;
    }
@@ -990,7 +994,7 @@ async function renderDetail(){
  }
  if(state.staff){
    el("editSite").addEventListener("click",()=>openEditor(site));
-   el("deleteSite").addEventListener("click",()=>void deleteSite(site));
+   el("deleteSite")?.addEventListener("click",()=>void deleteSite(site));
    el("siteDetails").querySelectorAll("[data-remove-photo]").forEach(btn=>btn.addEventListener("click",()=>void removePhoto(site,btn.dataset.removePhoto)));
  }
 }
@@ -999,13 +1003,15 @@ async function removePhoto(site,photoId){
  const photo=(site.site_photos||[]).find(p=>p.id===photoId);
  if(!photo||!confirm("حذف هذه الصورة من موقع القطعة نهائياً؟"))return;
  try{
-   const {error:storageError}=await db.storage.from("site-photos").remove([photo.storage_path]);
-   if(storageError)throw storageError;
-   const {error:dbError}=await db.from("site_photos").delete().eq("id",photo.id);
-   if(dbError)throw dbError;
-   state.photoUrls.delete(photo.storage_path);
-   await loadSites();
-   toast("تم حذف الصورة من الموقع.");
+   // A database failure must never leave a broken image reference.
+  const {data,error:dbError}=await db.from("site_photos").delete().eq("id",photo.id).select("id").maybeSingle();
+  if(dbError)throw dbError;
+  if(!data)throw Error("تعذّر حذف سجل الصورة");
+  state.photoUrls.delete(photo.storage_path);
+  const {error:storageError}=await db.storage.from("site-photos").remove([photo.storage_path]);
+  await loadSites();
+  if(storageError){console.warn("Orphaned image cleanup:",storageError.message);toast("حذفت الصورة؛ تنظيف الملف المخزن يحتاج مراجعة.");}
+  else toast("تم حذف الصورة من الموقع.");
  }catch(e){toast("تعذر حذف الصورة: "+(e.message||"خطأ غير معروف"));}
 }
 function refreshAdmin(){
@@ -1027,6 +1033,7 @@ async function authCheck(){
   if(!error && data && ["admin","editor"].includes(data.role)){state.staff=true;state.staffRole=data.role;}
  }
  refreshAdmin();
+  syncLiveChannels();
 }
 function applySiteSettings(data){
  if(!data)return;
@@ -1051,8 +1058,33 @@ async function loadSiteSettings(){
    console.warn("Optional company settings were not loaded:",err.message);
  }
 }
+let siteLoadSequence=0;
+let inventoryChannel=null,adminBookingChannel=null,inventoryReloadTimer=null;
+function scheduleInventoryReload(){
+ clearTimeout(inventoryReloadTimer);
+ inventoryReloadTimer=setTimeout(()=>{if(!document.hidden)void loadSites();},650);
+}
+function syncLiveChannels(){
+ if(!db)return;
+ if(!inventoryChannel){
+  inventoryChannel=db.channel("raafat-inventory")
+   .on("postgres_changes",{event:"*",schema:"public",table:"sites"},scheduleInventoryReload)
+   .on("postgres_changes",{event:"*",schema:"public",table:"site_photos"},scheduleInventoryReload)
+   .subscribe(status=>{if(status==="SUBSCRIBED")scheduleInventoryReload();});
+ }
+ if(state.staffRole==="admin"&&!adminBookingChannel){
+  adminBookingChannel=db.channel("raafat-bookings-admin")
+   .on("postgres_changes",{event:"*",schema:"public",table:"booking_requests"},event=>{
+     if(event.eventType==="INSERT")toast("وصل طلب حجز جديد • راجع لوحة الإدارة");
+     document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
+   }).subscribe();
+ }else if(state.staffRole!=="admin"&&adminBookingChannel){
+  void db.removeChannel(adminBookingChannel);adminBookingChannel=null;
+ }
+}
 async function loadSites(){
  if(!db)return;
+ const currentRequest=++siteLoadSequence;
  try{
   const items=[];
   for(let page=0;page<100;page++){
@@ -1065,16 +1097,19 @@ async function loadSites(){
     items.push(...(data||[]));
     if(!data || data.length<1000)break;
   }
-  state.sites=items;
-  if(state.selected&&!items.some(s=>s.id===state.selected))state.selected=null;
+  if(currentRequest!==siteLoadSequence)return;
+   state.sites=items;
+   if(state.selected&&!items.some(s=>s.id===state.selected))state.selected=null;
   renderFilters();render();
-  adminDashboard?.render();
-  const hash=location.hash.startsWith("#site=")?decodeURIComponent(location.hash.slice(6)):null;
+   adminDashboard?.render();
+   bookingController?.refreshSelection();
+   const hash=location.hash.startsWith("#site=")?decodeURIComponent(location.hash.slice(6)):null;
   if(hash&&state.sites.some(site=>site.id===hash))selectSite(hash);
   alertBanner("");
  }catch(error){
-  state.sites=[];renderFilters();render();adminDashboard?.render();
-  alertBanner("تعذر الاتصال بقاعدة البيانات. تحقق من الإعدادات واتصال الإنترنت وصلاحيات Supabase.");
+  if(currentRequest!==siteLoadSequence)return;
+   if(!state.sites.length){renderFilters();render();adminDashboard?.render();}
+   alertBanner("تعذّر تحديث البيانات. المعروض آخر بيانات تم تحميلها بنجاح.");
   console.error("Site fetch failed:",error.message);
  }
 }
@@ -1086,7 +1121,9 @@ function openEditor(site=null){
  el("photoInfo").textContent=site?"الصور القديمة ستبقى. الصور الجديدة تُضاف عند الحفظ.":"الصور الجديدة تُرفع بعد حفظ موقع القطعة.";
  const get=(field,defaultValue="") => site?.[field]??defaultValue;
  el("fCode").value=get("code");
- el("fPackageClass").value=site?packageForSite(site):"auto";
+ el("fPackageClass").value=site?(site.package_class||"auto"):"auto";
+ el("fStatus").disabled=state.staffRole!=="admin";
+ el("fPublished").disabled=state.staffRole!=="admin";
  updatePackageHint();
  el("fName").value=get("name");
  el("fGovernorate").value=get("governorate","صلاح الدين");
@@ -1111,15 +1148,15 @@ function updatePackageHint(){
  const site={width_m:Number(el("fWidth").value),height_m:Number(el("fHeight").value)};
  const found=packageForSite(site);
  const selected=el("fPackageClass").value;
- el("fPackageHint").textContent="الفئة حسب القياس: "+(found||"—")+(selected!=="auto"&&selected!==found?" • القياس لا يطابق الفئة المختارة":"")+" • رمز القطعة يقبل أرقاماً فقط عند اختيار فئة.";
+ el("fPackageHint").textContent="الفئة حسب القياس: "+(found||"—")+(selected!=="auto"&&selected!=="E"&&selected!==found?" • القياس لا يطابق الفئة المختارة":"")+" • رمز القطعة يقبل أرقاماً فقط عند اختيار فئة.";
 }
 function sitePayload(){
  const requestedClass=el("fPackageClass").value;
  const measuredClass=packageForSite({width_m:Number(el("fWidth").value),height_m:Number(el("fHeight").value)});
- if(requestedClass!=="auto"&&requestedClass!==measuredClass)throw Error("القياس لا يتطابق مع فئة "+requestedClass+". عدّل القياس أو اختر فئة صحيحة.");
+ if(requestedClass!=="auto"&&requestedClass!=="E"&&requestedClass!==measuredClass)throw Error("القياس لا يتطابق مع فئة "+requestedClass+". عدّل القياس أو اختر فئة صحيحة.");
  const rawCode=el("fCode").value.trim();
  const effectiveClass=requestedClass==="auto"?measuredClass:requestedClass;
- const code=/^\d+$/.test(rawCode)?effectiveClass+"-"+rawCode:rawCode;
+ const code=/^\d+$/.test(rawCode)?(effectiveClass||"X")+"-"+rawCode:rawCode;
  const name=el("fName").value.trim();
  const governorate=el("fGovernorate").value;
  const city=el("fCity").value.trim();
@@ -1141,6 +1178,7 @@ function sitePayload(){
  if(!Number.isInteger(faces)||faces<1||faces>8)throw Error("عدد الأوجه من 1 إلى 8.");
  return {
    code,name,governorate,city,area,street,landmark,facing,material,description,
+   package_class:requestedClass==="auto"?null:requestedClass,
    type:el("fType").value,status:el("fStatus").value,
    width_m,height_m,faces,lighting:el("fLighting").value==="true",
    ...coords,published:el("fPublished").checked
@@ -1190,9 +1228,20 @@ async function saveSite(event){
  }finally{actionBusy(false)}
 }
 async function deleteSite(site){
- if(!state.staff||!db)return;
- if(!confirm("هل تريد حذف القطعة "+site.code+" نهائياً؟ لا يمكن التراجع."))return;
+ if(state.staffRole!=="admin"||!db)return;
  try{
+  const [references,legacy]=await Promise.all([
+    db.from("booking_request_sites").select("id",{count:"exact",head:true}).eq("site_id",site.id),
+    db.from("booking_requests").select("id",{count:"exact",head:true}).eq("site_id",site.id)
+  ]);
+  if(references.error||legacy.error)throw(references.error||legacy.error);
+  if(Number(references.count||0)+Number(legacy.count||0)>0){
+    if(!confirm("هذه القطعة مرتبطة بحجوزات سابقة. هل تريد إخفاءها عن الزبائن مع حفظ التاريخ؟"))return;
+    const {error}=await db.from("sites").update({published:false}).eq("id",site.id);
+    if(error)throw error;
+    await loadSites();toast("تم إخفاء القطعة وحفظ روابط حجوزاتها.");return;
+  }
+  if(!confirm("هل تريد حذف القطعة "+site.code+" نهائياً؟ لا يمكن التراجع."))return;
   const paths=(site.site_photos||[]).map(p=>p.storage_path);
   const {error}=await db.from("sites").delete().eq("id",site.id);
   if(error)throw error;
@@ -1424,6 +1473,13 @@ async function main(){
  }
  window.addEventListener("orientationchange",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),250));
  window.addEventListener("resize",()=>setTimeout(()=>state.map?.invalidateSize({pan:false}),100));
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden){
+      scheduleInventoryReload();
+      if(state.staffRole==="admin")document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
+    }
+  });
+  window.setInterval(()=>{if(db&&!document.hidden)scheduleInventoryReload();},120000);
  if(!db){
   alertBanner("النظام لم يُربط بعد بقاعدة Supabase. يجب إعداد مشروع الشركة وملف config.js قبل نشره للزبائن.");
   el("listing").innerHTML='<div class="empty">لا توجد مواقع فعلية محمّلة. لن نعرض مواقع تجريبية على أنها قطع الشركة.</div>';
