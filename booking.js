@@ -11,18 +11,19 @@ const $=id=>document.getElementById(id);
 const safe=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 export function packageForSite(site){
  if(!site)return null;
+ if(site.package_class==="E")return "E";
  const w=Number(site.width_m),h=Number(site.height_m);
  if((w===1.2&&h===2)||(w===2&&h===1.2))return "A";
  if((w===2&&h===3)||(w===3&&h===2))return "B";
  if((w===2.5&&h===3.5)||(w===3.5&&h===2.5))return "C";
  if((w===3&&h===4)||(w===4&&h===3))return "D";
- return "E";
+ return null; // Custom dimensions need an explicit category E.
 }
 
 export function setupBookings({db,getState,toast}){
  const countries=$("bookingGovernorate"),cities=$("bookingCity"),sites=$("bookingSite"),category=$("bookingCategory"),duration=$("bookingDuration");
  const modal=$("bookingModal"),bar=$("bookingMapPicker"),chosen=new Map(),eArea=$("bookingEArea");
- let busy=false,selecting=false,dirty=false,currentCategory='A';
+ let busy=false,selecting=false,dirty=false,currentCategory='A',beforeMapSelection=null;
  const available=s=>s?.published&&s.status==="available";
  const inventory=()=>getState().sites||[];
  const validSite=id=>inventory().find(s=>s.id===id&&available(s)&&packageForSite(s)===category.value);
@@ -82,7 +83,11 @@ export function setupBookings({db,getState,toast}){
    category.value=key;currentCategory=key;chosen.clear();dirty=true;writePackage();
  }
  function renderSelection(){
-   for(const [id,s] of chosen)if(!validSite(id))chosen.delete(id);
+   for(const [id,old] of chosen){
+    const current=validSite(id);
+    if(!current)chosen.delete(id);
+    else if(current!==old)chosen.set(id,current);
+  }
    const arr=picked();
    $("bookingSelectedSites").innerHTML=arr.length?arr.map(s=>
      '<div class="booking-site-chip"><span class="booking-site-chip-code">'+safe(s.code)+'</span>'+
@@ -120,7 +125,9 @@ export function setupBookings({db,getState,toast}){
    if(!preserve){
      $("bookingForm").reset();chosen.clear();dirty=false;
      const s=inventory().find(s=>s.id===siteId&&available(s));
-     category.value=s?packageForSite(s):"A";currentCategory=category.value;
+     const detected=s?packageForSite(s):null;
+      if(s&&!detected){toast("هذا القياس لا يملك باقة تلقائية؛ تواصل مع الإدارة للتسعير.");return;}
+      category.value=detected||"A";currentCategory=category.value;
      countries.value=s?.governorate||"صلاح الدين";
      writeCities();
      if(s)cities.value=s.city;
@@ -141,15 +148,27 @@ export function setupBookings({db,getState,toast}){
  }
  function pickOnMap(){
    if(busy)return;
-   selecting=true;modal.hidden=true;bar.hidden=false;restoreScroll();
+   beforeMapSelection=new Map(chosen);
+    selecting=true;modal.hidden=true;bar.hidden=false;restoreScroll();
    document.querySelector(".map-area")?.scrollIntoView({behavior:"smooth",block:"center"});
    toast("اضغط على علامات المواقع بالخريطة. يمكن تحديد أكثر من قطعة من نفس الفئة.");
  }
  function finishMap(){
    if(!selecting)return;
-   selecting=false;bar.hidden=true;openBooking("",true);
- }
- function trackUrl(token){return location.origin+location.pathname+"#booking="+encodeURIComponent(token);}
+   selecting=false;beforeMapSelection=null;bar.hidden=true;openBooking("",true);
+  }
+  function cancelMap(){
+    if(!selecting)return;
+    chosen.clear();
+    for(const [id,site] of beforeMapSelection||[])chosen.set(id,site);
+    selecting=false;beforeMapSelection=null;bar.hidden=true;openBooking("",true);
+  }
+  function clearOnEmptyMap(){
+    if(!selecting||!chosen.size)return;
+    chosen.clear();dirty=true;renderSelection();
+    toast("تم إلغاء تحديد القطع من الخريطة.");
+  }
+  function trackUrl(token){return location.origin+location.pathname+"#booking="+encodeURIComponent(token);}
  function whatsappLink(result,payload,selected){
    const phone=String(getState().siteSettings?.whatsapp_number||window.RAAFAT_CONFIG?.whatsappNumber||"").replace(/\D/g,"");
    const details=selected.length?selected.map((s,i)=>(i+1)+". "+s.code+" — "+s.name+" ("+s.governorate+" / "+s.city+")").join("\n"):"طلب عام بدون قطع محددة";
@@ -219,7 +238,8 @@ export function setupBookings({db,getState,toast}){
  // Never dismiss on outside click: forms may contain unsaved customer data.
  $("bookingChooseOnMap").addEventListener("click",pickOnMap);
  $("bookingMapFinish").addEventListener("click",finishMap);
- $("bookingMapCancel").addEventListener("click",finishMap);
+ $("bookingMapCancel").addEventListener("click",cancelMap);
+  modal.addEventListener("click",event=>{if(event.target===modal)close();});
  $("bookingClearSites").addEventListener("click",()=>{if(chosen.size){chosen.clear();dirty=true;renderSelection();}});
  $("bookingSelectedSites").addEventListener("click",e=>{const btn=e.target.closest("[data-remove-booking-site]");if(btn)addOrRemove(btn.dataset.removeBookingSite);});
  countries.addEventListener("change",()=>{dirty=true;writeCities();});
@@ -241,6 +261,7 @@ export function setupBookings({db,getState,toast}){
    isSelecting:()=>selecting,
    isSelected:id=>chosen.has(id),
    handleSiteSelection:id=>{if(!selecting)return false;addOrRemove(id);return true;},
+    clearOnEmptyMap,
    refreshSelection:()=>{if(!modal.hidden||selecting)renderSelection();}
  };
 }
@@ -249,22 +270,42 @@ export function setupBookings({db,getState,toast}){
 export function setupAdminBookings({db,getState,toast}){
  const table=$("dashBookingRows"),count=$("dashBookingCount");
  if(!table)return;
- let bookings=[],loading=false;
+ let bookings=[],loading=false,page=0,totalCount=0;
+  const PAGE_SIZE=50;
+  const pager=document.createElement("div");
+  pager.id="dashBookingPager";pager.className="admin-booking-pager";pager.hidden=true;
+  pager.innerHTML='<button type="button" class="admin-mini-button secondary" data-booking-page="prev">السابق</button><span data-page-label></span><button type="button" class="admin-mini-button secondary" data-booking-page="next">التالي</button>';
+  count.insertAdjacentElement("afterend",pager);
+  pager.addEventListener("click",event=>{
+    const btn=event.target.closest("[data-booking-page]");
+    if(!btn||btn.disabled)return;
+    page+=btn.dataset.bookingPage==="next"?1:-1;
+    page=Math.max(0,Math.min(page,Math.max(0,Math.ceil(totalCount/PAGE_SIZE)-1)));
+    void load();
+  });
  const labels={pending:"بانتظار المراجعة",approved:"موافق عليه",rejected:"مرفوض",completed:"مكتمل"};
- const money=v=>"$"+Number(v).toLocaleString("en-US");
+  const allowed={pending:["pending","approved","rejected"],approved:["approved","pending","rejected","completed"],rejected:["rejected","pending","approved"],completed:["completed"]};
+  const money=v=>"$"+Number(v).toLocaleString("en-US");
  async function load(){
-  if(!getState().staff||!db||loading)return;
+  if(getState().staffRole!=="admin"||!db||loading)return;
   loading=true;
   count.textContent="جاري تحميل طلبات الحجز…";
   try{
-   const {data,error}=await db.from("booking_requests")
-    .select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,requested_area_m2,status,created_at,tracking_token,booking_request_sites(site_id,site_code,site_name,governorate,city,unit_price_usd)")
-    .order("created_at",{ascending:false}).limit(150);
+   const {data,error,count:all}=await db.from("booking_requests")
+    .select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,requested_area_m2,status,created_at,tracking_token,booking_request_sites(site_id,site_code,site_name,governorate,city,unit_price_usd)",{count:"exact"})
+     .order("created_at",{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
    if(error)throw error;
    bookings=data||[];
-   const pending=bookings.filter(b=>b.status==="pending").length;
-   $("dashBookingBadge").textContent=pending?String(pending):"";
-   count.textContent=bookings.length+" طلب • "+pending+" بانتظار المراجعة";
+    totalCount=all||0;
+    const {count:pending,error:pendingError}=await db.from("booking_requests")
+      .select("id",{count:"exact",head:true}).eq("status","pending");
+    if(pendingError)throw pendingError;
+    $("dashBookingBadge").textContent=pending?String(pending):"";
+    count.textContent="عرض "+(totalCount?page*PAGE_SIZE+1:0)+"–"+Math.min(totalCount,(page+1)*PAGE_SIZE)+" من "+totalCount+" طلب • "+pending+" بانتظار المراجعة";
+    pager.hidden=totalCount<=PAGE_SIZE;
+    pager.querySelector("[data-page-label]").textContent="صفحة "+(page+1)+" من "+Math.max(1,Math.ceil(totalCount/PAGE_SIZE));
+    pager.querySelector('[data-booking-page="prev"]').disabled=page===0;
+    pager.querySelector('[data-booking-page="next"]').disabled=(page+1)*PAGE_SIZE>=totalCount;
    table.innerHTML=bookings.length?bookings.map(b=>{
     const requested=b.booking_request_sites||[];
     const chips=requested.map(s=>
@@ -279,16 +320,18 @@ export function setupAdminBookings({db,getState,toast}){
      requested.map(s=>s.site_id?'<a class="booking-admin-map-link" href="'+safe(location.origin+location.pathname+'#site='+encodeURIComponent(s.site_id))+'" target="_blank" rel="noopener noreferrer">⌖ '+safe(s.site_code)+'</a>':"").join(" ")+
      '</td>'+
      '<td>'+safe(labels[b.status]||b.status)+'</td>'+
-     '<td><select class="input" data-booking-status="'+safe(b.id)+'">'+
-     Object.entries(labels).map(([key,label])=>'<option value="'+key+'" '+(b.status===key?"selected":"")+'>'+label+'</option>').join("")+
+     '<td><select class="input" data-booking-status="'+safe(b.id)+'" '+(b.status==="completed"?"disabled":"")+'>'+
+     Object.entries(labels).map(([key,label])=>'<option value="'+key+'" '+(b.status===key?"selected":"")+' '+(!(allowed[b.status]||[]).includes(key)?"disabled":"")+'>'+label+'</option>').join("")+
      '</select><button type="button" data-booking-link="'+safe(b.tracking_token)+'">نسخ رابط الزبون</button></td></tr>';
    }).join(""):'<tr><td colspan="6">لا توجد طلبات حجز حتى الآن.</td></tr>';
    table.querySelectorAll("[data-booking-status]").forEach(select=>select.addEventListener("change",async()=>{
     const booking=bookings.find(b=>b.id===select.dataset.bookingStatus);
     if(!booking||!confirm("هل تريد تغيير حالة الطلب إلى "+labels[select.value]+"؟")){select.value=booking?.status||"pending";return;}
     select.disabled=true;
-    const {error}=await db.from("booking_requests").update({status:select.value,updated_at:new Date().toISOString()}).eq("id",booking.id);
-    if(error){toast("لم يتم اعتماد التغيير: "+error.message);select.disabled=false;select.value=booking.status;return;}
+    const {data:updated,error}=await db.from("booking_requests")
+       .update({status:select.value,updated_at:new Date().toISOString()})
+       .eq("id",booking.id).eq("status",booking.status).select("id").maybeSingle();
+     if(error||!updated){toast("لم يتم اعتماد التغيير: "+(error?.message||"الطلب تغيّر من حساب آخر؛ حدّث القائمة."));select.disabled=false;select.value=booking.status;void load();return;}
     toast("تم تحديث الحجز والقطع المرتبطة به.");
     await load();
    }));
@@ -301,7 +344,7 @@ export function setupAdminBookings({db,getState,toast}){
   finally{loading=false;}
  }
  document.addEventListener("raafat:bookings-tab",()=>void load());
- setInterval(()=>{if(getState().staff&&!$("adminDashboard").hidden)void load();},60000);
+ setInterval(()=>{if(getState().staffRole==="admin"&&!$("adminDashboard").hidden)void load();},60000);
  $("dashBookingRefresh").addEventListener("click",()=>void load());
  return {load};
 }
