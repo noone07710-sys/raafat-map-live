@@ -41,13 +41,9 @@ jobs:
       - name: Validate JavaScript and essential UI controls
         shell: bash
         run: |
-          node --check app.js
-          node --check routing.js
-          node --check booking.js
-          node --check admin-dashboard.js
-          node --check brand-map.js
-          node --check google-basemap.js
-          node --check config.js
+          for file in app.js routing.js booking.js admin-dashboard.js brand-map.js google-basemap.js config.js; do
+            node --input-type=module --check < "$file"
+          done
           node <<'NODE'
           const fs = require('node:fs');
           const html = fs.readFileSync('index.html', 'utf8');
