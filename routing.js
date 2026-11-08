@@ -49,7 +49,7 @@ const instruction=(m)=>{
  if(DESTINATION_TYPES.has(type))return phrase;
  return (START_TYPES.has(type)||type===7||type===8||type===22||type===25)?phrase+(road?" على "+road:""):phrase+onRoad;
 };
-export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=()=>{}}){
+export function createRaafatNavigation({map,getSite,getLocation,hasSharedGps=()=>false,getSharedGpsFix=()=>null,toast,onChange=()=>{}}){
  const panel=$("raafatRoutePanel"),steps=$("raafatRouteSteps"),status=$("raafatRouteStatus");
  let routeLayer=null,originMarker=null,targetMarker=null,activeSite=null,starting=null;
  let choosing=false,requestId=0,abort=null,watchId=null,lastFix=null,lastRequested=null,requestTime=0;
@@ -252,6 +252,15 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
   }
   stopWatch();startWatchdog();
   setRealtime("waiting");
+  if(hasSharedGps()){
+    setStatus("جاري استقبال تحديثات GPS من موقعك…");
+    const fix=getSharedGpsFix();
+    if(fix&&goodCoord(fix.point)&&Number.isFinite(fix.timestamp)&&Date.now()-fix.timestamp>=0&&Date.now()-fix.timestamp<=10000){
+      onLiveLocation(fix.point,fix.accuracy,fix.heading,fix.speed,fix.timestamp);
+    }
+    // The map locator owns its GPS watcher; we listen to its updates instead.
+    return;
+  }
   setStatus("جاري طلب موقعك… قد يطلب المتصفح إذن الوصول إلى GPS.");
   watchId=navigator.geolocation.watchPosition(pos=>{
    if(!activeSite)return;
@@ -362,10 +371,11 @@ export function createRaafatNavigation({map,getSite,getLocation,toast,onChange=(
   return true;
  }
  function onLiveLocation(point,accuracy=Infinity,heading=null,speed=null,timestamp=Date.now()){
-  if(!activeSite||watchId!==null||manualOrigin)return;
-  if(goodCoord(point)&&accuracy<=MAX_PREVIEW_ACCURACY){
-    updateGPS(point,accuracy,heading,timestamp,speed);
-    if(!lastRequested&&!abort&&Date.now()-timestamp<=10000)void planRoute(point);
+  if(!activeSite||watchId!==null||manualOrigin||!goodCoord(point))return;
+  updateGPS(point,accuracy,heading,timestamp,speed);
+  if(Number.isFinite(accuracy)&&accuracy<=MAX_PREVIEW_ACCURACY&&
+     !lastRequested&&!abort&&Date.now()-timestamp>=0&&Date.now()-timestamp<=10000){
+    void planRoute(point);
   }
  }
  function recenter(){
