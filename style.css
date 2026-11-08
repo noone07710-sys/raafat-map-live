@@ -3872,3 +3872,8 @@ body .map-area #mapHome.raafat-gps-locate.is-realtime::after{
 .admin-booking-pager span{font-size:13px;direction:rtl;unicode-bidi:isolate}
 .admin-booking-pager button{min-width:90px}
 .admin-booking-pager button:disabled{opacity:.45;cursor:not-allowed}
+
+/* A custom billboard dimension is not a rooftop package by default. */
+.raafat-premium-site-icon .site-pin.category-custom,.category-custom{
+ --category-start:#97aebc;--category-end:#506777;
+}
