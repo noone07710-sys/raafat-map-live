@@ -69,7 +69,13 @@
       <button class="clear-filters" type="button" id="clearFilters">↻ مسح الفلاتر وعرض الكل</button>
         </div>
       </details>
-      <div class="list-heading"><strong>المساحات المعروضة</strong><span id="showingCount">—</span></div>
+      <div class="list-heading raafat-list-heading">
+        <strong>المساحات المعروضة</strong><span id="showingCount">—</span>
+      </div>
+      <div class="listing-quick-actions" role="group" aria-label="خيارات سريعة للمواقع الإعلانية">
+        <button id="showAvailableOnly" class="listing-quick-button" type="button" aria-pressed="false">✓ المتاحة فقط</button>
+        <button id="sortByNearest" class="listing-quick-button" type="button" aria-pressed="false" title="الترتيب حسب المسافة المباشرة وليس مسافة القيادة">⌖ الأقرب إليّ</button>
+      </div>
       <div id="listing" class="listing" aria-live="polite"><div class="empty">جاري تحميل المواقع...</div></div>
     </aside>
     <section class="map-area" aria-label="خريطة القطع الإعلانية">
