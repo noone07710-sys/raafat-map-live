@@ -36,9 +36,10 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 
 const state = {
  sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
- markers: null, markerById:new Map(), pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
+ markers: null, markerById:new Map(), mobilePinnedMarkers:[], pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
  basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false,
  locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null,
+ gpsFixTime:0,gpsFixAccuracy:Infinity,gpsFixHeading:null,gpsFixSpeed:null,nearestFirst:false,nearestLastRefresh:0,
  staffRole:null,siteSettings:null,googleActive:false,
  vipDirectLink:null,vipDirectLinkEnabled:false
 };
@@ -334,7 +335,8 @@ function updateLiveLocationUI(message=""){
 }
 function stopLiveLocationTracking(){
  if(locationFreshnessTimer!==null){clearInterval(locationFreshnessTimer);locationFreshnessTimer=null;}
- state.gpsFixTime=0;state.gpsFixAccuracy=Infinity;
+ state.gpsFixTime=0;state.gpsFixAccuracy=Infinity;state.gpsFixHeading=null;state.gpsFixSpeed=null;
+ state.nearestFirst=false;state.nearestLastRefresh=0;
  state.locationGeneration++;
  if(state.locationWatchId!==null && navigator.geolocation){
    navigator.geolocation.clearWatch(state.locationWatchId);
@@ -404,8 +406,16 @@ function startLiveLocationTracking(){
    state.lastLocation=point;
    state.gpsFixTime=Number(position.timestamp);
    state.gpsFixAccuracy=accuracy;
+   state.gpsFixHeading=coords.heading;
+   state.gpsFixSpeed=coords.speed;
    navigationController?.onLiveLocation(point,accuracy,coords.heading,coords.speed,Number(position.timestamp));
    updateVipDirectLink();
+   if(state.nearestFirst&&!navigationController?.isActive()
+      &&!bookingController?.isSelecting()
+      &&Date.now()-state.nearestLastRefresh>=20000){
+     state.nearestLastRefresh=Date.now();
+     render();
+   }
    if(state.followLocation){
      if(firstFix)state.map.flyTo(point,Math.max(16,state.map.getZoom()),{animate:true,duration:.65});
      // Locator recenters once only: never pull the map away while the user is choosing billboards.
@@ -562,6 +572,17 @@ function zoomAll(defaultOnly=false){
  else state.map.fitBounds(window.L.latLngBounds(visible.map(s=>[s.latitude,s.longitude])),{padding:[45,45],maxZoom:14});
 }
 
+// Approximate proximity requires a fresh, consented GPS fix.
+// Never use cached or unreliable positions for a "nearest" ranking.
+function freshGpsForListing(){
+ const age=Date.now()-Number(state.gpsFixTime||0);
+ return state.map&&state.lastLocation&&age>=0&&age<=15000
+   &&Number.isFinite(state.gpsFixAccuracy)&&state.gpsFixAccuracy<=150
+   ?state.lastLocation:null;
+}
+function straightLineMeters(site,origin){
+ return state.map.distance(origin,[Number(site.latitude),Number(site.longitude)]);
+}
 function filteredSites(){
  const query=el("search").value.trim().toLocaleLowerCase();
  const gov=el("governorateFilter").value;
@@ -641,7 +662,19 @@ function initializeCatalogLayout(){
 }
 function render(){
  renderCityChips();
- const sites=filteredSites();
+ const eligible=filteredSites();
+ const position=state.nearestFirst?freshGpsForListing():null;
+ if(state.nearestFirst&&!position)state.nearestFirst=false;
+ const sites=position
+   ?[...eligible].sort((a,b)=>straightLineMeters(a,position)-straightLineMeters(b,position))
+   :eligible;
+ // A board hidden by filtering must not remain highlighted or keep routing.
+ if(state.selected&&!sites.some(site=>site.id===state.selected)){
+   navigationController?.clear();
+   state.selected=null;
+ }
+ el("showAvailableOnly")?.setAttribute("aria-pressed",String(el("statusFilter").value==="available"));
+ el("sortByNearest")?.setAttribute("aria-pressed",String(state.nearestFirst));
  el("allCount").textContent=state.sites.length;
  el("availableCount").textContent=state.sites.filter(s=>s.status==="available").length;
  el("cityCount").textContent=Object.values(REGIONS).flat().length;
@@ -652,6 +685,7 @@ function render(){
    '<div class="card-row"><strong>'+escapeHtml(s.name)+'</strong>'+badge(s)+'</div>'+
    '<small><span class="listing-category-tag category-'+packageForSite(s)+'">فئة '+packageForSite(s)+'</span> '+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
    '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
+   (position?'<small class="listing-straight-distance">≈ '+format(straightLineMeters(s,position)/1000)+' كم بخط مستقيم</small>':'')+
   '</button>'
  ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'غيّر الفلاتر لعرض قطع أخرى.')+'</div>';
  el("listing").querySelectorAll("[data-site]").forEach(button=>button.addEventListener("click",()=>{
@@ -665,14 +699,19 @@ function render(){
    }
  }));
  renderMarkers(sites);
- if(state.selected && !sites.some(s=>s.id===state.selected))state.selected=null;
  updateMapSiteCTA();
  state.updateCityFocus?.();
  void renderDetail();
 }
 function renderMarkers(sites){
  if(!state.map)return;
+ // Keep chosen billboard pins above a mobile cluster without changing coordinates.
+ for(const layer of state.mobilePinnedMarkers){
+   if(state.map.hasLayer(layer))state.map.removeLayer(layer);
+ }
+ state.mobilePinnedMarkers=[];
  state.markers.clearLayers();state.markerById.clear();
+ const compactMap=window.matchMedia("(max-width:850px)").matches;
  for(const s of sites){
    const L=window.L;
    const safeStatus = statuses[s.status] ? s.status : "available";
@@ -700,7 +739,10 @@ function renderMarkers(sites){
    if(!window.matchMedia("(max-width:850px)").matches){
      marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
    }
-   state.markers.addLayer(marker);
+   if(compactMap&&(highlighted||bookingSelected)){
+     marker.addTo(state.map);
+     state.mobilePinnedMarkers.push(marker);
+   }else state.markers.addLayer(marker);
    state.markerById.set(s.id,marker);
  }
 }
@@ -1235,6 +1277,20 @@ async function signOut(){
  refreshAdmin();await loadSites();toast("تم تسجيل الخروج.");
 }
 function events(){
+ el("showAvailableOnly")?.addEventListener("click",()=>{
+   const filter=el("statusFilter");
+   filter.value=filter.value==="available"?"":"available";
+   render();zoomAll();
+ });
+ el("sortByNearest")?.addEventListener("click",()=>{
+   if(state.nearestFirst){state.nearestFirst=false;render();return;}
+   if(!freshGpsForListing()){
+     toast("فعّل أيقونة تحديد الموقع بالخارطة، وانتظر إشارة GPS دقيقة، ثم اضغط الأقرب إليّ.");
+     return;
+   }
+   state.nearestFirst=true;state.nearestLastRefresh=Date.now();
+   render();
+ });
  const network=el("vipCoverage");
  const legendButton=el("vipLegendToggle");
  const legend=el("vipLegend");
@@ -1257,8 +1313,17 @@ function events(){
    legend.hidden=!open;
    legendButton.setAttribute("aria-expanded",String(open));
  });
- for(const filter of ["search","cityFilter","statusFilter","typeFilter","sizeFilter"]){
-  el(filter).addEventListener(filter==="search"?"input":"change",()=>{render();zoomAll()});
+ // Search is debounced so the map doesn't jump and rebuild on each keypress.
+ let searchDebounce=null;
+ el("search").addEventListener("input",()=>{
+   clearTimeout(searchDebounce);
+   searchDebounce=setTimeout(()=>{
+     render();
+     if(!navigationController?.isActive()&&!bookingController?.isSelecting())zoomAll();
+   },260);
+ });
+ for(const filter of ["cityFilter","statusFilter","typeFilter","sizeFilter"]){
+   el(filter).addEventListener("change",()=>{render();zoomAll()});
  }
  el("governorateFilter").addEventListener("change",()=>{renderCityOptions();render();zoomAll()});
  el("fGovernorate").addEventListener("change",()=>renderAdminCities());
@@ -1340,6 +1405,14 @@ async function main(){
        map:state.map,
        getSite:()=>state.sites.find(s=>s.id===state.selected),
        getLocation:()=>state.lastLocation,
+       hasSharedGps:()=>state.locationWatchId!==null,
+       getSharedGpsFix:()=>({
+         point:state.lastLocation,
+         accuracy:state.gpsFixAccuracy,
+         heading:state.gpsFixHeading,
+         speed:state.gpsFixSpeed,
+         timestamp:state.gpsFixTime
+       }),
        toast,
        onChange:updateNavigationToggle
      });
