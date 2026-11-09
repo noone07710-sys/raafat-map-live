@@ -1218,6 +1218,20 @@ function updatePackageHint({selectionChanged=false}={}){
    if(selectionChanged){width.value="";height.value="";}
    el("fPackageHint").textContent="الفئة E • أدخل العرض والارتفاع بالمتر حسب قياس موقع الإعلان.";
  }
+ for(const elField of [width,height]){
+   const row=elField.closest(".raafat-manual-dimension");if(row)row.hidden=Boolean(fixed);
+ }
+ el("siteModal").querySelectorAll("[data-raafat-package]").forEach(button=>{
+   const active=button.dataset.raafatPackage===selected;
+   button.classList.toggle("is-active",active);button.setAttribute("aria-pressed",String(active));
+ });
+ const summary=el("fPackageSizeSummary");
+ if(summary){
+   const strong=summary.querySelector("strong"),label=summary.querySelector("span"),note=summary.querySelector("small");
+   if(label)label.textContent=selected==="E"?"الفئة E — قياس خاص":"قياس الفئة "+selected;
+   if(strong)strong.textContent=fixed?(fixed[0]+" × "+fixed[1]+" متر"):"عرض وارتفاع حسب القطعة";
+   if(note)note.textContent=fixed?"محسوب تلقائياً — ما يحتاج إدخال":"أدخل القياس من الحقول أدناه";
+ }
  el("fDimensionHint").textContent=fixed
    ?"القياسات محسوبة تلقائياً من الفئة المختارة."
    :"القياسات هنا فقط قابلة للتعديل، وتُحسب المساحة من العرض × الارتفاع.";
@@ -1474,6 +1488,13 @@ function events(){
  el("manageDashboard").addEventListener("click",()=>adminDashboard?.open());
  el("logoutButton").addEventListener("click",()=>void signOut());
  el("siteForm").addEventListener("submit",saveSite);
+ el("siteModal").querySelectorAll("[data-raafat-package]").forEach(button=>button.addEventListener("click",()=>{
+   const category=el("fPackageClass");
+   if(category.value===button.dataset.raafatPackage)return;
+   category.value=button.dataset.raafatPackage;
+   category.dispatchEvent(new Event("change",{bubbles:true}));
+   category.dispatchEvent(new Event("raafat-select-sync"));
+ }));
  el("fPackageClass").addEventListener("change",()=>{updatePackageHint({selectionChanged:true});siteFormDirty=true;});
  ["fWidth","fHeight"].forEach(id=>el(id).addEventListener("input",()=>updatePackageHint()));
  el("loginForm").addEventListener("submit",signIn);

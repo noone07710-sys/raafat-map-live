@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="./style.css">
    <link rel="stylesheet" href="./admin-v3.css">
    <link rel="stylesheet" href="./theme-day.css">
+   <link rel="stylesheet" href="./raafat-finish.css">
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script defer src="https://unpkg.com/maplibre-gl@2.2.1/dist/maplibre-gl.js"></script>
@@ -401,11 +402,11 @@
 
  <div class="modal-backdrop" id="siteModal" hidden>
   <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="formTitle">
-   <div class="modal-head"><div><div class="eyebrow">INVENTORY / MANAGEMENT</div><h2 id="formTitle">إضافة موقع إعلاني</h2></div><button type="button" class="x" data-close="siteModal" aria-label="إغلاق">×</button></div>
+   <div class="modal-head"><div><div class="eyebrow">إدارة المواقع الإعلانية</div><h2 id="formTitle">إضافة موقع إعلاني</h2></div><button type="button" class="x raafat-site-editor-close" data-close="siteModal" aria-label="إغلاق"><svg viewBox="0 0 24 24" class="raafat-ui-svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button></div>
    <p class="hint">القطع غير المنشورة لا تظهر للزبائن. تأكد من الإحداثيات قبل اختيار «نشر».</p>
    <form id="siteForm" novalidate>
     <div class="form-grid">
-      <div class="span2"><label for="fPackageClass">الفئة الإعلانية — القياس يحدد تلقائياً</label><select class="input" id="fPackageClass"><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="hint small-hint" id="fPackageHint">اختر الفئة؛ القياسات القياسية ثابتة تلقائياً.</div></div>
+      <div class="span2 raafat-package-picker"><div class="raafat-package-picker-heading"><strong>فئة القطعة الإعلانية</strong><small>اختار الفئة ويظهر قياسها تلقائياً — E للقياس الخاص فقط</small></div><div class="raafat-package-card-grid" role="group" aria-label="اختر فئة القطعة"><button type="button" class="raafat-package-card is-active" data-raafat-package="A" aria-pressed="true"><span class="raafat-package-symbol">A</span><strong>فئة A</strong><small>١٢٠ × ٢٠٠ سم</small></button><button type="button" class="raafat-package-card" data-raafat-package="B" aria-pressed="false"><span class="raafat-package-symbol">B</span><strong>فئة B</strong><small>٢ × ٣ متر</small></button><button type="button" class="raafat-package-card" data-raafat-package="C" aria-pressed="false"><span class="raafat-package-symbol">C</span><strong>فئة C</strong><small>٢٫٥ × ٣٫٥ متر</small></button><button type="button" class="raafat-package-card" data-raafat-package="D" aria-pressed="false"><span class="raafat-package-symbol">D</span><strong>فئة D</strong><small>٣ × ٤ متر</small></button><button type="button" class="raafat-package-card" data-raafat-package="E" aria-pressed="false"><span class="raafat-package-symbol">E</span><strong>فئة E</strong><small>قياس مخصص</small></button></div><select class="input" id="fPackageClass" aria-label="الفئة المختارة"><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="raafat-package-size-summary" id="fPackageSizeSummary" aria-live="polite"><span>قياس الفئة A</span><strong>١٢٠ × ٢٠٠ سم</strong><small>محسوب تلقائياً — ما يحتاج إدخال</small></div><div class="hint small-hint" id="fPackageHint">اختر الفئة؛ القياسات القياسية ثابتة تلقائياً.</div></div>
       <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
       <div><label for="fName">اسم الموقع *</label><input class="input" id="fName" required maxlength="140" placeholder="شارع رئيسي — تقاطع..."></div>
       <div><label for="fGovernorate">المحافظة *</label><select class="input" id="fGovernorate" required><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></div>
@@ -415,8 +416,8 @@
       <div><label for="fLandmark">أقرب معلم معروف</label><input class="input" id="fLandmark" maxlength="200" placeholder="قرب تقاطع / مستشفى / جسر"></div>
       <div><label for="fType">نوع الإعلان</label><select class="input" id="fType"><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="building">إعلان على بناية</option><option value="sidewalk">لوحة رصيف</option><option value="other">أخرى</option></select></div>
       <div><label for="fStatus">الحالة</label><select class="input" id="fStatus"><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option></select></div>
-      <div><label for="fWidth">العرض بالمتر</label><input class="input" id="fWidth" type="number" required min=".01" max="1000" step=".01" readonly></div>
-      <div><label for="fHeight">الارتفاع بالمتر</label><input class="input" id="fHeight" type="number" required min=".01" max="1000" step=".01" readonly></div>
+      <div class="raafat-manual-dimension" hidden><label for="fWidth">العرض بالمتر — فئة E</label><input class="input" id="fWidth" type="number" required min=".01" max="1000" step=".01" readonly></div>
+      <div class="raafat-manual-dimension" hidden><label for="fHeight">الارتفاع بالمتر — فئة E</label><input class="input" id="fHeight" type="number" required min=".01" max="1000" step=".01" readonly></div>
       <div class="span2"><p class="raafat-dimension-note" id="fDimensionHint">اختار فئة A أو B أو C أو D، ويُكتب القياس تلقائياً. الفئة E فقط تسمح بالتعديل.</p></div>
       <div><label for="fFaces">الأوجه</label><input class="input" id="fFaces" type="number" value="1" min="1" max="8"></div>
       <div><label for="fLighting">الإنارة</label><select class="input" id="fLighting"><option value="false">غير مضاءة</option><option value="true">مضاءة</option></select></div>

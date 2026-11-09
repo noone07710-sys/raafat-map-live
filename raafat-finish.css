@@ -1,0 +1,266 @@
+
+/* RAAFAT FINAL COHERENCE: one surface/ink/accent family per appearance. */
+:root:not([data-raafat-theme="day"]){
+ --rf-surface:#103037;--rf-raised:#183c40;--rf-border:rgba(202,185,142,.24);
+ --rf-ink:#f0f5ed;--rf-subtle:#b8d1c7;--rf-accent:#e2bc85;
+}
+html[data-raafat-theme="day"]{
+ --rf-surface:#fffaf4;--rf-raised:#f8ecdf;--rf-border:#e7cdae;
+ --rf-ink:#294439;--rf-subtle:#627667;--rf-accent:#b76b34;
+}
+/* One brand lockup rather than a black, detached logo tile on ivory. */
+html[data-raafat-theme="day"] .header .identity{
+ background:#153d38!important;border:1px solid #c18b55!important;
+ border-radius:17px!important;padding:7px 12px!important;
+ box-shadow:0 6px 15px rgba(64,72,58,.11)!important;min-width:0;
+}
+html[data-raafat-theme="day"] .header .identity .brand,
+html[data-raafat-theme="day"] .header .identity .brand-text,
+html[data-raafat-theme="day"] .header .identity .brand span:first-child{
+ color:#f8f6e9!important;
+}
+html[data-raafat-theme="day"] .header .identity .brand span{color:#efae69!important}
+html[data-raafat-theme="day"] .header .identity .brand-caption{color:#d5dace!important}
+html[data-raafat-theme="day"] .header .identity .logo,
+html[data-raafat-theme="day"] .header .identity .logo:hover{
+ background:#153d38!important;border:0!important;box-shadow:none!important;
+ border-radius:0!important;padding:0!important;margin:0!important;
+}
+html[data-raafat-theme="day"] .header .identity .logo img{
+ mix-blend-mode:lighten!important;filter:none!important;
+}
+@media(max-width:580px){
+ html[data-raafat-theme="day"] .header .identity{padding:4px 7px!important;border-radius:13px!important;gap:5px!important}
+ html[data-raafat-theme="day"] .header .identity .brand{font-size:17px!important}
+ html[data-raafat-theme="day"] .header .identity .logo{width:39px!important;height:40px!important;flex-basis:39px!important}
+ html[data-raafat-theme="day"] .header .identity .logo img{width:39px!important;height:40px!important}
+}
+/* Cards in the catalogue: no gray disabled look, colored text always legible. */
+html[data-raafat-theme="day"] .browse .location-card,
+html[data-raafat-theme="day"] .browse .location-card:hover,
+html[data-raafat-theme="day"] .browse .location-card.active{
+ background:#fffaf3!important;border:1px solid #e4c7a4!important;
+ color:#294239!important;box-shadow:0 3px 13px rgba(131,88,42,.055)!important;
+}
+html[data-raafat-theme="day"] .browse .location-card.active{
+ background:#fff2e1!important;border-color:#c78342!important;
+ box-shadow:inset 3px 0 #ce874a,0 5px 15px rgba(131,88,42,.1)!important;
+}
+html[data-raafat-theme="day"] .browse .location-card strong,
+html[data-raafat-theme="day"] .browse .location-card .location-name,
+html[data-raafat-theme="day"] .browse .location-card b{color:#284237!important}
+html[data-raafat-theme="day"] .browse .location-card small,
+html[data-raafat-theme="day"] .browse .location-card .card-address{color:#547164!important;opacity:1!important}
+html[data-raafat-theme="day"] .browse .location-card .card-meta span{
+ display:inline-flex;align-items:center;
+ background:#f5e8d8!important;color:#5e5b48!important;
+ border:1px solid #e0c5a7!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] .browse .location-card .listing-category-tag,
+html[data-raafat-theme="day"] .browse .location-card .category-A,
+html[data-raafat-theme="day"] .browse .location-card .detail-category-tag{
+ color:#103d32!important;opacity:1!important;
+ border:1px solid rgba(23,117,96,.17)!important;
+}
+html[data-raafat-theme="day"] .browse .location-card .status.available,
+html[data-raafat-theme="day"] .browse .status.available{
+ color:#126b49!important;background:#dcefe3!important;
+ border:1px solid #b9d9c5!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] .browse .status.reserved{color:#92561f!important;background:#faecd6!important;border:1px solid #e9cfad!important}
+html[data-raafat-theme="day"] .browse .status.booked{color:#2b6690!important;background:#e1ecf7!important;border:1px solid #bfd2e4!important}
+html[data-raafat-theme="day"] .browse .status.maintenance{color:#934b42!important;background:#f9e7e3!important;border:1px solid #e6c4bb!important}
+html[data-raafat-theme="day"] .browse .list-heading{color:#284339!important;border-color:#e5cbae!important}
+html[data-raafat-theme="day"] .browse .list-heading span{color:#a35f2e!important;background:#f8e7d4!important}
+html[data-raafat-theme="day"] .browse .listing-quick-button{
+ background:#fff8ee!important;border:1px solid #d9b990!important;
+ color:#81502b!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .browse .listing-quick-button svg{color:#99602f!important;stroke:#99602f!important}
+html[data-raafat-theme="day"] .browse .listing-quick-button[aria-pressed="true"]{
+ background:#e9c79d!important;border-color:#c38b4e!important;color:#583819!important;
+}
+html[data-raafat-theme="day"] .browse .listing-quick-button[aria-pressed="true"] svg{color:#583819!important;stroke:#583819!important}
+html[data-raafat-theme="day"] .browse .listing-straight-distance{color:#80522c!important}
+html[data-raafat-theme="day"] .browse .filter-disclosure,
+html[data-raafat-theme="day"] .browse .coverage-box,
+html[data-raafat-theme="day"] .browse .stat,
+html[data-raafat-theme="day"] .browse .empty{
+ background:#fffaf3!important;border-color:#e4c8a8!important;color:#304639!important;
+}
+html[data-raafat-theme="day"] .browse .clear-filters{
+ background:#fff4e7!important;border-color:#d9b78e!important;color:#995728!important;
+}
+html[data-raafat-theme="day"] .browse .clear-filters svg{color:#995728!important;stroke:#995728!important}
+/* Details: refined executive panel in both themes, without gray inactive cards. */
+.details{background:linear-gradient(180deg,#0c2b30,#091f28)!important}
+.details>h2{color:#f3f5e9!important}
+.details .detail-empty{
+ background:#12343a!important;border:1px solid #31534f!important;
+ color:#c3ded0!important;border-radius:16px!important;
+}
+.details .detail-empty .empty-icon{background:#1b4846!important;color:#e5be80!important;border-color:#68837944!important}
+.details .detail-empty p,.details .detail-empty span{color:#bfd6cb!important;opacity:1!important}
+.vip-site-detail{background:#102e35!important;border:1px solid rgba(207,183,137,.32)!important;border-radius:17px!important;box-shadow:0 8px 25px rgba(0,10,18,.16)!important}
+.vip-site-hero{min-height:205px!important;border-radius:16px 16px 0 0!important}
+.vip-site-hero.no-photo{height:200px!important;min-height:200px!important;background:#12363a!important}
+.vip-site-hero.no-photo .vip-site-hero-fallback{background:#163c40!important}
+.vip-site-overview{padding:16px!important;gap:13px!important}
+.vip-site-intro h4{color:#f6f3e9!important}
+.vip-site-intro p{color:#bfd4cb!important}
+.vip-site-metric{background:#17393e!important;border:1px solid rgba(208,178,133,.21)!important;border-radius:12px!important;box-shadow:none!important}
+.vip-site-metric small{color:#bad2c8!important}
+.vip-site-metric strong{color:#f0c991!important}
+.vip-site-specification,.vip-site-description{background:#12343a!important;border-color:rgba(208,178,133,.25)!important}
+.vip-site-spec-cell{background:#13343c!important}
+.vip-site-spec-cell small{color:#bbd0c6!important}
+.vip-site-spec-cell strong{color:#f6f1e9!important}
+.vip-site-action-grid .btn,.vip-site-secondary-actions .btn{
+ background:#194346!important;color:#edf4ea!important;
+ border-color:rgba(199,181,142,.36)!important;
+}
+html[data-raafat-theme="day"] .details{
+ background:#fffaf3!important;border-color:#e0c5a5!important;
+}
+html[data-raafat-theme="day"] .details>h2{
+ color:#284137!important;border-color:#e5c9a9!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty{
+ background:#fff3e4!important;border:1px solid #e4c5a3!important;
+ box-shadow:none!important;color:#315044!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty .empty-icon{
+ background:#f9e5c9!important;border-color:#daba8f!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty p,
+html[data-raafat-theme="day"] .details .detail-empty span{color:#365145!important}
+html[data-raafat-theme="day"] .vip-site-detail{
+ background:#fffaf4!important;border-color:#dcc19e!important;
+ box-shadow:0 6px 23px rgba(117,84,52,.08)!important;
+}
+html[data-raafat-theme="day"] .vip-site-hero{
+ background:#173e3c!important;
+}
+html[data-raafat-theme="day"] .vip-site-hero.no-photo,
+html[data-raafat-theme="day"] .vip-site-hero.no-photo .vip-site-hero-fallback{
+ background:#1c4844!important;color:#fff6e9!important;
+}
+html[data-raafat-theme="day"] .vip-site-hero-bottom h3,
+html[data-raafat-theme="day"] .vip-site-hero-fallback strong{color:#fffaf1!important}
+html[data-raafat-theme="day"] .vip-site-hero-bottom p,
+html[data-raafat-theme="day"] .vip-site-hero-fallback small{color:#d9e7dd!important}
+html[data-raafat-theme="day"] .vip-site-overview{background:#fffaf4!important}
+html[data-raafat-theme="day"] .vip-site-intro h4{color:#2d4339!important}
+html[data-raafat-theme="day"] .vip-site-intro p,
+html[data-raafat-theme="day"] .vip-site-metric small{color:#617266!important}
+html[data-raafat-theme="day"] .vip-site-metric{
+ background:#f6eddf!important;border-color:#e4cab0!important;
+}
+html[data-raafat-theme="day"] .vip-site-metric strong{color:#8e4f27!important}
+html[data-raafat-theme="day"] .vip-site-metric em{color:#304a3d!important}
+html[data-raafat-theme="day"] .vip-site-specification,
+html[data-raafat-theme="day"] .vip-site-description{
+ background:#fff9ef!important;border-color:#e3c7a7!important;
+}
+html[data-raafat-theme="day"] .vip-site-specification>summary b,
+html[data-raafat-theme="day"] .vip-site-description strong{color:#2a4739!important}
+html[data-raafat-theme="day"] .vip-site-specification>summary small,
+html[data-raafat-theme="day"] .vip-site-description p{color:#5b7063!important}
+html[data-raafat-theme="day"] .vip-spec-arrow{background:#f3e2c9!important;color:#99602f!important}
+html[data-raafat-theme="day"] .vip-site-spec-grid{background:#e9d6c0!important;border-color:#e0c6a8!important}
+html[data-raafat-theme="day"] .vip-site-spec-cell{background:#fffaf4!important}
+html[data-raafat-theme="day"] .vip-site-spec-cell small{color:#657769!important}
+html[data-raafat-theme="day"] .vip-site-spec-cell strong{color:#29463a!important}
+html[data-raafat-theme="day"] .vip-site-action-grid .btn,
+html[data-raafat-theme="day"] .vip-site-secondary-actions .btn{
+ background:#f8edde!important;color:#81512c!important;
+ border-color:#dbbc94!important;
+}
+html[data-raafat-theme="day"] .vip-site-action-grid .btn svg,
+html[data-raafat-theme="day"] .vip-site-secondary-actions .btn svg{color:#995b2a!important;stroke:#995b2a!important}
+html[data-raafat-theme="day"] .vip-site-action-stack .vip-site-book-button{
+ background:#c17a3b!important;color:#fffaf2!important;
+ border-color:#dfab70!important;
+}
+html[data-raafat-theme="day"] .vip-site-book-button .raafat-inline-icon,
+html[data-raafat-theme="day"] .vip-site-book-button .raafat-site-book-text{color:#fffdf7!important}
+html[data-raafat-theme="day"] .vip-site-description strong{color:#2d4438!important}
+/* Same readable foreground for administrator cards, actions, and badges in day mode. */
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table td,
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table td strong{color:#304538!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table .admin-danger-mini{color:#96453c!important;background:#fbe7e4!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-staff-row small{color:#687968!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-select-trigger{color:#304438!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-overview-stat strong{color:#955422!important}
+/* Site editor: category selection visually consistent with customer booking. */
+#siteModal .modal-head{
+ position:relative!important;top:auto!important;transform:none!important;
+ z-index:1!important;
+}
+#siteModal .raafat-site-editor-close{
+ display:grid!important;place-items:center!important;width:40px!important;height:40px!important;
+ flex:0 0 40px!important;padding:0!important;border-radius:12px!important;
+}
+#siteModal .raafat-site-editor-close svg{width:19px;height:19px;pointer-events:none}
+#siteModal .raafat-package-picker>.raafat-select-shell,
+#siteModal .raafat-package-picker>#fPackageClass{display:none!important}
+#siteModal .raafat-package-picker-heading{display:grid;gap:5px;margin-bottom:13px}
+#siteModal .raafat-package-picker-heading strong{font-size:14px;color:#f3ecdb}
+#siteModal .raafat-package-picker-heading small{font-size:11px;color:#aec9c0;line-height:1.7}
+#siteModal .raafat-package-card-grid{
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;
+}
+#siteModal .raafat-package-card{
+ display:grid;justify-items:center;align-content:center;gap:7px;min-width:0;
+ min-height:105px;padding:13px 6px!important;border-radius:13px!important;
+ background:#153941!important;border:1px solid #41605c!important;color:#d9e9e2!important;
+ font-family:inherit;cursor:pointer;box-shadow:none!important;
+}
+#siteModal .raafat-package-card:hover{background:#21504b!important;border-color:#dfb77f!important}
+#siteModal .raafat-package-card.is-active{
+ background:#234d47!important;border:2px solid #e5bd82!important;
+ box-shadow:inset 0 0 0 1px rgba(230,189,126,.16)!important;
+}
+#siteModal .raafat-package-symbol{font:900 19px/1 Arial,sans-serif;color:#e8c28c}
+#siteModal .raafat-package-card strong{font-size:11px;line-height:1.4;font-weight:800}
+#siteModal .raafat-package-card small{font-size:10px;line-height:1.5;color:#b4d0c5;text-align:center}
+#siteModal .raafat-package-size-summary{
+ display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:13px 15px;margin-top:13px;
+ border-radius:12px;border:1px solid #806c4b;background:#20413d;color:#e8e7da;
+}
+#siteModal .raafat-package-size-summary span{font-size:11px;color:#bdd3c9}
+#siteModal .raafat-package-size-summary strong{font-size:16px;color:#f0cd95}
+#siteModal .raafat-package-size-summary small{font-size:10px;color:#bdd3c9}
+#siteModal .raafat-manual-dimension[hidden]{display:none!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-picker-heading strong{color:#33473b!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-picker-heading small{color:#61776a!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card{
+ background:#fff8ee!important;border-color:#dec39f!important;color:#34493d!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card:hover{background:#fbead5!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card.is-active{
+ background:#f6e0c4!important;border-color:#ba7438!important;
+ box-shadow:inset 0 0 0 1px rgba(192,119,58,.2)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-package-symbol{color:#a76330!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card strong{color:#334638!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card small{color:#6f6f60!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-size-summary{
+ background:#f8ebd9!important;border-color:#dab990!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-package-size-summary span,
+html[data-raafat-theme="day"] #siteModal .raafat-package-size-summary small{color:#706955!important}
+html[data-raafat-theme="day"] #siteModal .raafat-package-size-summary strong{color:#9c5728!important}
+@media(max-width:670px){
+ #siteModal .raafat-package-card-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ #siteModal .raafat-package-card{min-height:93px!important;padding:10px 4px!important}
+ #siteModal .raafat-package-size-summary{justify-content:space-between}
+}
+@media(max-width:380px){
+ #siteModal .raafat-package-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* Never pin either form's title to the scroll viewport. */
+#siteModal .modal.wide>.modal-head,
+#bookingModal .booking-modal>.booking-modal-head{
+ position:relative!important;top:auto!important;inset-block-start:auto!important;
+}
