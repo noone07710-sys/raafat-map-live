@@ -9,6 +9,7 @@ on:
       - 'admin-v3.css'
       - 'theme-day.css'
       - 'raafat-finish.css'
+      - 'daylight-unified.css'
       - 'arabic-export.js'
       - 'ui-dialog.js'
       - 'admin-dropdown.js'
@@ -128,6 +129,26 @@ jobs:
           assert.match(finishCss,/#siteModal \.modal\.wide>\.modal-head/,'Editor header must scroll naturally');
           assert.match(fs.readFileSync('app.js','utf8'),/data-raafat-package/,'Package cards require click behavior');
           assert.match(fs.readFileSync('index.html','utf8'),/raafat-finish\.css/,'Final style sheet must load last');
+          const unified = fs.readFileSync('daylight-unified.css','utf8');
+          const htmlTheme = fs.readFileSync('index.html','utf8');
+          assert.match(htmlTheme,/daylight-unified\.css/,'The unified daylight stylesheet must be linked');
+          assert.ok(htmlTheme.indexOf('daylight-unified.css')>htmlTheme.indexOf('raafat-finish.css'),'Unified daylight styles must load last');
+          assert.match(unified,/--day-paper:#fffcf8/,'Day theme needs a consistent ivory base');
+          assert.match(unified,/--day-accent:#b66a31/,'Day theme needs copper accent');
+          assert.ok(!/background:\s*(?:#(?:0[0-9a-f]{5}|1[0-9a-f]{5})|linear-gradient\([^;]*#[01][0-9a-f]{5})/i.test(unified),
+            'Dark surfaces may not leak into the unified daylight stylesheet');
+          for(const target of ['.panel.browse','.details .vip-site-detail','.details .vip-site-metric',
+            '.browse .listing-quick-button','.browse .location-card','.browse .status',
+            '#adminDashboard .raafat-admin-sidebar','#adminDashboard .raafat-overview-welcome',
+            '#adminDashboard .admin-data-table','#adminDashboard .raafat-activity-table',
+            '#adminDashboard .admin-staff-row','#adminDashboard .admin-settings-group',
+            '#adminDashboard .admin-bulkbar','#bookingModal .booking-tier-card',
+            '#bookingModal .booking-sites-picker','#siteModal .raafat-package-card',
+            '.map-area .map-site-cta','.raafat-dialog-layer .raafat-dialog-card']){
+            assert.ok(unified.includes(target),'No unified daylight rules for '+target);
+          }
+          assert.ok(!unified.includes('[data-raafat-theme="night"]'),
+            'Never modify the dark theme in the daylight-only file');
           assert.match(app,/request!==premiumMapGeneration/,'An obsolete dark tile load must not override day theme');
           assert.match(theme,/#bookingModal \.booking-tier-card>strong/,'Day mode cards must use dark text');
           assert.match(theme,/#bookingModal \.booking-step-title span/,'Day mode headings must use dark text');
@@ -154,7 +175,7 @@ jobs:
           ];
           const missing = required.filter(id => !html.includes('id="' + id + '"'));
           if (missing.length) throw new Error('Missing essential UI elements: ' + missing.join(', '));
-          for(const file of ['style.css','admin-v3.css','theme-day.css','raafat-finish.css']){
+          for(const file of ['style.css','admin-v3.css','theme-day.css','raafat-finish.css','daylight-unified.css']){
             const css = fs.readFileSync(file,'utf8');
             let depth=0;
             for(const char of css){
@@ -171,7 +192,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          cp index.html style.css admin-v3.css theme-day.css raafat-finish.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
+          cp index.html style.css admin-v3.css theme-day.css raafat-finish.css daylight-unified.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
