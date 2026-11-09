@@ -150,6 +150,20 @@ jobs:
           assert.ok(!unified.includes('[data-raafat-theme="night"]'),
             'Never modify the dark theme in the daylight-only file');
           assert.match(app,/request!==premiumMapGeneration/,'An obsolete dark tile load must not override day theme');
+
+          // A native image chooser must never trigger the global Escape handler
+          // and hide the site editor. Check the independent upload button, preview
+          // gallery and guard for Windows/iOS chooser focus-return events.
+          assert.match(ui,/id="fPhotosTrigger" type="button"/,'Upload picker must not submit or close the form');
+          assert.match(ui,/id="photoPreviews"/,'Image preview gallery must be present');
+          assert.match(app,/function photoPickerGuardActive\(/,'Native picker guard is required');
+          assert.match(app,/photoPickerGuardActive\(\)\|\|document\.querySelector\("\.raafat-select-menu"\)/,
+            'Escape must not dismiss the site editor while choosing photos');
+          assert.match(app,/fileInput\.addEventListener\("change"/,'File-selection handler missing');
+          assert.match(app,/previewSelectedPhotos\(\)/,'Selected images must preview immediately');
+          assert.match(app,/URL\.revokeObjectURL/,'Image previews must release their blob URLs');
+          assert.ok(!ui.includes('class="raafat-file-drop" for="fPhotos"'),
+            'Never use a nested file picker label again');
           assert.match(theme,/#bookingModal \.booking-tier-card>strong/,'Day mode cards must use dark text');
           assert.match(theme,/#bookingModal \.booking-step-title span/,'Day mode headings must use dark text');
           const ui=fs.readFileSync('index.html','utf8');
