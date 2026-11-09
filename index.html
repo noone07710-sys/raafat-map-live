@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#062727">
+  <script>
+    try{document.documentElement.dataset.raafatTheme=localStorage.getItem("raafat-visual-theme")==="day"?"day":"night";}
+    catch(e){document.documentElement.dataset.raafatTheme="night";}
+  </script>
   <meta name="description" content="شركة رأفت للدعاية والإعلان والتجارة العامة — شبكة المواقع الإعلانية في العراق">
   <title>شركة رأفت | شبكة المواقع الإعلانية</title>
   <link rel="icon" type="image/png" href="./assets/raafat-logo.png">
@@ -16,6 +20,7 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@2.2.1/dist/maplibre-gl.css">
   <link rel="stylesheet" href="./style.css">
    <link rel="stylesheet" href="./admin-v3.css">
+   <link rel="stylesheet" href="./theme-day.css">
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script defer src="https://unpkg.com/maplibre-gl@2.2.1/dist/maplibre-gl.js"></script>
@@ -32,12 +37,16 @@
     </div>
     <nav class="header-actions" aria-label="الإجراءات">
       <span class="admin-tag" id="staffTag" hidden>إدارة</span>
+      <button class="raafat-theme-toggle" id="raafatThemeToggle" type="button" aria-label="تفعيل المظهر النهاري" aria-pressed="false" data-tip="المظهر النهاري">
+<svg class="raafat-theme-icon raafat-theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+<svg class="raafat-theme-icon raafat-theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.6 14.4A9 9 0 0 1 9.6 3.4a9 9 0 1 0 11 11Z"/></svg>
+</button>
       <button class="btn btn-primary booking-top-button" id="bookNow" type="button"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="3"/><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17m-12 5 2.3 2.2 4.6-4.8"/></svg><span class="raafat-book-label">احجز الآن</span></button>
-      <button class="btn btn-primary" id="manageDashboard" type="button" hidden>لوحة التحكم</button>
-      <button class="btn btn-ghost" id="newSite" hidden>+ إضافة موقع</button>
-      <button class="btn btn-ghost" id="loginButton" hidden>دخول الإدارة</button>
-      <button class="btn btn-ghost" id="changePasswordButton" type="button" hidden>تغيير كلمة المرور</button>
-      <button class="btn btn-ghost" id="logoutButton" hidden>خروج</button>
+      <button class="btn btn-primary raafat-header-icon" id="manageDashboard" type="button" aria-label="لوحة التحكم" data-tip="لوحة التحكم" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></button>
+      <button class="btn btn-ghost raafat-header-icon" id="newSite" type="button" aria-label="إضافة قطعة" data-tip="إضافة قطعة" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="btn btn-ghost raafat-header-icon" id="loginButton" type="button" aria-label="دخول الإدارة" data-tip="دخول الإدارة" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h4M15 8l5 4-5 4m5-4h-9"/></svg></button>
+      <button class="btn btn-ghost raafat-header-icon" id="changePasswordButton" type="button" aria-label="تغيير كلمة المرور" data-tip="تغيير كلمة المرور" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
+      <button class="btn btn-ghost raafat-header-icon" id="logoutButton" type="button" aria-label="تسجيل الخروج" data-tip="تسجيل الخروج" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h4M14 8l5 4-5 4m5-4H9"/></svg></button>
     </nav>
   </header>
   <main class="main-layout">
@@ -200,10 +209,16 @@
         </div>
         <div class="admin-dashboard-top-actions">
           <div class="raafat-top-user"><strong id="dashAdminGreeting">مرحباً بك</strong><small id="dashAdminRole">حساب إدارة</small></div>
-          <button class="admin-mini-button" id="dashAddSite" type="button"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>إضافة قطعة</span></button>
-          <button class="admin-mini-button secondary" id="dashExport" type="button"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13m-5-5 5 5 5-5M4 18v3h16v-3"/></svg><span>تصدير</span></button>
-          <button class="admin-mini-button secondary raafat-pass-action" id="dashChangePassword" type="button" aria-label="تغيير كلمة المرور" title="تغيير كلمة المرور"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
-          <button class="admin-close" id="closeAdminDashboard" type="button" aria-label="إغلاق لوحة التحكم"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg></button>
+          <button class="admin-mini-button raafat-header-icon" id="dashAddSite" type="button" aria-label="إضافة قطعة" data-tip="إضافة قطعة"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="admin-mini-button secondary raafat-header-icon" id="dashExport" type="button" aria-label="تصدير البيانات" data-tip="تصدير البيانات" aria-expanded="false" aria-controls="dashExportMenu"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13m-5-5 5 5 5-5M4 18v3h16v-3"/></svg></button>
+          <button class="admin-mini-button secondary raafat-pass-action" id="dashChangePassword" type="button" aria-label="تغيير كلمة المرور" data-tip="كلمة المرور"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
+          <button class="admin-close" id="closeAdminDashboard" type="button" aria-label="إغلاق لوحة التحكم" data-tip="إغلاق"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg></button>
+        </div>
+        <div class="raafat-export-menu" id="dashExportMenu" role="menu" aria-label="خيارات تصدير البيانات" hidden>
+          <div class="raafat-export-menu-title"><strong>تصدير البيانات</strong><small>ملفات عربية متوافقة مع Excel</small></div>
+          <button type="button" data-raafat-export="sites" role="menuitem"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 11h8m-8 4h5M8 8h8"/></svg><span><strong>جميع القطع الإعلانية</strong><small>الرموز والمواقع والقياسات والحالات</small></span></button>
+          <button type="button" data-raafat-export="bookings" id="dashExportBookings" role="menuitem"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13m-5-5 5 5 5-5M4 18v3h16v-3"/></svg><span><strong>جميع طلبات الحجز</strong><small>أرقام RA والزبائن والقطع والأسعار</small></span></button>
+          <div class="raafat-export-status" id="dashExportStatus" role="status" hidden></div>
         </div>
       </header>
       <main class="admin-dashboard-content">
@@ -390,7 +405,7 @@
    <p class="hint">القطع غير المنشورة لا تظهر للزبائن. تأكد من الإحداثيات قبل اختيار «نشر».</p>
    <form id="siteForm" novalidate>
     <div class="form-grid">
-      <div class="span2"><label for="fPackageClass">فئة الباقة المرتبطة بالقياس</label><select class="input" id="fPackageClass"><option value="auto">تحديد تلقائي للمقاسات القياسية</option><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="hint small-hint" id="fPackageHint">تتحدد الفئة تلقائياً من العرض والارتفاع.</div></div>
+      <div class="span2"><label for="fPackageClass">الفئة الإعلانية — القياس يحدد تلقائياً</label><select class="input" id="fPackageClass"><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="hint small-hint" id="fPackageHint">اختر الفئة؛ القياسات القياسية ثابتة تلقائياً.</div></div>
       <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
       <div><label for="fName">اسم الموقع *</label><input class="input" id="fName" required maxlength="140" placeholder="شارع رئيسي — تقاطع..."></div>
       <div><label for="fGovernorate">المحافظة *</label><select class="input" id="fGovernorate" required><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></div>
@@ -400,8 +415,9 @@
       <div><label for="fLandmark">أقرب معلم معروف</label><input class="input" id="fLandmark" maxlength="200" placeholder="قرب تقاطع / مستشفى / جسر"></div>
       <div><label for="fType">نوع الإعلان</label><select class="input" id="fType"><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="building">إعلان على بناية</option><option value="sidewalk">لوحة رصيف</option><option value="other">أخرى</option></select></div>
       <div><label for="fStatus">الحالة</label><select class="input" id="fStatus"><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option></select></div>
-      <div><label for="fWidth">العرض (متر) *</label><input class="input" id="fWidth" type="number" required min=".01" max="1000" step=".01"></div>
-      <div><label for="fHeight">الارتفاع (متر) *</label><input class="input" id="fHeight" type="number" required min=".01" max="1000" step=".01"></div>
+      <div><label for="fWidth">العرض بالمتر</label><input class="input" id="fWidth" type="number" required min=".01" max="1000" step=".01" readonly></div>
+      <div><label for="fHeight">الارتفاع بالمتر</label><input class="input" id="fHeight" type="number" required min=".01" max="1000" step=".01" readonly></div>
+      <div class="span2"><p class="raafat-dimension-note" id="fDimensionHint">اختار فئة A أو B أو C أو D، ويُكتب القياس تلقائياً. الفئة E فقط تسمح بالتعديل.</p></div>
       <div><label for="fFaces">الأوجه</label><input class="input" id="fFaces" type="number" value="1" min="1" max="8"></div>
       <div><label for="fLighting">الإنارة</label><select class="input" id="fLighting"><option value="false">غير مضاءة</option><option value="true">مضاءة</option></select></div>
       <div><label for="fFacing">اتجاه مواجهة الإعلان</label><input class="input" id="fFacing" maxlength="140" placeholder="مثلاً: باتجاه مركز المدينة"></div>

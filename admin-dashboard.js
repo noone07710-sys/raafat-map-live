@@ -1,5 +1,6 @@
 import {raafatConfirm} from "./ui-dialog.js";
 import {enhanceAdminSelects} from "./admin-dropdown.js";
+import {downloadArabicCsv} from "./arabic-export.js";
 /**
  * RA'AFAT CONTROL CENTER
  * All user management is delegated to the protected Supabase admin-staff
@@ -12,7 +13,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
   const labels={available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
   const roles={admin:"مدير كامل",editor:"محرر مواقع"};
   const chosen=new Set();
-  let staffLoaded=false,activeTab="overview",settingsLoaded=false,activityPage=0,activityTotal=0;
+  let staffLoaded=false,activeTab="overview",settingsLoaded=false,activityPage=0,activityTotal=0,exportBusy=false;
   const isAdmin=()=>getState().staffRole==="admin";
 
   function open(){
@@ -23,6 +24,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("dashStaffTab").hidden=!isAdmin();
     $("dashSettingsTab").hidden=!isAdmin();
     $("dashActivityTab").hidden=!isAdmin();
+    $("dashExportBookings").hidden=!isAdmin();
     $("dashMyName").value=state.staffName||"";
     $("dashMyNameForm").hidden=Boolean(state.staffName);
     $("dashIdentityLocked").hidden=!state.staffName;
@@ -39,12 +41,14 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
   }
   function close(){
+    closeExportMenu();
     $("adminDashboard").hidden=true;
     document.body.classList.remove("dashboard-open");
   }
   function switchTab(tab){
     if(["staff","settings","bookings","activity"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
     activeTab=tab;
+    closeExportMenu();
     const titles={overview:"نظرة عامة",inventory:"إدارة القطع",bookings:"طلبات الحجز",activity:"سجل النشاط",staff:"فريق الإدارة",settings:"الإعدادات"};
     $("dashCurrentSection").textContent=titles[tab]||"إدارة رأفت";
     document.querySelectorAll("[data-dash-tab]").forEach(btn=>{
@@ -149,30 +153,50 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
       toast("تم "+description+" بنجاح.");
     }catch(err){toast("تعذر التعديل: "+(err.message||"خطأ غير متوقع"));}
   }
-  function exportCsv(){
-    const items=getState().sites;
-    if(!items.length){toast("لا توجد بيانات لتصديرها.");return;}
-    const cols=[
-      ["code","الرمز"],["name","اسم الموقع"],["package_class","الفئة المحددة"],["governorate","المحافظة"],
-      ["city","المدينة"],["area","المنطقة"],["street","الشارع"],
-      ["landmark","أقرب معلم"],["type","نوع الإعلان"],["status","الحالة"],
-      ["width_m","العرض"],["height_m","الارتفاع"],["faces","الأوجه"],
-      ["lighting","الإنارة"],["latitude","خط العرض"],["longitude","خط الطول"],
-      ["published","منشورة"],["description","الوصف"]
-    ];
-    const csvCell=value=>{
-      let v=String(value??"");
-      if(/^[\s]*[=+\-@]/.test(v))v="'"+v;
-      return '"'+v.replaceAll('"','""')+'"';
-    };
-    const rows=[cols.map(([,title])=>csvCell(title)).join(","),
-      ...items.map(s=>cols.map(([key])=>csvCell(s[key])).join(","))];
-    const blob=new Blob(["\ufeff"+rows.join("\r\n")],{type:"text/csv;charset=utf-8"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;a.download="raafat-sites-"+new Date().toISOString().slice(0,10)+".csv";
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),2500);
+  function closeExportMenu(){
+    const menu=$("dashExportMenu");if(!menu)return;
+    menu.hidden=true;$("dashExport").setAttribute("aria-expanded","false");
+  }
+  function toggleExportMenu(){
+    if(exportBusy)return;
+    const menu=$("dashExportMenu"),willOpen=menu.hidden;
+    menu.hidden=!willOpen;
+    $("dashExport").setAttribute("aria-expanded",String(willOpen));
+    $("dashExportBookings").hidden=!isAdmin();
+    if(willOpen)menu.querySelector('[data-raafat-export="sites"]')?.focus();
+    else $("dashExport").focus();
+  }
+  async function fetchAllForExport(kind){
+    const isBooking=kind==="bookings";
+    if(isBooking&&!isAdmin())throw Error("تصدير الحجوزات متاح للمدير فقط.");
+    const table=isBooking?"booking_requests":"sites";
+    const fields=isBooking
+      ?"id,booking_no,created_at,customer_name,phone,company_name,governorate,city,category,duration_months,quoted_price_usd,requested_area_m2,status,site_code,booking_request_sites(site_code,site_name)"
+      :"code,name,package_class,governorate,city,area,street,landmark,type,status,width_m,height_m,faces,lighting,published,facing,material,description,latitude,longitude,created_at,id";
+    const items=[],perPage=1000,maxPages=200;
+    for(let page=0;page<maxPages;page++){
+      const {data,error}=await db.from(table).select(fields)
+        .order("created_at",{ascending:false}).order("id",{ascending:true})
+        .range(page*perPage,(page+1)*perPage-1);
+      if(error)throw error;
+      items.push(...(data||[]));
+      if(!data||data.length<perPage)return items;
+    }
+    throw Error("عدد السجلات كبير جداً؛ لم يتم إنشاء ملف ناقص. قلّل البيانات أو راجع الإدارة التقنية.");
+  }
+  async function exportCsv(kind){
+    if(exportBusy)return;
+    exportBusy=true;closeExportMenu();
+    const status=$("dashExportStatus"),button=$("dashExport");
+    status.hidden=false;status.textContent="جاري تجهيز الملف العربي…";
+    button.disabled=true;
+    try{
+      const items=await fetchAllForExport(kind);
+      if(!items.length){toast(kind==="bookings"?"لا توجد حجوزات قابلة للتصدير حالياً.":"لا توجد قطع قابلة للتصدير حالياً.");return;}
+      const total=downloadArabicCsv(items,kind);
+      toast("تم تنزيل "+total+" سجل بنجاح. الملف باللغة العربية ومتوافق مع Excel.");
+    }catch(error){toast("تعذر تصدير البيانات: "+(error.message||"راجع الاتصال والصلاحيات."));}
+    finally{exportBusy=false;status.hidden=true;button.disabled=false;}
   }
   function strongPassword(){
     const chars="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#!%*";
@@ -348,7 +372,14 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("adminDashboard").addEventListener("keydown",event=>{if(event.key==="Escape"){event.stopPropagation();close()}});
     $("dashAddSite").addEventListener("click",()=>{close();openEditor()});
     $("dashQuickNew").addEventListener("click",()=>{close();openEditor()});
-    $("dashExport").addEventListener("click",exportCsv);
+    $("dashExport").addEventListener("click",toggleExportMenu);
+    $("dashExportMenu").querySelectorAll("[data-raafat-export]").forEach(button=>
+      button.addEventListener("click",()=>void exportCsv(button.dataset.raafatExport))
+    );
+    document.addEventListener("pointerdown",event=>{
+      if($("dashExportMenu").hidden)return;
+      if(!event.target.closest("#dashExportMenu,#dashExport"))closeExportMenu();
+    });
     $("dashChangePassword").addEventListener("click",()=>{close();$("changePasswordButton").click()});
     $("dashRefresh").addEventListener("click",async()=>{await loadSites();render();toast("تم تحديث البيانات.")});
     for(const [id,event] of [["dashInventorySearch","input"],["dashInventoryStatus","change"],["dashInventoryPublication","change"]]){

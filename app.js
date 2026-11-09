@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
-import { fetchRaafatMapStyle } from "./brand-map.js";
+import { fetchRaafatMapStyle, recolorRaafatMap } from "./brand-map.js";
 import { createGoogleMapLayer } from "./google-basemap.js";
 import { createAdminDashboard } from "./admin-dashboard.js";
 import { setupBookings, setupAdminBookings, packageForSite } from "./booking.js";
@@ -29,6 +29,7 @@ const CITY_CENTERS = Object.freeze({
 });
 const sizeKey = s => Number(s.width_m)+"x"+Number(s.height_m);
 const statuses = { available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
+const STANDARD_PACKAGES=Object.freeze({A:[1.2,2],B:[2,3],C:[2.5,3.5],D:[3,4]});
 const byId = id => document.getElementById(id);
 const el = byId;
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -54,6 +55,28 @@ let adminDashboard=null;
 let bookingController=null;
 let navigationController=null;
 let siteFormDirty=false;
+function visualTheme(){return document.documentElement.dataset.raafatTheme==="day"?"day":"night";}
+function setVisualTheme(mode,{save=false}={}){
+ const next=mode==="day"?"day":"night";
+ document.documentElement.dataset.raafatTheme=next;
+ if(save){
+   try{localStorage.setItem("raafat-visual-theme",next);}catch(err){console.warn("Preference storage unavailable",err);}
+ }
+ const button=el("raafatThemeToggle");
+ if(button){
+   const nextLabel=next==="day"?"تفعيل المظهر الليلي":"تفعيل المظهر النهاري";
+   button.setAttribute("aria-label",nextLabel);
+   button.setAttribute("data-tip",nextLabel);
+   button.setAttribute("aria-pressed",String(next==="day"));
+ }
+ const meta=document.querySelector('meta[name="theme-color"]');
+ if(meta)meta.setAttribute("content",next==="day"?"#faf7f2":"#062727");
+ try{const renderer=state.basemap?.getMaplibreMap?.();
+   if(renderer?.isStyleLoaded?.())recolorRaafatMap(renderer,next);
+ }catch(error){console.warn("Unable to switch live map palette:",error);}
+ window.requestAnimationFrame(()=>state.map?.invalidateSize({pan:false}));
+}
+
 
 function toast(message){
  const box = el("toast");
@@ -274,7 +297,7 @@ async function installRaafatPremiumMap(){
  try{
    const arabicEnabled=await enableArabicMapLabels();
    if(!arabicEnabled)console.warn("RTL plugin unavailable. Fallback Latin labels and persistent Arabic city labels are enabled.");
-   const style=await fetchRaafatMapStyle(config.cartoApiKey,{arabicEnabled});
+   const style=await fetchRaafatMapStyle(config.cartoApiKey,{arabicEnabled,theme:visualTheme()});
    if(!state.map)return;
    const layer=window.L.maplibreGL({style,interactive:false,padding:.12});
    layer.addTo(state.map);
@@ -305,6 +328,7 @@ async function installRaafatPremiumMap(){
      if(!state.map)return;
      if(state.basemap&&state.map.hasLayer(state.basemap))state.map.removeLayer(state.basemap);
      state.basemap=layer;
+     recolorRaafatMap(renderer,visualTheme());
      finishMapReveal();
    };
    renderer.once("load",onReady);
@@ -1137,10 +1161,10 @@ function openEditor(site=null){
  el("photoInfo").textContent=site?"الصور القديمة ستبقى. الصور الجديدة تُضاف عند الحفظ.":"الصور الجديدة تُرفع بعد حفظ موقع القطعة.";
  const get=(field,defaultValue="") => site?.[field]??defaultValue;
  el("fCode").value=get("code");
- el("fPackageClass").value=site?(site.package_class||"auto"):"auto";
+ const originalClass=site?.package_class==="E"?"E":site?(packageForSite(site)||"E"):"A";
+ el("fPackageClass").value=originalClass;
  el("fStatus").disabled=state.staffRole!=="admin";
  el("fPublished").disabled=state.staffRole!=="admin";
- updatePackageHint();
  el("fName").value=get("name");
  el("fGovernorate").value=get("governorate","صلاح الدين");
  renderAdminCities(get("city"));
@@ -1153,6 +1177,7 @@ function openEditor(site=null){
  el("fStatus").value=get("status","available");
  el("fWidth").value=get("width_m");
  el("fHeight").value=get("height_m");
+ updatePackageHint();
  el("fFaces").value=get("faces",1);
  el("fLighting").value=String(get("lighting",false));
  el("fDescription").value=get("description");
@@ -1161,18 +1186,32 @@ function openEditor(site=null){
  el("siteModal").querySelectorAll("select").forEach(select=>select.dispatchEvent(new Event("raafat-select-sync")));
  openModal("siteModal");
 }
-function updatePackageHint(){
- const site={width_m:Number(el("fWidth").value),height_m:Number(el("fHeight").value)};
- const found=packageForSite(site);
+function updatePackageHint({selectionChanged=false}={}){
  const selected=el("fPackageClass").value;
- el("fPackageHint").textContent="الفئة حسب القياس: "+(found||"—")+(selected!=="auto"&&selected!=="E"&&selected!==found?" • القياس لا يطابق الفئة المختارة":"")+" • رمز القطعة يقبل أرقاماً فقط عند اختيار فئة.";
+ const width=el("fWidth"),height=el("fHeight");
+ const fixed=STANDARD_PACKAGES[selected];
+ width.readOnly=Boolean(fixed);
+ height.readOnly=Boolean(fixed);
+ width.classList.toggle("raafat-fixed-size",Boolean(fixed));
+ height.classList.toggle("raafat-fixed-size",Boolean(fixed));
+ if(fixed){
+   width.value=String(fixed[0]);
+   height.value=String(fixed[1]);
+   el("fPackageHint").textContent="الفئة "+selected+" • القياس ثابت: "+fixed[0]+" × "+fixed[1]+" متر، ولا يحتاج إدخاله يدوياً.";
+ }else{
+   if(selectionChanged){width.value="";height.value="";}
+   el("fPackageHint").textContent="الفئة E • أدخل العرض والارتفاع بالمتر حسب قياس موقع الإعلان.";
+ }
+ el("fDimensionHint").textContent=fixed
+   ?"القياسات محسوبة تلقائياً من الفئة المختارة."
+   :"القياسات هنا فقط قابلة للتعديل، وتُحسب المساحة من العرض × الارتفاع.";
 }
 function sitePayload(){
  const requestedClass=el("fPackageClass").value;
- const measuredClass=packageForSite({width_m:Number(el("fWidth").value),height_m:Number(el("fHeight").value)});
- if(requestedClass!=="auto"&&requestedClass!=="E"&&requestedClass!==measuredClass)throw Error("القياس لا يتطابق مع فئة "+requestedClass+". عدّل القياس أو اختر فئة صحيحة.");
+ const preset=STANDARD_PACKAGES[requestedClass];
+ if(!preset&&requestedClass!=="E")throw Error("اختر فئة إعلانية صحيحة.");
  const rawCode=el("fCode").value.trim();
- const effectiveClass=requestedClass==="auto"?measuredClass:requestedClass;
+ const effectiveClass=requestedClass;
  const code=/^\d+$/.test(rawCode)?(effectiveClass||"X")+"-"+rawCode:rawCode;
  const name=el("fName").value.trim();
  const governorate=el("fGovernorate").value;
@@ -1184,8 +1223,8 @@ function sitePayload(){
  const material=el("fMaterial").value.trim();
  const description=el("fDescription").value.trim();
  const coords=getCoords(el("fCoords").value);
- const width_m=number(el("fWidth").value);
- const height_m=number(el("fHeight").value);
+ const width_m=preset?preset[0]:number(el("fWidth").value);
+ const height_m=preset?preset[1]:number(el("fHeight").value);
  const faces=number(el("fFaces").value);
  if(!code||code.length>40||!name||name.length>140||!city||city.length>80)throw Error("تحقق من رمز القطعة واسم الموقع والمدينة.");
  if(!REGIONS[governorate]||!REGIONS[governorate].includes(city))throw Error("المحافظة والمدينة غير متطابقتين.");
@@ -1195,7 +1234,7 @@ function sitePayload(){
  if(!Number.isInteger(faces)||faces<1||faces>8)throw Error("عدد الأوجه من 1 إلى 8.");
  return {
    code,name,governorate,city,area,street,landmark,facing,material,description,
-   package_class:requestedClass==="auto"?null:requestedClass,
+   package_class:requestedClass,
    type:el("fType").value,status:el("fStatus").value,
    width_m,height_m,faces,lighting:el("fLighting").value==="true",
    ...coords,published:el("fPublished").checked
@@ -1419,7 +1458,8 @@ function events(){
  el("manageDashboard").addEventListener("click",()=>adminDashboard?.open());
  el("logoutButton").addEventListener("click",()=>void signOut());
  el("siteForm").addEventListener("submit",saveSite);
- ["fWidth","fHeight","fPackageClass"].forEach(id=>el(id).addEventListener("input",updatePackageHint));
+ el("fPackageClass").addEventListener("change",()=>{updatePackageHint({selectionChanged:true});siteFormDirty=true;});
+ ["fWidth","fHeight"].forEach(id=>el(id).addEventListener("input",()=>updatePackageHint()));
  el("loginForm").addEventListener("submit",signIn);
  el("changePasswordButton").addEventListener("click",()=>{if(state.staff)openModal("passwordModal")});
  el("changePasswordForm").addEventListener("submit",changeAdminPassword);
@@ -1480,6 +1520,10 @@ async function main(){
      }
    });
  }
+ setVisualTheme(visualTheme());
+ el("raafatThemeToggle")?.addEventListener("click",()=>{
+   setVisualTheme(visualTheme()==="day"?"night":"day",{save:true});
+ });
  adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,deleteSite,loadSites,selectSite,applySettings:applySiteSettings});
  bookingController=setupBookings({db,getState:()=>state,toast});
  document.addEventListener("raafat:booking-selection-changed",()=>render());

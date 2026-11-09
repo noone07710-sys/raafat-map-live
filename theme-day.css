@@ -1,0 +1,439 @@
+/* RAAFAT VISUAL SYSTEM • accessible icon controls and optional ivory/orange daytime theme. */
+/* First-party SVG-only header actions (no Chrome tooltips, dialogs or icon fonts). */
+.header-actions .raafat-header-icon,
+#adminDashboard .admin-dashboard-top-actions .raafat-header-icon,
+.header-actions #raafatThemeToggle{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ flex:0 0 39px!important;width:39px!important;height:39px!important;min-width:39px!important;
+ min-height:39px!important;max-width:39px!important;padding:0!important;gap:0!important;
+ border-radius:12px!important;border:1px solid rgba(190,216,193,.25)!important;
+ background:rgba(19,66,62,.67)!important;color:#edf7ed!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.07)!important;
+ cursor:pointer;position:relative;transition:background .18s,border-color .18s,transform .18s;
+}
+.header-actions .raafat-header-icon[hidden],#adminDashboard .raafat-header-icon[hidden],
+#adminDashboard .raafat-export-menu[hidden]{display:none!important}
+.header-actions .raafat-header-icon:hover,
+.header-actions #raafatThemeToggle:hover,
+#adminDashboard .admin-dashboard-top-actions .raafat-header-icon:hover{
+ background:#2e7367!important;border-color:#ddb881!important;transform:translateY(-1px);
+}
+.header-actions .raafat-admin-svg,
+#adminDashboard .admin-dashboard-top-actions .raafat-header-icon .raafat-admin-svg{
+ flex:0 0 19px!important;width:19px!important;height:19px!important;stroke-width:1.8;
+}
+#adminDashboard .admin-dashboard-top-actions .raafat-header-icon{
+ flex:0 0 40px!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;
+ max-width:40px!important;background:#174642!important;color:#f1f7e8!important;
+}
+#adminDashboard .admin-dashboard-top-actions #dashAddSite.raafat-header-icon{
+ background:linear-gradient(130deg,#d3ac70,#e2c48f)!important;
+ color:#143e38!important;border-color:#e9d1a5!important;
+}
+#adminDashboard .admin-dashboard-top-actions #dashAddSite.raafat-header-icon:hover{background:#e5c48b!important}
+#adminDashboard .admin-dashboard-header{position:relative;z-index:20}
+#adminDashboard .raafat-export-menu{
+ position:absolute;z-index:40;top:calc(100% - 2px);left:25px;
+ width:min(330px,calc(100vw - 28px));padding:11px;border-radius:16px;
+ border:1px solid rgba(211,183,140,.30);
+ background:linear-gradient(155deg,#183b3d,#0e2931);color:#f4f5e9;
+ box-shadow:0 25px 64px rgba(0,0,0,.49);direction:rtl;
+}
+#adminDashboard .raafat-export-menu-title{padding:7px 9px 11px;border-bottom:1px solid rgba(201,203,181,.14);margin-bottom:7px;display:grid;gap:3px}
+#adminDashboard .raafat-export-menu-title strong{font-size:12px;color:#f3deb7}
+#adminDashboard .raafat-export-menu-title small{font-size:10px;color:#9fbaae}
+#adminDashboard .raafat-export-menu button{
+ width:100%;border:1px solid transparent;background:transparent;border-radius:11px;
+ padding:11px 10px;display:flex;align-items:center;gap:10px;text-align:right;
+ cursor:pointer;color:#edf6ec;transition:background .15s,border-color .15s;
+}
+#adminDashboard .raafat-export-menu button:hover,#adminDashboard .raafat-export-menu button:focus-visible{
+ background:rgba(68,128,107,.23);border-color:rgba(220,184,129,.30);outline:none;
+}
+#adminDashboard .raafat-export-menu button[hidden]{display:none!important}
+#adminDashboard .raafat-export-menu button svg{width:19px;height:19px;color:#e3bc80;flex:0 0 19px}
+#adminDashboard .raafat-export-menu button span{display:grid;gap:3px}
+#adminDashboard .raafat-export-menu button strong{font-size:11px;color:inherit}
+#adminDashboard .raafat-export-menu button small{font-size:10px;color:#a2bfb4}
+#adminDashboard .raafat-export-status{margin:7px;padding:9px;border-radius:9px;background:#1f4e4b;font-size:10px}
+#adminDashboard .raafat-export-status[hidden]{display:none!important}
+/* Custom in-page SVG tooltip on desktop; never rely on Chrome's native title bubble. */
+@media(hover:hover) and (pointer:fine){
+  .header-actions [data-tip]:hover:after,
+  #adminDashboard .admin-dashboard-top-actions [data-tip]:hover:after{
+    content:attr(data-tip);position:absolute;z-index:100;top:calc(100% + 8px);
+    left:50%;transform:translateX(-50%);width:max-content;max-width:180px;
+    font:700 10px/1.5 "IBM Plex Sans Arabic",Tahoma,sans-serif;
+    border-radius:9px;background:#132c31;color:#fff1d5;
+    padding:7px 10px;pointer-events:none;box-shadow:0 10px 26px rgba(0,0,0,.25);
+    border:1px solid rgba(214,190,152,.25);white-space:nowrap;
+  }
+}
+.header-actions #raafatThemeToggle{border-color:rgba(218,178,115,.45)!important;color:#e5c181!important}
+.header-actions #raafatThemeToggle .raafat-theme-icon{width:19px;height:19px;stroke:currentColor;display:block}
+html[data-raafat-theme="day"] #raafatThemeToggle .raafat-theme-sun{display:none!important}
+html:not([data-raafat-theme="day"]) #raafatThemeToggle .raafat-theme-moon{display:none!important}
+#siteModal .raafat-fixed-size{
+ color:#e9d5ad!important;border-color:rgba(215,183,117,.37)!important;
+ background:#173c3b!important;cursor:default!important;
+}
+#siteModal .raafat-dimension-note{
+ margin:0;padding:9px 12px;border-radius:11px;
+ background:rgba(215,181,118,.10);border:1px solid rgba(221,187,121,.20);
+ font-size:11px;line-height:1.8;color:#ddc89d;
+}
+@media(max-width:850px){
+ .header-actions .raafat-header-icon,
+ .header-actions #raafatThemeToggle{width:36px!important;height:36px!important;min-width:36px!important;max-width:36px!important;min-height:36px!important;flex-basis:36px!important;border-radius:11px!important}
+ #adminDashboard .admin-dashboard-top-actions .raafat-header-icon{width:37px!important;height:37px!important;min-width:37px!important;max-width:37px!important;min-height:37px!important;flex-basis:37px!important}
+}
+@media(max-width:480px){
+ .header-actions{gap:5px!important}
+ .header-actions .raafat-header-icon,
+ .header-actions #raafatThemeToggle{width:34px!important;height:34px!important;min-width:34px!important;max-width:34px!important;min-height:34px!important;flex-basis:34px!important}
+ #adminDashboard .raafat-export-menu{left:8px;top:calc(100% + 2px)}
+}
+@media(prefers-reduced-motion:reduce){.header-actions .raafat-header-icon,#raafatThemeToggle{transition:none!important;transform:none!important}}
+
+/* Day theme: warm ivory, crisp dark lettering and restrained copper-orange accents. */
+html[data-raafat-theme="day"]{
+ color-scheme:light;
+ --bg:#f6f3ee;--panel:#fffdfa;--panel2:#f3eae0;
+ --line:rgba(171,117,71,.22);--white:#273730;--muted:#6f7974;
+ --gold:#cf7930;--goldsoft:#e49c58;--green:#267868;
+ --shadow:0 15px 40px rgba(109,75,47,.12);
+ --raafat-hairline:rgba(173,124,75,.18);
+ --raafat-panel:#fffdfa;--raafat-warm:#bc661f;
+}
+html[data-raafat-theme="day"] body,
+html[data-raafat-theme="day"] .app-shell{background:#f6f3ee!important;color:#263a33!important}
+html[data-raafat-theme="day"] .header{
+ background:linear-gradient(110deg,#fffdfa 0%,#fff7ed 72%,#f8ebdc)!important;
+ border-bottom:1px solid rgba(204,134,65,.24)!important;
+ box-shadow:0 9px 25px rgba(156,102,52,.09)!important;
+}
+html[data-raafat-theme="day"] .header::after{background:linear-gradient(90deg,transparent,rgba(211,129,56,.32),transparent)}
+html[data-raafat-theme="day"] .header .brand,
+html[data-raafat-theme="day"] .header .brand-text{color:#263c36!important}
+html[data-raafat-theme="day"] .header .brand span{color:#c86d23!important}
+html[data-raafat-theme="day"] .header .brand-caption{color:#8b725d!important}
+html[data-raafat-theme="day"] .header-actions .raafat-header-icon,
+html[data-raafat-theme="day"] .header-actions #raafatThemeToggle{
+ background:#fffaf3!important;border-color:rgba(195,137,76,.30)!important;
+ color:#a85d24!important;box-shadow:0 3px 10px rgba(178,125,71,.08)!important;
+}
+html[data-raafat-theme="day"] .header-actions .raafat-header-icon:hover,
+html[data-raafat-theme="day"] .header-actions #raafatThemeToggle:hover{background:#fcebd6!important;border-color:#d19051!important}
+html[data-raafat-theme="day"] .header-actions #bookNow.booking-top-button{
+ background:linear-gradient(145deg,#db9148,#bc6729)!important;color:#fffaf5!important;
+ border-color:#e8b47e!important;box-shadow:0 8px 18px rgba(168,97,35,.15)!important
+}
+html[data-raafat-theme="day"] .header-actions #bookNow .raafat-ui-svg{color:#fff0dc!important}
+html[data-raafat-theme="day"] .header-actions #bookNow:hover{background:linear-gradient(145deg,#e4a45d,#ca7332)!important}
+html[data-raafat-theme="day"] .browse,
+html[data-raafat-theme="day"] .panel.browse{
+ background:linear-gradient(160deg,#fffdf9,#f8f2e9)!important;
+ color:#304038!important;border-color:rgba(194,139,82,.22)!important;
+}
+html[data-raafat-theme="day"] .browse h1,
+html[data-raafat-theme="day"] .catalog-title{color:#283b35!important}
+html[data-raafat-theme="day"] .browse h1 span{color:#be6d2d!important}
+html[data-raafat-theme="day"] .coverage-box,
+html[data-raafat-theme="day"] .filter-disclosure,
+html[data-raafat-theme="day"] .location-card,
+html[data-raafat-theme="day"] .stat,
+html[data-raafat-theme="day"] .browse .list-card,
+html[data-raafat-theme="day"] .browse .site-card{
+ background:linear-gradient(150deg,#fffcf8,#f5ece0)!important;
+ border:1px solid rgba(196,136,75,.25)!important;color:#32413a!important;
+ box-shadow:0 6px 18px rgba(146,95,49,.06)!important;
+}
+html[data-raafat-theme="day"] .coverage-head,
+html[data-raafat-theme="day"] .browse .section-kicker,
+html[data-raafat-theme="day"] .stat span{color:#766756!important}
+html[data-raafat-theme="day"] .coverage-head strong,
+html[data-raafat-theme="day"] .stat strong{color:#a85b25!important}
+html[data-raafat-theme="day"] .region-group,
+html[data-raafat-theme="day"] .region-group summary,
+html[data-raafat-theme="day"] .city-chip{
+ background:#fff8ef!important;border-color:rgba(206,151,91,.29)!important;color:#3f4941!important;
+}
+html[data-raafat-theme="day"] .region-group summary strong,
+html[data-raafat-theme="day"] .region-group-title,
+html[data-raafat-theme="day"] .region-group-trailing{color:#35433b!important}
+html[data-raafat-theme="day"] .region-group .region-group-icon{
+ background:#f7e1c7!important;color:#b46b2e!important;border-color:#e6bf94!important;
+}
+html[data-raafat-theme="day"] .city-chip:hover,
+html[data-raafat-theme="day"] .region-group summary:hover{background:#f6e8d7!important}
+html[data-raafat-theme="day"] .map-area,
+html[data-raafat-theme="day"] .map,
+html[data-raafat-theme="day"] .leaflet-container{background:#f5f2ec!important}
+html[data-raafat-theme="day"] .map-area::after{opacity:.03!important}
+html[data-raafat-theme="day"] .map-chip,
+html[data-raafat-theme="day"] .map-region-label,
+html[data-raafat-theme="day"] .live-location-status,
+html[data-raafat-theme="day"] .map-site-cta{
+ background:rgba(255,251,246,.95)!important;
+ color:#334238!important;border:1px solid rgba(197,140,83,.29)!important;
+ box-shadow:0 8px 26px rgba(127,93,54,.10)!important;
+}
+html[data-raafat-theme="day"] .map-chip strong,
+html[data-raafat-theme="day"] .map-region-label strong{color:#9f5829!important}
+html[data-raafat-theme="day"] .leaflet-control-attribution{background:rgba(255,255,255,.93)!important;color:#455950!important}
+html[data-raafat-theme="day"] .leaflet-control-attribution a{color:#a55b21!important}
+html[data-raafat-theme="day"] .details{
+ background:linear-gradient(160deg,#fffcf7,#f5eee5)!important;
+ color:#304037!important;border-color:rgba(188,134,80,.2)!important;
+}
+html[data-raafat-theme="day"] .details h2,
+html[data-raafat-theme="day"] .detail-name{color:#2c3b36!important}
+html[data-raafat-theme="day"] .details .detail-line,
+html[data-raafat-theme="day"] .detail-table,
+html[data-raafat-theme="day"] .detail-pill{
+ background:#fff9f0!important;border-color:rgba(196,136,75,.21)!important;color:#344940!important;
+}
+html[data-raafat-theme="day"] .detail-line span,
+html[data-raafat-theme="day"] .detail-code,
+html[data-raafat-theme="day"] .detail-description{color:#6f7469!important}
+html[data-raafat-theme="day"] .details strong{color:#3e453c}
+html[data-raafat-theme="day"] .detail-photo{background:#eee7dd!important;border-color:#d6bda0!important}
+html[data-raafat-theme="day"] .browse input,
+html[data-raafat-theme="day"] .browse select,
+html[data-raafat-theme="day"] .browse textarea{
+ background:#fffdfa!important;color:#253f35!important;border-color:rgba(190,133,76,.32)!important;
+}
+html[data-raafat-theme="day"] .browse input::placeholder{color:#8c8a7d!important}
+html[data-raafat-theme="day"] .browse .btn-ghost,
+html[data-raafat-theme="day"] .details .btn-ghost{
+ background:#fff6e9!important;color:#754923!important;border-color:#d6ad81!important;
+}
+html[data-raafat-theme="day"] .browse .btn-primary,
+html[data-raafat-theme="day"] .details .btn-primary{background:#c87535!important;color:#fff9f2!important;border-color:#d99657!important}
+html[data-raafat-theme="day"] .modal:not(#siteModal .modal),
+html[data-raafat-theme="day"] .booking-modal{
+ background:linear-gradient(145deg,#fffdfa,#f6ebdc)!important;border-color:rgba(190,133,75,.28)!important;
+ color:#293c33!important;box-shadow:0 35px 80px rgba(91,65,43,.23)!important;
+}
+html[data-raafat-theme="day"] .modal .input,
+html[data-raafat-theme="day"] .booking-modal input,
+html[data-raafat-theme="day"] .booking-modal select{
+ background:#fffdfa!important;color:#304237!important;border-color:#d6b591!important;
+}
+html[data-raafat-theme="day"] .modal h2,
+html[data-raafat-theme="day"] .booking-modal h2{color:#2a3c34!important}
+html[data-raafat-theme="day"] .modal .hint,
+html[data-raafat-theme="day"] .modal label{color:#6b7365!important}
+html[data-raafat-theme="day"] .booking-package-card,
+html[data-raafat-theme="day"] .booking-summary,
+html[data-raafat-theme="day"] .booking-site-chip,
+html[data-raafat-theme="day"] .booking-tier-card{
+ background:#fff7ed!important;color:#344339!important;border:1px solid rgba(191,132,76,.23)!important;
+}
+html[data-raafat-theme="day"] .booking-package-card strong,
+html[data-raafat-theme="day"] .booking-summary strong{color:#a45f2c!important}
+/* Daytime admin, cards, tables, filters and export surface. */
+html[data-raafat-theme="day"] #adminDashboard.raafat-control-v3{
+ --ra-bg:#f7f4ee;--ra-surface:#fffdfa;--ra-surface2:#fcf3e8;
+ --ra-line:rgba(167,114,65,.20);--ra-text:#304036;--ra-muted:#65766b;
+ --ra-mint:#9d7150;--ra-gold:#bd6d2d;
+ background:rgba(79,57,34,.30)!important;color:#31433a!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-shell{
+ background:#f7f4ee!important;box-shadow:0 24px 90px rgba(73,54,37,.18)!important;border-color:rgba(192,139,88,.35)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-sidebar{
+ background:linear-gradient(155deg,#fff9f0,#f4e9db)!important;border-color:#e8ceb1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-sidebar-brand strong,
+html[data-raafat-theme="day"] #adminDashboard .raafat-nav-label{color:#36463b!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-sidebar-brand small,
+html[data-raafat-theme="day"] #adminDashboard .raafat-sidebar-nav-title,
+html[data-raafat-theme="day"] #adminDashboard .raafat-sidebar-brand div>span{color:#977655!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs button[data-dash-tab]{
+ color:#617067!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs button[data-dash-tab].active{
+ background:#f3e0c9!important;color:#79441e!important;border-color:#e4bb8c!important;
+ box-shadow:inset 3px 0 #d48a45!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs button[data-dash-tab]:hover{
+ background:#f4e7d5!important;color:#834e2c!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs .raafat-admin-svg{color:#b56d34!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-workspace{
+ background:linear-gradient(155deg,#f9f5ed,#f6f0e8)!important;color:#30443a!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-header,
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-footer{
+ background:#fffdfa!important;border-color:rgba(179,127,77,.21)!important;color:#667c70!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-title h2,
+html[data-raafat-theme="day"] #adminDashboard .admin-section-heading h3{color:#344238!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-eyebrow,
+html[data-raafat-theme="day"] #adminDashboard .raafat-workspace-breadcrumb{color:#937661!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-workspace-breadcrumb strong,
+html[data-raafat-theme="day"] #adminDashboard .raafat-top-user strong{color:#b46b30!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-top-user small{color:#75867a!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-overview-welcome{
+ background:linear-gradient(116deg,#fff9ef,#f2e4d3)!important;border-color:rgba(200,151,89,.33)!important;
+ box-shadow:0 12px 30px rgba(132,85,36,.09)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-copy h3,
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-art{color:#7f4a26!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-copy p,
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-art small{color:#7b7d6c!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-overline{color:#bb6f32!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-ctas button{
+ background:#d78d4a!important;color:#fffdf8!important;border-color:#d79b66!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-ctas button+button{background:#fff4e4!important;color:#875226!important;border-color:#dab38d!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-overview-stat,
+html[data-raafat-theme="day"] #adminDashboard .admin-widget,
+html[data-raafat-theme="day"] #adminDashboard .raafat-booking-insights>div,
+html[data-raafat-theme="day"] #adminDashboard .admin-inventory-tools,
+html[data-raafat-theme="day"] #adminDashboard .admin-bulkbar,
+html[data-raafat-theme="day"] #adminDashboard .admin-table-scroll,
+html[data-raafat-theme="day"] #adminDashboard .admin-staff-row,
+html[data-raafat-theme="day"] #adminDashboard .raafat-identity-ready{
+ background:linear-gradient(150deg,#fffcf8,#f7eee3)!important;
+ color:#344339!important;border-color:rgba(197,146,95,.27)!important;
+ box-shadow:0 5px 19px rgba(122,87,50,.05)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-overview-stat small,
+html[data-raafat-theme="day"] #adminDashboard .admin-section-heading p,
+html[data-raafat-theme="day"] #adminDashboard .admin-note,
+html[data-raafat-theme="day"] #adminDashboard .raafat-booking-insights small{color:#797d70!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-overview-stat strong,
+html[data-raafat-theme="day"] #adminDashboard .raafat-booking-insights strong,
+html[data-raafat-theme="day"] #adminDashboard .admin-widget h4,
+html[data-raafat-theme="day"] #adminDashboard .raafat-identity-ready strong{color:#a75d26!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table th{
+ background:#f2e6d8!important;color:#684d34!important;border-color:#dfc7ad!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table td{
+ background:#fffcf8!important;color:#35453a!important;border-color:#e9d7c3!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table tr:hover td{background:#f9eee1!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table strong,
+html[data-raafat-theme="day"] #adminDashboard .admin-chart-item span{color:#37493e!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table small,
+html[data-raafat-theme="day"] #adminDashboard .admin-chart-item strong{color:#94643f!important}
+html[data-raafat-theme="day"] #adminDashboard .input,
+html[data-raafat-theme="day"] #adminDashboard textarea,
+html[data-raafat-theme="day"] #adminDashboard input:not([type=checkbox]),
+html[data-raafat-theme="day"] #adminDashboard .raafat-select-trigger{
+ background:#fffdfa!important;color:#33463b!important;border-color:#d7b999!important;
+}
+html[data-raafat-theme="day"] #adminDashboard input::placeholder{color:#908578!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-mini-button.secondary,
+html[data-raafat-theme="day"] #adminDashboard .raafat-header-icon.secondary{
+ background:#fff7ee!important;color:#ae672e!important;border-color:#dbb991!important;
+}
+html[data-raafat-theme="day"] #adminDashboard #dashAddSite.raafat-header-icon{
+ background:#d38b48!important;color:#fffaf4!important;border-color:#dfa76a!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-close{background:#fff3ee!important;color:#a65338!important;border-color:#e6b7ab!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu{
+ background:#fffaf3!important;border-color:#dfbc94!important;color:#30453a!important;
+ box-shadow:0 20px 50px rgba(93,71,45,.18)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu button{color:#39483e!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu button:hover{background:#f6e6d1!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu-title strong,
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu button svg{color:#b66e35!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu small{color:#806f5e!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-identity{
+ background:#fff8ef!important;border-color:#d9b98e!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-identity strong,
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-identity label{color:#79502d!important}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-identity small{color:#87796b!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-widget .btn-primary,
+html[data-raafat-theme="day"] #adminDashboard .admin-settings-save .btn-primary{background:#cf8241!important;color:#fff!important;border-color:#dc9b62!important}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs{background:transparent!important}
+html[data-raafat-theme="day"] .raafat-select-menu{
+ background:#fffaf2!important;color:#36483b!important;border-color:#deb98d!important;
+ box-shadow:0 18px 42px rgba(102,78,49,.20)!important;
+}
+html[data-raafat-theme="day"] .raafat-select-option{color:#43564a!important}
+html[data-raafat-theme="day"] .raafat-select-option:hover,
+html[data-raafat-theme="day"] .raafat-select-option[aria-selected="true"]{background:#f4e5d1!important;color:#a55e2b!important}
+html[data-raafat-theme="day"] #siteModal.modal-backdrop{background:rgba(88,66,42,.28)!important}
+html[data-raafat-theme="day"] #siteModal .modal.wide{
+ background:linear-gradient(150deg,#fffdfa,#f9eee0)!important;color:#36443a!important;border-color:#d9b68c!important
+}
+html[data-raafat-theme="day"] #siteModal .modal-head,
+html[data-raafat-theme="day"] #siteModal .modal>.hint{
+ background:#fbf1e4!important;color:#695a4a!important;border-color:#e4c8a5!important
+}
+html[data-raafat-theme="day"] #siteModal .modal-head h2{color:#38483c!important}
+html[data-raafat-theme="day"] #siteModal label,
+html[data-raafat-theme="day"] #siteModal .modal-head .eyebrow{color:#996533!important}
+html[data-raafat-theme="day"] #siteModal .input,
+html[data-raafat-theme="day"] #siteModal input:not([type=checkbox]),
+html[data-raafat-theme="day"] #siteModal textarea,
+html[data-raafat-theme="day"] #siteModal .raafat-select-trigger{
+ background:#fffdf9!important;color:#39473c!important;border-color:#d6b892!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-fixed-size{background:#f3e8d7!important;color:#846349!important}
+html[data-raafat-theme="day"] #siteModal .raafat-dimension-note,
+html[data-raafat-theme="day"] #siteModal .section-caption{background:#f8e7d1!important;border-color:#e1bb8c!important;color:#925926!important}
+html[data-raafat-theme="day"] #siteModal .raafat-file-drop{background:#fff6e8!important;border-color:#dbb68d!important}
+html[data-raafat-theme="day"] #siteModal .raafat-file-drop strong{color:#4d5142!important}
+html[data-raafat-theme="day"] #siteModal .raafat-file-drop small{color:#827667!important}
+html[data-raafat-theme="day"] #siteModal .raafat-file-pill{background:#d28b47!important;color:#fff!important}
+html[data-raafat-theme="day"] #siteModal .form-actions .btn-primary{background:#ce813e!important;color:#fff!important}
+html[data-raafat-theme="day"] .raafat-dialog-layer .raafat-dialog-overlay{background:rgba(87,64,43,.30)!important}
+html[data-raafat-theme="day"] .raafat-dialog-layer .raafat-dialog-card{
+ background:linear-gradient(155deg,#fffdf9,#f6e9d9)!important;border-color:#d9b68c!important;
+ color:#314339!important;box-shadow:0 25px 70px rgba(85,67,43,.20)!important;
+}
+html[data-raafat-theme="day"] .raafat-dialog-card h2{color:#344639!important}
+html[data-raafat-theme="day"] .raafat-dialog-message,
+html[data-raafat-theme="day"] .raafat-dialog-detail{color:#6b776b!important}
+html[data-raafat-theme="day"] .raafat-dialog-verification{background:#fff5e9!important;border-color:#e4c59e!important}
+html[data-raafat-theme="day"] .raafat-dialog-input,
+html[data-raafat-theme="day"] .raafat-dialog-copy{background:#fffdfa!important;color:#344638!important;border-color:#d9b992!important}
+html[data-raafat-theme="day"] .raafat-dialog-cancel{background:#f1e7da!important;color:#604f3d!important;border-color:#d8b991!important}
+html[data-raafat-theme="day"] .raafat-dialog-confirm{background:#d38c48!important;color:#fff!important;border-color:#ddaa71!important}
+html[data-raafat-theme="day"] .toast{background:#fff7ed!important;color:#624426!important;border-color:#d5ac80!important;box-shadow:0 10px 28px rgba(145,91,43,.14)!important}
+
+
+/* Customer booking: custom accessible menus replace native browser dropdown popups. */
+#bookingModal .raafat-select-shell{
+ display:inline-flex;width:100%;min-width:0;position:relative;align-items:stretch;
+}
+#bookingModal .raafat-select-shell select.raafat-native-select{
+ position:absolute!important;opacity:0!important;pointer-events:none!important;
+ height:1px!important;min-height:0!important;width:1px!important;max-width:1px!important;
+ padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;
+}
+#bookingModal .raafat-select-trigger{
+ display:flex;align-items:center;justify-content:space-between;gap:9px;
+ width:100%;min-height:45px;padding:10px 13px;border-radius:11px;cursor:pointer;
+ background:#0c2930;color:#f3f4eb;border:1px solid rgba(165,194,171,.39);
+ font:700 12px/1.6 "IBM Plex Sans Arabic",Tahoma,sans-serif;text-align:right;
+}
+#bookingModal .raafat-select-text{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bookingModal .raafat-select-trigger svg{width:17px;height:17px;flex:0 0 17px;color:#dfbc89}
+#bookingModal .raafat-select-trigger:focus-visible{outline:2px solid #dfbc89;outline-offset:2px}
+#bookingModal .raafat-select-trigger[aria-expanded="true"]{border-color:#e3c190;background:#184344;box-shadow:0 0 0 3px rgba(224,192,144,.11)}
+#bookingModal .raafat-select-trigger:disabled{opacity:.55;cursor:not-allowed}
+html[data-raafat-theme="day"] #bookingModal .raafat-select-trigger{
+ background:#fffdfa!important;color:#35433a!important;border-color:#dfbd93!important;
+}
+html[data-raafat-theme="day"] #bookingModal .raafat-select-trigger[aria-expanded="true"]{
+ background:#fff5e8!important;border-color:#b8793d!important;
+}
+/* High priority styles for the most visible booking and inventory controls. */
+html[data-raafat-theme="day"] .booking-success,
+html[data-raafat-theme="day"] .booking-tracking-card,
+html[data-raafat-theme="day"] .booking-price-summary{
+ background:#fff7e9!important;color:#304439!important;border-color:#dfb78b!important;
+}
+html[data-raafat-theme="day"] .booking-success strong{color:#aa602c!important}
+html[data-raafat-theme="day"] .booking-tier-card.selected{
+ border-color:#c98245!important;background:#ffe7c9!important;
+ box-shadow:0 0 0 2px rgba(211,132,60,.1)!important;
+}

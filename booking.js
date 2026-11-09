@@ -81,8 +81,8 @@ export function setupBookings({db,getState,toast}){
  }
  async function changeCategory(key){
    if(key===currentCategory)return;
-   if(chosen.size&&!(await raafatConfirm({title:"تغيير فئة الإعلان",message:"اختيار فئة جديدة راح يلغي تحديد القطع السابقة. تريد تكمل؟",danger:true,confirmText:"تغيير الفئة"}))){category.value=currentCategory;renderCards();return;}
-   category.value=key;currentCategory=key;chosen.clear();dirty=true;writePackage();
+   if(chosen.size&&!(await raafatConfirm({title:"تغيير فئة الإعلان",message:"اختيار فئة جديدة راح يلغي تحديد القطع السابقة. تريد تكمل؟",danger:true,confirmText:"تغيير الفئة"}))){category.value=currentCategory;category.dispatchEvent(new Event("raafat-select-sync"));renderCards();return;}
+   category.value=key;category.dispatchEvent(new Event("raafat-select-sync"));currentCategory=key;chosen.clear();dirty=true;writePackage();
  }
  function renderSelection(){
    for(const [id,old] of chosen){
@@ -134,6 +134,7 @@ export function setupBookings({db,getState,toast}){
      writeCities();
      if(s)cities.value=s.city;
      duration.value="3";
+     for(const item of [countries,cities,category,duration,sites])item.dispatchEvent(new Event("raafat-select-sync"));
      if(s)chosen.set(s.id,s);
    }
    selecting=false;bar.hidden=true;modal.hidden=false;restoreScroll();
@@ -250,12 +251,13 @@ export function setupBookings({db,getState,toast}){
  category.addEventListener("change",event=>changeCategory(event.target.value));
  duration.addEventListener("change",()=>{dirty=true;renderSelection();});
  eArea.addEventListener("input",()=>{dirty=true;renderSelection();});
- sites.addEventListener("change",()=>{if(sites.value)addOrRemove(sites.value);sites.value="";});
+ sites.addEventListener("change",()=>{if(sites.value)addOrRemove(sites.value);sites.value="";sites.dispatchEvent(new Event("raafat-select-sync"));});
  $("bookingForm").addEventListener("input",()=>{dirty=true;});
  $("bookingForm").addEventListener("submit",submit);
  $("bookingPhone").addEventListener("input",event=>{event.target.value=event.target.value.replace(/\D/g,"").slice(0,11);});
  $("bookingCopy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("bookingResultLink").value);toast("تم نسخ رابط متابعة الحجز.");}catch{toast("انسخ الرابط يدوياً.");}});
  $("bookingTrackClose").addEventListener("click",()=>$("bookingTracking").hidden=true);
+ enhanceAdminSelects(modal);
  window.addEventListener("hashchange",hashTrack);
  hashTrack();
  if(new URLSearchParams(location.search).get("booking")==="1")openBooking();

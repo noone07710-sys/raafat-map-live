@@ -10,7 +10,7 @@ function closeOpened({returnFocus=false}={}){
 export function enhanceAdminSelects(scope=document){
  const root=scope||document;
  root.querySelectorAll("select:not([data-raafat-select])").forEach(select=>{
-  if(!select.closest("#adminDashboard,#siteModal"))return;
+  if(!select.closest("#adminDashboard,#siteModal,#bookingModal"))return;
   select.setAttribute("data-raafat-select","yes");
   const holder=document.createElement("span");
   holder.className="raafat-select-shell";
