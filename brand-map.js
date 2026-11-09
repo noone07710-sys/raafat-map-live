@@ -28,27 +28,28 @@ const C=Object.freeze({
 });
 
 const DAY=Object.freeze({
-  background:"#f5f2ec",
-  land:"#f5f2ec",
-  landMuted:"#f1eee6",
-  district:"#f1ece6",
-  park:"#e4eee0",
-  forest:"#e1ece2",
-  water:"#cee6e6",
-  waterEdge:"#a6cdd0",
-  building:"#e4dfd7",
-  buildingOutline:"#c6bfb6",
-  road:"#d4d2cb",
-  secondaryRoad:"#c3c0b9",
-  highway:"#e3bb8e",
-  casing:"#e3ded4",
-  boundary:"#c5b9ab",
-  neutral:"#c1b9ac",
-  name:"#4c5350",
-  nameStrong:"#313c39",
-  roadName:"#596661",
-  poi:"#61736e",
-  halo:"#f5f2ec"
+  background:"#f5f2ed",
+  land:"#f5f2ed",
+  landMuted:"#eeeae1",
+  district:"#ece7dd",
+  park:"#dce9d8",
+  forest:"#d4e5d6",
+  water:"#b8d8dc",
+  waterEdge:"#90b8bd",
+  building:"#dfdad2",
+  buildingOutline:"#b8b0a5",
+  road:"#a5aaa5",
+  secondaryRoad:"#9aa49e",
+  highway:"#d5a369",
+  casing:"#e4dfd5",
+  boundary:"#b7aa99",
+  neutral:"#a6a9a3",
+  name:"#455a50",
+  nameStrong:"#243c33",
+  roadName:"#455a50",
+  poi:"#536b5e",
+  halo:"#f8f5ef"
+
 });
 function colorize(layer,output,palette=C){
  const next={...layer,paint:{...(layer.paint||{})}};

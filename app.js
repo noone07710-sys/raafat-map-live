@@ -72,29 +72,18 @@ function setVisualTheme(mode,{save=false}={}){
  }
  const meta=document.querySelector('meta[name="theme-color"]');
  if(meta)meta.setAttribute("content",next==="day"?"#faf7f2":"#062727");
- // The daytime map uses original OpenStreetMap colors, readable shop labels
- // and the complete street network; it never receives the dark graphite tint.
- // Switching basemaps does NOT recreate Leaflet, GPS, navigation or markers.
- if(state.map&&state.osmBasemap&&!state.googleActive){
-   if(next==="day"){
-     ++premiumMapGeneration; // invalidate any in-flight vector load
-     if(!state.map.hasLayer(state.osmBasemap))state.osmBasemap.addTo(state.map);
-     if(state.basemap!==state.osmBasemap&&state.basemap&&state.map.hasLayer(state.basemap))
-       state.map.removeLayer(state.basemap);
-     state.basemap=state.osmBasemap;
-     document.body.classList.add("osm-standard-map");
-     document.body.classList.remove("raafat-signature-map");
-     if(state.fallbackTilesLoaded)finishMapReveal();
-   }else{
-     document.body.classList.remove("osm-standard-map");
-     document.body.classList.add("raafat-signature-map");
-     if(state.basemap===state.osmBasemap)void installRaafatPremiumMap();
-     else{
-       try{const renderer=state.basemap?.getMaplibreMap?.();
-         if(renderer?.isStyleLoaded?.())recolorRaafatMap(renderer,"night");
-       }catch(error){console.warn("Raafat dark palette:",error);}
-     }
+ // Keep the same premium vector cartography in both modes.
+ // Only the MapLibre palette changes; zoom, GPS, markers and navigation survive.
+ if(state.map&&!state.googleActive){
+   const renderer=state.basemap?.getMaplibreMap?.();
+   if(renderer){
+     if(renderer.isStyleLoaded?.())recolorRaafatMap(renderer,next);
+     else renderer.once?.("idle",()=>recolorRaafatMap(renderer,visualTheme()));
+   }else if(state.basemap===state.osmBasemap){
+     void installRaafatPremiumMap();
    }
+   document.body.classList.remove("osm-standard-map");
+   document.body.classList.add("raafat-signature-map");
  }
  window.requestAnimationFrame(()=>state.map?.invalidateSize({pan:false}));
 }
@@ -311,7 +300,6 @@ async function installGoogleBasemap(){
 
 async function installRaafatPremiumMap(){
  const request=++premiumMapGeneration;
- if(visualTheme()==="day")return;
  if(!state.map||!window.maplibregl||typeof window.L.maplibreGL!=="function"
     ||(typeof window.maplibregl.supported==="function"&&!window.maplibregl.supported())){
    console.warn("Vector WebGL unavailable; using the branded raster fallback.");
@@ -321,8 +309,8 @@ async function installRaafatPremiumMap(){
  try{
    const arabicEnabled=await enableArabicMapLabels();
    if(!arabicEnabled)console.warn("RTL plugin unavailable. Fallback Latin labels and persistent Arabic city labels are enabled.");
-   const style=await fetchRaafatMapStyle(config.cartoApiKey,{arabicEnabled,theme:"night"});
-   if(!state.map||visualTheme()==="day"||request!==premiumMapGeneration)return;
+   const style=await fetchRaafatMapStyle(config.cartoApiKey,{arabicEnabled,theme:visualTheme()});
+   if(!state.map||request!==premiumMapGeneration)return;
    const layer=window.L.maplibreGL({style,interactive:false,padding:.12});
    layer.addTo(state.map);
    const renderer=layer.getMaplibreMap?.();
@@ -349,7 +337,7 @@ async function installRaafatPremiumMap(){
      if(ready)return;
      ready=true;
      clearTimeout(timeout);
-     if(!state.map||visualTheme()==="day"||request!==premiumMapGeneration){
+     if(!state.map||request!==premiumMapGeneration){
        if(state.map?.hasLayer(layer))state.map.removeLayer(layer);
        return;
      }
@@ -537,8 +525,8 @@ function initializeMap(){
  osm.addTo(state.map);
  state.basemap=osm;
  state.osmBasemap=osm;
- document.body.classList.toggle("osm-standard-map",visualTheme()==="day");
- document.body.classList.toggle("raafat-signature-map",visualTheme()!=="day");
+ document.body.classList.remove("osm-standard-map");
+ document.body.classList.add("raafat-signature-map");
  // Show original OpenStreetMap tiles only when premium vector map fails.
  window.setTimeout(()=>{
    if(!state.map||state.basemap!==osm)return;
@@ -603,8 +591,7 @@ function initializeMap(){
    state.pick=false;el("mapPicking").hidden=true;openModal("siteModal");
  });
  // Keep bright, legible OSM streets/shops in day mode; graphite only at night.
- if(visualTheme()==="day")revealFallbackIfReady();
- else void installRaafatPremiumMap();
+ void installRaafatPremiumMap();
 }
 
 function zoomAll(defaultOnly=false){

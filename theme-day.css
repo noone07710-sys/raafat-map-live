@@ -809,3 +809,74 @@ html[data-raafat-theme="day"] .map-area .raafat-location-announcer{
 #bookingModal select.raafat-native-select{
  display:none!important;visibility:hidden!important;
 }
+
+
+/* November 9 — targeted daytime fixes: original logo, no sticky booking header,
+   readable placeholder panels, and high-contrast premium map controls. */
+#bookingModal .booking-modal-head{
+ position:relative!important;top:auto!important;bottom:auto!important;
+ z-index:1!important;transform:none!important;
+}
+html[data-raafat-theme="day"] .header .logo,
+html[data-raafat-theme="day"] .header .logo:hover{
+ display:grid!important;place-items:center!important;
+ background:#123936!important;border:1px solid #c9945b!important;
+ border-radius:13px!important;overflow:hidden!important;
+ padding:3px!important;opacity:1!important;visibility:visible!important;
+ box-shadow:0 3px 9px rgba(42,72,60,.13)!important;
+}
+html[data-raafat-theme="day"] .header .logo img{
+ display:block!important;visibility:visible!important;opacity:1!important;
+ width:100%!important;height:100%!important;object-fit:contain!important;
+ mix-blend-mode:lighten!important;filter:none!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty,
+html[data-raafat-theme="day"] .browse .empty,
+html[data-raafat-theme="day"] .browse .listing .empty,
+html[data-raafat-theme="day"] .browse .listing-quick-actions,
+html[data-raafat-theme="day"] .browse .list-empty{
+ background:#fff9ef!important;
+ border:1px solid #e7cdae!important;border-radius:16px!important;
+ color:#354c40!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty *,
+html[data-raafat-theme="day"] .browse .empty *,
+html[data-raafat-theme="day"] .browse .listing .empty *{
+ color:#405a4d!important;text-shadow:none!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty .empty-icon{
+ background:#f7ebd8!important;border:1px solid #e2bd88!important;
+ color:#ab6a2e!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty .empty-icon svg{
+ color:#ab6a2e!important;stroke:#ab6a2e!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty p,
+html[data-raafat-theme="day"] .details .detail-empty span,
+html[data-raafat-theme="day"] .browse .empty,
+html[data-raafat-theme="day"] .browse .listing .empty{
+ color:#365346!important;font-size:12px;line-height:1.85!important;
+}
+html[data-raafat-theme="day"] .browse .filter-disclosure,
+html[data-raafat-theme="day"] .browse .coverage-box,
+html[data-raafat-theme="day"] .browse .stats .stat{
+ background:#fffaf3!important;color:#33483c!important;
+ border-color:#e5caa8!important;
+}
+html[data-raafat-theme="day"] .browse .filter-disclosure summary,
+html[data-raafat-theme="day"] .browse .filter-disclosure summary *,
+html[data-raafat-theme="day"] .browse .coverage-head *,
+html[data-raafat-theme="day"] .browse .stats .stat *{
+ color:#35483d!important;
+}
+html[data-raafat-theme="day"] .map-area .map-chip,
+html[data-raafat-theme="day"] .map-area .map-region-label{
+ background:rgba(255,252,245,.96)!important;color:#27473c!important;
+ border-color:rgba(184,126,71,.30)!important;
+}
+html[data-raafat-theme="day"] .leaflet-container,
+html[data-raafat-theme="day"] .map-area,
+html[data-raafat-theme="day"] .map{background:#f5f2ec!important;}
+@media(max-width:700px){
+ #bookingModal .booking-modal-head{position:relative!important;top:auto!important}
+}
