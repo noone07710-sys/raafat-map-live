@@ -294,12 +294,7 @@ html body .header .logo img{
   display:block!important;max-width:100%!important;max-height:100%!important;
   object-fit:contain!important;box-shadow:none!important;
 }
-/* Transparent colour key for the original dark-matte PNG; its mark stays intact. */
-html body .header .logo img{
-  -webkit-filter:url(#raafat-transparent-logo)!important;
-  filter:url(#raafat-transparent-logo)!important;
-  mix-blend-mode:normal!important;
-}
+
 html[data-raafat-theme="day"] body .header .identity .brand,
 html[data-raafat-theme="day"] body .header .identity .brand-text,
 html[data-raafat-theme="day"] body .header .identity .brand span:first-child{
@@ -680,4 +675,22 @@ html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-shortcuts 
   html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table tbody td{
     background:transparent!important;
   }
+}
+
+/* ORIGINAL LOGO • original PNG pixels, unchanged in night and day modes.
+   Do not apply blend modes, color matrices, grayscale or opacity filters. */
+html body .header .logo img,
+html[data-raafat-theme="day"] body .header .identity .logo img,
+html[data-raafat-theme="night"] body .header .identity .logo img,
+html body #adminDashboard img[src*="raafat-logo.png"],
+html body img[src*="raafat-logo.png"]{
+  filter:none!important;-webkit-filter:none!important;
+  mix-blend-mode:normal!important;
+  opacity:1!important;
+  box-shadow:none!important;
+}
+html body .header .logo,
+html[data-raafat-theme="day"] body .header .logo,
+html[data-raafat-theme="night"] body .header .logo{
+  background:transparent!important;border:0!important;box-shadow:none!important;
 }
