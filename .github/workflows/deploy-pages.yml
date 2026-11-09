@@ -141,7 +141,7 @@ jobs:
             '.browse .listing-quick-button','.browse .location-card','.browse .status',
             '#adminDashboard .raafat-admin-sidebar','#adminDashboard .raafat-overview-welcome',
             '#adminDashboard .admin-data-table','#adminDashboard .raafat-activity-table',
-            '#adminDashboard .admin-staff-row','#adminDashboard .admin-settings-group',
+            '.admin-tab-panel .admin-staff-row','.admin-tab-panel .admin-settings-group',
             '#adminDashboard .admin-bulkbar','#bookingModal .booking-tier-card',
             '#bookingModal .booking-sites-picker','#siteModal .raafat-package-card',
             '.map-area .map-site-cta','.raafat-dialog-layer .raafat-dialog-card']){
