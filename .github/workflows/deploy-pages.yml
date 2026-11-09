@@ -60,6 +60,11 @@ jobs:
           assert.match(code,/\.eq\("status",booking\.status\)/);
           assert.match(app,/if\(currentRequest!==siteLoadSequence\)return/);
           assert.match(admin,/visibleIds\.has\(id\)/);
+          assert.match(app,/hard_delete_site/, 'Site deletion must use audited server RPC');
+          assert.match(code,/hard_delete_booking/, 'Booking deletion must use audited server RPC');
+          assert.match(admin,/set_my_staff_name/, 'Staff identity editor must exist');
+          assert.match(admin,/activity_logs/, 'Admin activity journal must exist');
+          assert.match(admin,/dashActivityRows/, 'Audit rows must render');
           console.log('Booking, navigation and inventory regression contracts passed');
           MODULE
           node <<'NODE'
@@ -70,7 +75,12 @@ jobs:
             'raafatRouteRealtime', 'raafatRouteNext', 'raafatRouteClose',
             'raafatRouteChooseStart', 'raafatRouteRemaining',
             'vipLegendToggle', 'mapSiteCTA', 'listing',
-            'showAvailableOnly', 'sortByNearest'
+            'showAvailableOnly', 'sortByNearest',
+            'dashMyNameForm', 'dashMyName', 'dashSaveMyName',
+            'dashActivityTab', 'dashActivityRows', 'dashActivityCount',
+            'dashActivitySearch', 'dashActivityEntity',
+            'dashActivityRefresh', 'dashActivityPrev', 'dashActivityNext',
+            'dashStaffName'
           ];
           const missing = required.filter(id => !html.includes('id="' + id + '"'));
           if (missing.length) throw new Error('Missing essential UI elements: ' + missing.join(', '));
