@@ -264,3 +264,420 @@ html[data-raafat-theme="day"] #siteModal .raafat-package-size-summary strong{col
 #bookingModal .booking-modal>.booking-modal-head{
  position:relative!important;top:auto!important;inset-block-start:auto!important;
 }
+
+
+/* RAAFAT final component alignment — no tile behind brand/logo in either theme. */
+html body .header .identity,
+html[data-raafat-theme="day"] body .header .identity,
+html body .header .brand-text,
+html[data-raafat-theme="day"] body .header .brand-text{
+  background:transparent!important;background-image:none!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;outline:none!important;
+  padding:0!important;margin:0!important;
+  backdrop-filter:none!important;
+}
+html body .header .identity:before,
+html body .header .identity:after,
+html body .header .brand-text:before,
+html body .header .brand-text:after{content:none!important;display:none!important}
+html body .header .logo,
+html body .header .logo:hover,
+html[data-raafat-theme="day"] body .header .identity .logo,
+html[data-raafat-theme="day"] body .header .identity .logo:hover{
+  background:transparent!important;background-image:none!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  padding:0!important;margin:0!important;overflow:visible!important;
+  outline:0!important;
+}
+html body .header .logo img{
+  display:block!important;max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;box-shadow:none!important;
+}
+/* Transparent colour key for the original dark-matte PNG; its mark stays intact. */
+html body .header .logo img{
+  -webkit-filter:url(#raafat-transparent-logo)!important;
+  filter:url(#raafat-transparent-logo)!important;
+  mix-blend-mode:normal!important;
+}
+html[data-raafat-theme="day"] body .header .identity .brand,
+html[data-raafat-theme="day"] body .header .identity .brand-text,
+html[data-raafat-theme="day"] body .header .identity .brand span:first-child{
+  color:#29443a!important;
+}
+html[data-raafat-theme="day"] body .header .identity .brand span:last-child{
+  color:#be6927!important;
+}
+html[data-raafat-theme="day"] body .header .identity .brand-caption{
+  color:#766d5d!important;
+}
+/* Same standalone dialog proportions and hierarchy as customer reservations. */
+#siteModal.modal-backdrop{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  padding:clamp(9px,2.2vw,22px)!important;
+  background:rgba(4,18,22,.80)!important;
+  overflow:hidden!important;
+}
+#siteModal.modal-backdrop[hidden]{display:none!important}
+#siteModal .modal.wide{
+  width:min(820px,100%)!important;
+  max-width:820px!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:min(880px,calc(100dvh - 24px))!important;
+  display:block!important;
+  padding:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  border-radius:22px!important;
+  background:#0e2830!important;
+  border:1px solid rgba(217,180,122,.36)!important;
+  box-shadow:0 28px 85px rgba(0,0,0,.48)!important;
+  scrollbar-width:thin;
+}
+#siteModal .modal.wide>.modal-head{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:20px!important;position:relative!important;top:auto!important;
+  inset:auto!important;transform:none!important;
+  padding:24px 27px 22px 80px!important;
+  min-height:111px!important;
+  background:linear-gradient(128deg,#1b4143 0%,#102832 100%)!important;
+  border:0!important;border-bottom:1px solid rgba(226,189,128,.24)!important;
+  border-radius:21px 21px 0 0!important;
+  backdrop-filter:none!important;
+}
+#siteModal .modal-head>div{flex:1;min-width:0}
+#siteModal .modal-head .eyebrow{
+  color:#e1bb83!important;font-size:10px!important;
+  font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif!important;
+  letter-spacing:0!important;line-height:1.8!important;
+}
+#siteModal .modal-head h2{
+  color:#fff8ee!important;font-size:clamp(20px,2.4vw,27px)!important;
+  font-weight:850!important;line-height:1.5!important;
+  margin:6px 0 0!important;
+}
+#siteModal .modal-head .raafat-site-editor-close,
+#siteModal .modal-head button.x.raafat-site-editor-close{
+  position:absolute!important;top:24px!important;
+  left:22px!important;right:auto!important;
+  inset-inline-end:22px!important;inset-inline-start:auto!important;
+  width:42px!important;height:42px!important;min-width:42px!important;
+  min-height:42px!important;flex:0 0 42px!important;
+  display:grid!important;place-items:center!important;
+  margin:0!important;padding:0!important;
+  background:#1c4850!important;
+  border:1px solid rgba(216,189,145,.48)!important;
+  color:#f8ecdd!important;
+  border-radius:13px!important;
+  box-shadow:none!important;transform:none!important;
+  font-size:0!important;line-height:0!important;z-index:5!important;
+  cursor:pointer!important;
+}
+#siteModal .modal-head .raafat-site-editor-close svg{
+  width:21px!important;height:21px!important;display:block!important;
+  color:inherit!important;stroke:currentColor!important;
+}
+#siteModal .modal-head .raafat-site-editor-close:hover{
+  background:#2f6563!important;border-color:#e1b77b!important;
+}
+#siteModal .modal.wide>.hint{
+  margin:0!important;padding:14px 27px!important;
+  background:#14343b!important;color:#c3d6ce!important;
+  border-bottom:1px solid rgba(209,180,137,.15)!important;
+  font-size:11px!important;line-height:1.95!important;
+}
+#siteModal #siteForm{
+  padding:22px clamp(15px,3.2vw,30px) 28px!important;
+  background:#0e2830!important;
+}
+#siteModal #siteForm .form-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:16px 17px!important;
+  align-items:start!important;
+}
+#siteModal #siteForm .form-grid>.span2{grid-column:1/-1!important}
+#siteModal #siteForm .form-grid>div:not(.span2){min-width:0!important;max-width:100%!important}
+#siteModal #siteForm label{margin:0 0 7px!important;line-height:1.75!important;font-size:11px!important}
+#siteModal #siteForm .input,
+#siteModal #siteForm .raafat-select-trigger{
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  min-height:45px!important;
+  font-size:12px!important;
+  border-radius:11px!important;
+}
+#siteModal #siteForm .section-caption{
+  background:#183b3e!important;
+  border:1px solid rgba(214,185,138,.3)!important;
+  color:#ead3ac!important;
+  padding:13px 17px!important;
+  font-size:12px!important;line-height:1.8!important;
+  border-radius:13px!important;margin-top:11px!important;
+}
+#siteModal #siteForm .raafat-package-picker{
+  padding:20px!important;
+  background:#14343b!important;
+  border:1px solid rgba(212,181,129,.26)!important;
+  border-radius:17px!important;
+}
+#siteModal #siteForm .raafat-package-card-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:10px!important;margin-top:12px!important;
+}
+#siteModal #siteForm .raafat-package-card{
+  min-height:112px!important;box-sizing:border-box!important;
+  border-radius:13px!important;
+  padding:14px 6px!important;
+}
+#siteModal #siteForm .raafat-package-card.is-active{
+  background:#26534c!important;border-color:#e5c188!important;
+}
+#siteModal #siteForm .raafat-package-size-summary{margin-top:13px!important;justify-content:flex-start!important}
+#siteModal #siteForm .raafat-dimension-note{
+  margin:0!important;padding:11px 13px!important;line-height:1.8!important;
+}
+#siteModal #siteForm .form-actions{
+  display:flex!important;justify-content:flex-end!important;gap:10px!important;
+  align-items:center!important;
+  margin-top:20px!important;padding-top:20px!important;
+  border-top:1px solid rgba(201,182,146,.19)!important;
+}
+#siteModal #siteForm .form-actions button{
+  min-height:46px!important;min-width:120px!important;
+  border-radius:12px!important;cursor:pointer;
+  font-size:12px!important;
+}
+/* Light admin editor is an ivory/orange booking-like form, not dark fields on ivory. */
+html[data-raafat-theme="day"] #siteModal.modal-backdrop{
+  background:rgba(77,55,34,.38)!important;
+}
+html[data-raafat-theme="day"] #siteModal .modal.wide{
+  background:#fffcf8!important;
+  border:1px solid #d8b48c!important;
+  box-shadow:0 25px 75px rgba(80,60,40,.22)!important;
+}
+html[data-raafat-theme="day"] #siteModal .modal.wide>.modal-head{
+  background:linear-gradient(130deg,#fff9ee,#f1e0c9)!important;
+  border-bottom:1px solid #e1c09a!important;
+}
+html[data-raafat-theme="day"] #siteModal .modal-head h2{color:#2c4237!important}
+html[data-raafat-theme="day"] #siteModal .modal-head .eyebrow{color:#a6652e!important}
+html[data-raafat-theme="day"] #siteModal .modal-head .raafat-site-editor-close{
+  background:#fff7ea!important;color:#91522d!important;
+  border:1px solid #d7b389!important;
+}
+html[data-raafat-theme="day"] #siteModal .modal-head .raafat-site-editor-close:hover{
+  background:#f7e7cf!important;border-color:#b7793d!important;
+}
+html[data-raafat-theme="day"] #siteModal .modal.wide>.hint{
+  background:#faf0e2!important;color:#556b5e!important;
+  border-bottom:1px solid #e5d1b8!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm{background:#fffcf8!important}
+html[data-raafat-theme="day"] #siteModal #siteForm .raafat-package-picker,
+html[data-raafat-theme="day"] #siteModal #siteForm .section-caption{
+  background:#fcf2e6!important;
+  border-color:#e2c4a1!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .section-caption{
+  color:#a05c2a!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm label{
+  color:#344e40!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .input,
+html[data-raafat-theme="day"] #siteModal #siteForm textarea,
+html[data-raafat-theme="day"] #siteModal #siteForm .raafat-select-trigger{
+  color:#294438!important;background:#fffdf9!important;
+  border:1px solid #dcc09b!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .raafat-package-card.is-active{
+  background:#f4dfc5!important;border-color:#c27b3b!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .raafat-package-size-summary{
+  background:#f7e8d4!important;color:#395043!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .raafat-dimension-note{
+  color:#765d43!important;background:#fff4e4!important;
+  border-color:#e0c29b!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .form-actions{
+  border-color:#e5ccb0!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .form-actions .btn-ghost{
+  background:#fff5e6!important;color:#78512d!important;
+  border:1px solid #d7b58f!important;
+}
+html[data-raafat-theme="day"] #siteModal #siteForm .form-actions .btn-primary{
+  background:#c88041!important;color:#fffaf3!important;
+  border:1px solid #cc8e55!important;
+}
+@media(max-width:700px){
+  #siteModal.modal-backdrop{padding:0!important}
+  #siteModal .modal.wide{
+    width:100%!important;max-width:100%!important;
+    max-height:100dvh!important;height:100dvh!important;
+    border-radius:0!important;border:0!important;
+  }
+  #siteModal .modal.wide>.modal-head{
+    border-radius:0!important;min-height:100px!important;
+    padding:20px 17px 19px 62px!important;
+  }
+  #siteModal .modal-head .raafat-site-editor-close{
+    width:38px!important;height:38px!important;min-height:38px!important;
+    min-width:38px!important;top:20px!important;left:13px!important;
+    inset-inline-end:13px!important;
+  }
+  #siteModal .modal.wide>.hint{padding:12px 17px!important}
+  #siteModal #siteForm{padding:17px 14px 27px!important}
+  #siteModal #siteForm .form-grid{gap:13px 12px!important}
+  #siteModal #siteForm .raafat-package-picker{padding:15px!important}
+  #siteModal #siteForm .raafat-package-card-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;
+  }
+  #siteModal #siteForm .raafat-package-card{min-height:95px!important}
+}
+@media(max-width:540px){
+  #siteModal #siteForm .form-grid{grid-template-columns:minmax(0,1fr)!important}
+  #siteModal #siteForm .form-grid>div{grid-column:1/-1!important}
+  #siteModal #siteForm .form-actions button{flex:1 1 0!important;min-width:0!important}
+  #siteModal .modal-head h2{font-size:21px!important}
+}
+@media(max-width:370px){
+  #siteModal #siteForm .raafat-package-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+/* Daytime admin: explicit, readable ink and surfaces for every data section. */
+html[data-raafat-theme="day"] #adminDashboard.raafat-control-v3{
+  --ra-ink:#283f35;--ra-subtle:#526a5d;--ra-accent:#aa642c;
+  --ra-paper:#fffcf8;--ra-paper-muted:#f7ecde;--ra-paper-line:#e1c4a2;
+  color:var(--ra-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel{
+  color:#294337!important;background:transparent!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(h2,h3,h4,h5,h6,p,label,li,small,em,time){
+  color:#354e41!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.admin-note,.admin-section-heading p,.admin-widget-title small,.admin-staff-row small,.admin-chart-item span,.admin-chart-item small,.admin-settings-group small,.admin-widget small,.raafat-activity-table time){
+  color:#5e7667!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.admin-widget,.admin-settings-group,.admin-staff-form,.admin-staff-row,.admin-settings-save,.admin-inventory-tools,.admin-bulkbar,.admin-overview-stat,.raafat-booking-insights>div,.admin-table-scroll){
+  background:#fffcf7!important;color:#2c4539!important;
+  border-color:#e2c7a7!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.admin-data-table,.raafat-activity-table){
+  color:#2d473b!important;background:#fffcf8!important;border-color:#e3cbb0!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-data-table thead th,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table thead th{
+  background:#f1e3d1!important;color:#684a31!important;
+  border-color:#ddc4a5!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-data-table tbody td,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table tbody td{
+  color:#2d473b!important;background:#fffdf9!important;
+  border-color:#ebdac5!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-data-table tbody tr:hover td,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table tbody tr:hover td{
+  background:#fbf0e1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-data-table :is(strong,b,span,small),
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table :is(strong,b,span,small){
+  color:#2e493c!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table .audit-action{
+  color:#256548!important;background:#e7f1e7!important;
+  border:1px solid #b5d6bd!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table .audit-action.is-delete{
+  color:#a44740!important;background:#fbe7e3!important;
+  border-color:#e4b8ae!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.admin-data-table,.raafat-activity-table) .admin-danger-mini,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-danger-mini{
+  background:#fce9e6!important;color:#9a493e!important;
+  border:1px solid #deb5ad!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-data-table button:not(.admin-danger-mini),
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-staff-actions button:not(.admin-danger-mini),
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-bulkbar button{
+  background:#f4e7d6!important;color:#805127!important;
+  border:1px solid #d8b48a!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-staff-row :is(strong,span),
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-settings-group :is(strong,span),
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table time{
+  color:#314b3d!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-widget h4,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-booking-insights strong,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-overview-stat strong{
+  color:#985820!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.admin-widget,.admin-settings-group) :is(input,textarea,.raafat-select-trigger),
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(input.input,textarea.input,.raafat-select-trigger){
+  background:#fffdf9!important;color:#2b4439!important;
+  border:1px solid #d7b793!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel input::placeholder,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel textarea::placeholder{
+  color:#737c71!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-form-message{
+  color:#345745!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-form-message.bad{
+  color:#a54339!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-audit-pager button,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-booking-pager button{
+  background:#f6e8d5!important;color:#79502d!important;
+  border:1px solid #d6b48a!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.raafat-status-chip.is-pending,.admin-table-status.reserved){
+  color:#936024!important;background:#faead4!important;border:1px solid #e2c39f!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.raafat-status-chip.is-approved,.admin-table-status.available,.admin-publication.yes){
+  color:#266f4a!important;background:#e4f2e7!important;border:1px solid #b5d5c1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.raafat-status-chip.is-rejected,.admin-table-status.maintenance){
+  color:#984b44!important;background:#fbeae5!important;border:1px solid #e2bdb2!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(.raafat-status-chip.is-completed,.admin-table-status.booked){
+  color:#315c86!important;background:#e9f1fb!important;border:1px solid #bfcee1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-publication.no{
+  color:#5b6c62!important;background:#eef0eb!important;border:1px solid #ccd5c8!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-overview-grid .admin-overview-stat small,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-booking-insights small{
+  color:#5a705f!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-settings-save .btn-primary,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-staff-form .btn-primary{
+  background:#c77f3c!important;color:#fffaf5!important;
+  border:1px solid #d7a067!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-settings-save .btn-primary *,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-staff-form .btn-primary *{
+  color:#fffaf5!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-shortcuts button{
+  color:#674526!important;background:#f4e4d1!important;border:1px solid #dfbf97!important;
+}
+/* Mobile readability: audit rows become clean cards with no forced dark backgrounds. */
+@media(max-width:640px){
+  html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-data-table tbody tr,
+  html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table tbody tr{
+    background:#fffcf8!important;border:1px solid #e3c7a8!important;
+    box-shadow:0 3px 10px rgba(130,97,54,.05)!important;
+  }
+  html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-data-table tbody td,
+  html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-activity-table tbody td{
+    background:transparent!important;
+  }
+}
