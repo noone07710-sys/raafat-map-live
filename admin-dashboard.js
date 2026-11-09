@@ -1,3 +1,5 @@
+import {raafatConfirm} from "./ui-dialog.js";
+import {enhanceAdminSelects} from "./admin-dropdown.js";
 /**
  * RA'AFAT CONTROL CENTER
  * All user management is delegated to the protected Supabase admin-staff
@@ -22,12 +24,17 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("dashSettingsTab").hidden=!isAdmin();
     $("dashActivityTab").hidden=!isAdmin();
     $("dashMyName").value=state.staffName||"";
-    $("dashMyNameNote").textContent=state.staffName?"اسمك المعتمد يظهر في سجل العمليات.":"يرجى تسجيل اسمك قبل تنفيذ الحذف النهائي.";
+    $("dashMyNameForm").hidden=Boolean(state.staffName);
+    $("dashIdentityLocked").hidden=!state.staffName;
+    $("dashIdentityName").textContent=state.staffName||"الاسم غير مسجّل";
+    $("dashMyNameNote").textContent="يُعتمد اسمك لمرة واحدة فقط في سجلات العمليات.";
     if(!state.staffName)requestAnimationFrame(()=>$("dashMyName").focus());
     document.querySelector('[data-dash-tab="bookings"]').hidden=!isAdmin();
     for(const id of ["dashApplyStatus","dashBulkPublish","dashBulkHide"])$(id).hidden=!isAdmin();
     $("dashBulkStatus").disabled=!isAdmin();
-    $("dashSessionRole").textContent=(state.staffName||"الاسم غير مسجل")+" • "+(roles[state.staffRole]||"موظف");
+    $("dashSessionRole").textContent=(state.staffName||"الاسم غير مسجّل")+" • "+(roles[state.staffRole]||"موظف");
+    $("dashAdminGreeting").textContent="أهلاً، "+(state.staffName||"ضيف الإدارة");
+    $("dashAdminRole").textContent=roles[state.staffRole]||"حساب معتمد";
     switchTab("overview");
     document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
   }
@@ -38,6 +45,8 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
   function switchTab(tab){
     if(["staff","settings","bookings","activity"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
     activeTab=tab;
+    const titles={overview:"نظرة عامة",inventory:"إدارة القطع",bookings:"طلبات الحجز",activity:"سجل النشاط",staff:"فريق الإدارة",settings:"الإعدادات"};
+    $("dashCurrentSection").textContent=titles[tab]||"إدارة رأفت";
     document.querySelectorAll("[data-dash-tab]").forEach(btn=>{
       const selected=btn.dataset.dashTab===tab;
       btn.classList.toggle("active",selected);
@@ -129,7 +138,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     const visibleIds=new Set(matchingSites().map(s=>s.id));
     const ids=[...chosen].filter(id=>visibleIds.has(id));
     if(!ids.length){toast("حدد قطعة ظاهرة واحدة على الأقل.");return;}
-    if(!confirm("تأكيد "+description+" لعدد "+ids.length+" قطعة؟"))return;
+    if(!(await raafatConfirm({title:"تأكيد التعديل الجماعي",message:"هل تريد "+description+" لـ "+ids.length+" قطعة إعلانية؟",detail:"راح تطبَّق التغييرات على القطع المحددة الظاهرة فقط.",confirmText:"تطبيق التغييرات"})))return;
     try{
       const {error}=await db.from("sites").update(patch).in("id",ids);
       if(error)throw error;
@@ -205,15 +214,16 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
           '<button type="button" data-revoke-staff="'+escape(m.id)+'" title="إيقاف صلاحية هذا المستخدم">سحب الصلاحية</button></div>')+'</div>'
       ).join(""):'<p class="admin-note">ماكو موظفين مسجلين.</p>';
       $("dashStaffList").querySelectorAll("[data-staff-role]").forEach(el=>el.addEventListener("change",async()=>{
-        if(!confirm("هل تريد تعديل صلاحية هذا الموظف؟")){await loadStaff();return;}
+        if(!(await raafatConfirm({title:"تعديل صلاحية الموظف",message:"تغيير الرتبة راح يغيّر الصلاحيات المتاحة لهذا الحساب.",confirmText:"تحديث الصلاحية"}))){await loadStaff();return;}
         try{await staffAction({action:"change_role",id:el.dataset.staffRole,role:el.value});toast("تم تعديل الصلاحية.");await loadStaff()}
         catch(err){toast("تعذر تعديل الصلاحية: "+err.message);await loadStaff();}
       }));
       $("dashStaffList").querySelectorAll("[data-revoke-staff]").forEach(el=>el.addEventListener("click",async()=>{
-        if(!confirm("سيُمنع هذا الموظف من إدارة الموقع. هل تريد الاستمرار؟"))return;
+        if(!(await raafatConfirm({title:"سحب صلاحيات الموظف",message:"راح يفقد هذا المستخدم صلاحية الوصول إلى إدارة المنصة.",danger:true,confirmText:"سحب الصلاحية"})))return;
         try{await staffAction({action:"revoke",id:el.dataset.revokeStaff});toast("تم سحب صلاحية الموظف.");await loadStaff()}
         catch(err){toast("تعذر سحب الصلاحية: "+err.message);}
       }));
+      enhanceAdminSelects($("dashStaffList"));
     }catch(err){$("dashStaffList").textContent="تعذر عرض الموظفين: "+err.message;}
   }
   async function createStaff(event){
@@ -223,7 +233,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     if(display_name.length<2||display_name.length>80){staffMessage("اكتب اسم الموظف الصحيح.",true);return;}
     const role=$("dashStaffRole").value;
     if(password.length<14){staffMessage("كلمة المرور يجب أن تتكون من 14 حرفاً على الأقل.",true);return;}
-    if(!confirm("إنشاء "+(roles[role]||role)+" للبريد "+email+"؟"))return;
+    if(!(await raafatConfirm({title:"إنشاء حساب إداري",message:"سيتم إنشاء حساب جديد باسم "+display_name+" ("+email+") بصلاحية "+(roles[role]||role)+".",confirmText:"إنشاء الحساب"})))return;
     button.disabled=true;staffMessage("جاري إنشاء الحساب…");
     try{
       await staffAction({action:"create",email,password,role,display_name});
@@ -280,7 +290,11 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
       const {data,error}=await db.rpc("set_my_staff_name",{p_name:name});
       if(error)throw error;
       getState().staffName=data;
-      $("dashMyNameNote").textContent="تم حفظ الاسم. كل عملية قادمة تظهر باسمك.";
+      $("dashMyNameForm").hidden=true;
+      $("dashIdentityLocked").hidden=false;
+      $("dashIdentityName").textContent=data;
+      $("dashAdminGreeting").textContent="أهلاً، "+data;
+      $("dashMyNameNote").textContent="تم تسجيل اسمك لمرة واحدة.";
       $("dashSessionRole").textContent=data+" • "+(roles[getState().staffRole]||"موظف");
       document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
       toast("تم حفظ اسم الموظف بنجاح.");
@@ -364,6 +378,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     });
     $("dashStaffForm").addEventListener("submit",event=>void createStaff(event));
     $("dashReloadStaff").addEventListener("click",()=>void loadStaff());
+    enhanceAdminSelects($("adminDashboard"));
     $("dashSettingsForm").addEventListener("submit",event=>void saveSettings(event));
     $("dashMyNameForm").addEventListener("submit",event=>void saveMyName(event));
     $("dashActivityRefresh").addEventListener("click",()=>void loadActivity());

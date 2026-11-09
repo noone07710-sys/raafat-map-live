@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@2.2.1/dist/maplibre-gl.css">
   <link rel="stylesheet" href="./style.css">
+   <link rel="stylesheet" href="./admin-v3.css">
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script defer src="https://unpkg.com/maplibre-gl@2.2.1/dist/maplibre-gl.js"></script>
@@ -159,36 +160,63 @@
  </div>
 
 
- <section class="admin-dashboard" id="adminDashboard" hidden role="dialog" aria-modal="true" aria-labelledby="adminDashTitle">
+ <section class="admin-dashboard raafat-control-v3" id="adminDashboard" hidden role="dialog" aria-modal="true" aria-labelledby="adminDashTitle">
    <div class="admin-dashboard-shell">
-     <header class="admin-dashboard-header">
-       <div class="admin-dashboard-title">
-         <span class="admin-dashboard-mark admin-dashboard-original-logo"><img src="./assets/raafat-logo.png" alt="شعار شركة رأفت الأصلي" width="48" height="46"></span>
-         <div><div class="admin-dashboard-eyebrow">لوحة إدارة شركة رأفت</div><h2 id="adminDashTitle">مركز إدارة المواقع الإعلانية</h2></div>
-       </div>
-       <div class="admin-dashboard-top-actions">
-         <button class="admin-mini-button" id="dashAddSite" type="button">+ إضافة قطعة</button>
-         <button class="admin-mini-button secondary" id="dashExport" type="button">تصدير البيانات</button>
-         <button class="admin-mini-button secondary" id="dashChangePassword" type="button">كلمة المرور</button>
-         <button class="admin-close" id="closeAdminDashboard" type="button" aria-label="إغلاق لوحة التحكم">×</button>
-       </div>
-     </header>
-     <form id="dashMyNameForm" class="raafat-admin-identity">
-       <label for="dashMyName">اسمك في سجل الإدارة</label>
-       <input class="input" id="dashMyName" maxlength="80" minlength="2" required autocomplete="name" placeholder="اكتب اسمك الحقيقي">
-       <button type="submit" id="dashSaveMyName">حفظ الاسم</button>
-       <small id="dashMyNameNote" role="status">كل عملية تُسجّل باسم الحساب الذي نفذها.</small>
-     </form>
-     <nav class="admin-dashboard-tabs" aria-label="أقسام لوحة التحكم">
-       <button type="button" data-dash-tab="overview" class="active" aria-selected="true">نظرة عامة</button>
-       <button type="button" data-dash-tab="inventory" aria-selected="false">إدارة القطع</button>
-       <button type="button" data-dash-tab="bookings" aria-selected="false">طلبات الحجز <span id="dashBookingBadge" class="booking-notice-badge"></span></button>
-       <button type="button" data-dash-tab="activity" id="dashActivityTab" aria-selected="false">سجل النشاط</button>
-       <button type="button" data-dash-tab="staff" id="dashStaffTab" aria-selected="false">الموظفون والصلاحيات</button>
-       <button type="button" data-dash-tab="settings" id="dashSettingsTab" aria-selected="false">إعدادات الموقع</button>
-     </nav>
-     <div class="admin-dashboard-content">
+    <aside class="raafat-admin-sidebar" aria-label="التنقل في لوحة الإدارة">
+      <div class="raafat-sidebar-brand">
+        <span class="raafat-sidebar-logo admin-dashboard-original-logo"><img src="./assets/raafat-logo.png" alt="شعار رأفت" width="55" height="53"></span>
+        <div><small>RAAFAT / MANAGEMENT</small><strong>مركز عمليات رأفت</strong><span>نظام إدارة المواقع الإعلانية</span></div>
+      </div>
+      <div class="raafat-sidebar-nav-title">القائمة الرئيسية</div>
+      <nav class="admin-dashboard-tabs" aria-label="أقسام لوحة التحكم">
+        <button type="button" data-dash-tab="overview" aria-selected="true" class="active"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg><span class="raafat-nav-label">الرئيسية</span></button>
+        <button type="button" data-dash-tab="inventory" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 10h18M9 10v10M14 14h4M14 17h4"/></svg><span class="raafat-nav-label">المواقع والقطع</span></button>
+        <button type="button" data-dash-tab="bookings" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3v3M15 3v3M5 10h14m-10 4h6m-6 3h4"/></svg><span class="raafat-nav-label">طلبات الحجوزات</span><span id="dashBookingBadge" class="booking-notice-badge"></span></button>
+        <button type="button" data-dash-tab="activity" id="dashActivityTab" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5m4-2v5l4 2"/></svg><span class="raafat-nav-label">سجل العمليات</span></button>
+        <div class="raafat-sidebar-nav-title sub">إدارة النظام</div>
+        <button type="button" data-dash-tab="staff" id="dashStaffTab" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 7h4M19 5v4M17 17h4"/></svg><span class="raafat-nav-label">الموظفون والصلاحيات</span></button>
+        <button type="button" data-dash-tab="settings" id="dashSettingsTab" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5"/><circle cx="16" cy="17" r="2.5"/></svg><span class="raafat-nav-label">إعدادات المنصة</span></button>
+      </nav>
+      <div class="raafat-sidebar-identity">
+        <div id="dashIdentityLocked" class="raafat-identity-ready" hidden>
+          <span class="raafat-user-avatar" aria-hidden="true"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 8 4v6c0 5-3.5 8.2-8 10-4.5-1.8-8-5-8-10V6l8-4Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <div><small>حساب الإدارة المعتمد</small><strong id="dashIdentityName">مدير</strong><em>الاسم مثبت في سجل النشاط</em></div>
+        </div>
+        <form id="dashMyNameForm" class="raafat-admin-identity">
+          <strong>أهلاً بك في فريق رأفت</strong>
+          <label for="dashMyName">ثبّت اسمك مرة واحدة</label>
+          <input class="input" id="dashMyName" maxlength="80" minlength="2" required autocomplete="name" placeholder="اسمك الكامل">
+          <small id="dashMyNameNote" role="status">سيظهر هذا الاسم في سجل عملياتك ولا يمكن تغييره بعد الحفظ.</small>
+          <button type="submit" id="dashSaveMyName">حفظ وتثبيت الاسم</button>
+        </form>
+        <div class="raafat-sidebar-security"><span class="raafat-status-dot"></span> اتصال آمن • صلاحيات معتمدة</div>
+      </div>
+    </aside>
+    <div class="raafat-admin-workspace">
+      <header class="admin-dashboard-header">
+        <div class="raafat-workspace-title">
+          <div class="raafat-workspace-breadcrumb">لوحة التحكم <span> / </span> <strong id="dashCurrentSection">الرئيسية</strong></div>
+          <div class="admin-dashboard-title"><div><div class="admin-dashboard-eyebrow">شركة رأفت للدعاية والإعلان والتجارة العامة</div><h2 id="adminDashTitle">منصة الإدارة الذكية</h2></div></div>
+        </div>
+        <div class="admin-dashboard-top-actions">
+          <div class="raafat-top-user"><strong id="dashAdminGreeting">مرحباً بك</strong><small id="dashAdminRole">حساب إدارة</small></div>
+          <button class="admin-mini-button" id="dashAddSite" type="button"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>إضافة قطعة</span></button>
+          <button class="admin-mini-button secondary" id="dashExport" type="button"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13m-5-5 5 5 5-5M4 18v3h16v-3"/></svg><span>تصدير</span></button>
+          <button class="admin-mini-button secondary raafat-pass-action" id="dashChangePassword" type="button" aria-label="تغيير كلمة المرور" title="تغيير كلمة المرور"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
+          <button class="admin-close" id="closeAdminDashboard" type="button" aria-label="إغلاق لوحة التحكم"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg></button>
+        </div>
+      </header>
+      <main class="admin-dashboard-content">
        <section class="admin-tab-panel" data-dash-panel="overview">
+        <div class="raafat-overview-welcome">
+          <div class="raafat-welcome-copy">
+            <span class="raafat-overline">RAAFAT / OPERATIONS</span>
+            <h3>كل شغلك، بمكان واحد.</h3>
+            <p>تابع اللوحات والحجوزات والموظفين من مركز إدارة واضح وسريع، وخلّ التفاصيل كلها تحت سيطرتك.</p>
+            <div class="raafat-welcome-ctas"><button type="button" data-dash-go="inventory"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 10h18M9 10v10M14 14h4M14 17h4"/></svg> إدارة القطع</button><button type="button" data-dash-go="bookings"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3v3M15 3v3M5 10h14m-10 4h6m-6 3h4"/></svg> الحجوزات</button></div>
+          </div>
+          <div class="raafat-welcome-art" aria-hidden="true"><div class="raafat-art-orbit"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></div><span>RAAFAT</span><small>LIVE CONTROL SYSTEM</small></div>
+        </div>
          <div class="admin-section-heading"><div><h3>أداء شبكة الإعلانات</h3><p>ملخص مباشر من بيانات المواقع الفعلية</p></div><button class="admin-link" id="dashRefresh" type="button">تحديث</button></div>
          <div class="admin-overview-grid">
            <div class="admin-overview-stat"><small>إجمالي القطع</small><strong id="dashTotal">0</strong></div>
@@ -236,7 +264,12 @@
          <p id="dashInventoryCount" class="admin-note"></p>
        </section>
        <section class="admin-tab-panel" data-dash-panel="bookings" hidden>
- <div class="admin-section-heading"><div><h3>إشعارات وطلبات الحجز</h3><p>الطلبات الواردة من الموقع، مراجعتها واعتمادها أو رفضها</p></div><button type="button" class="admin-link" id="dashBookingRefresh">تحديث الطلبات</button></div>
+ <div class="admin-section-heading"><div><h3>طلبات الحجز</h3><p>راجع الطلبات الجديدة، اعتمد الحجز، وراقب حالته ورقمه المختصر.</p></div><button type="button" class="admin-link" id="dashBookingRefresh">تحديث الطلبات</button></div>
+ <div class="raafat-booking-insights">
+  <div><small>إجمالي الطلبات</small><strong id="dashBookingTotalMetric">—</strong></div>
+  <div><small>تنتظر المراجعة</small><strong id="dashBookingPendingMetric">—</strong></div>
+  <div><small>طريقة الترقيم</small><strong>RA-1، RA-2…</strong></div>
+ </div>
  <p id="dashBookingCount" class="admin-note">جاري تحميل الطلبات…</p>
  <div class="admin-table-scroll"><table class="admin-data-table booking-admin-table"><thead><tr><th>المرجع والتاريخ</th><th>الزبون</th><th>الجهة والمنطقة</th><th>الباقة والقطعة</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="dashBookingRows"></tbody></table></div>
  </section>
@@ -318,8 +351,9 @@
            <div class="admin-settings-save"><button class="btn btn-primary" id="dashSaveSettings" type="submit">حفظ الإعدادات</button><span id="dashSettingsMessage" role="status"></span></div>
          </form>
        </section>
-     </div>
-     <div class="admin-dashboard-footer"><span id="dashSessionRole">جلسة إدارة معتمدة</span><span>شركة رأفت للدعاية والإعلان</span></div>
+      </main>
+      <div class="admin-dashboard-footer"><span id="dashSessionRole">جلسة إدارة معتمدة</span><span>شركة رأفت للدعاية والإعلان • RAAFAT CONTROL CENTER</span></div>
+    </div>
    </div>
  </section>
 

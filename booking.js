@@ -1,4 +1,6 @@
 // Customer booking and private tracking for Raafat advertising.
+import {raafatConfirm,raafatVerify,raafatCopy} from "./ui-dialog.js";
+import {enhanceAdminSelects} from "./admin-dropdown.js";
 const PACKAGES = Object.freeze({
  A:{size:"عرض ١٢٠ سم • ارتفاع ٢ م",prices:{3:280,6:430,12:670}},
  B:{size:"عرض ٢ م • ارتفاع ٣ م",prices:{3:520,6:760,12:1120}},
@@ -77,9 +79,9 @@ export function setupBookings({db,getState,toast}){
    if(!Number.isFinite(area)||area<=0)return null;
    return Math.ceil(area*rate*term);
  }
- function changeCategory(key){
+ async function changeCategory(key){
    if(key===currentCategory)return;
-   if(chosen.size && !confirm("تغيير الفئة يمسح القطع المحددة حالياً. هل تريد المتابعة؟")){category.value=currentCategory;renderCards();return;}
+   if(chosen.size&&!(await raafatConfirm({title:"تغيير فئة الإعلان",message:"اختيار فئة جديدة راح يلغي تحديد القطع السابقة. تريد تكمل؟",danger:true,confirmText:"تغيير الفئة"}))){category.value=currentCategory;renderCards();return;}
    category.value=key;currentCategory=key;chosen.clear();dirty=true;writePackage();
  }
  function renderSelection(){
@@ -140,9 +142,9 @@ export function setupBookings({db,getState,toast}){
    writePackage();
    $("bookingPhone").dispatchEvent(new Event("input"));
  }
- function close(){
+ async function close(){
    if(busy)return;
-   if(!$("bookingResult").hidden || !dirty || confirm("توجد بيانات حجز غير مرسلة. هل تريد إغلاق النموذج وفقدانها؟")){
+   if(!$("bookingResult").hidden||!dirty||(await raafatConfirm({title:"إغلاق طلب الحجز",message:"عندك بيانات حجز غير مرسلة. تريد تغلق النموذج وتلغيها؟",danger:true,confirmText:"إغلاق بدون إرسال"}))){
      modal.hidden=true;bar.hidden=true;selecting=false;restoreScroll();
    }
  }
@@ -292,7 +294,7 @@ export function setupAdminBookings({db,getState,toast}){
   count.textContent="جاري تحميل طلبات الحجز…";
   try{
    const {data,error,count:all}=await db.from("booking_requests")
-    .select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,requested_area_m2,status,created_at,tracking_token,booking_request_sites(site_id,site_code,site_name,governorate,city,unit_price_usd)",{count:"exact"})
+    .select("id,customer_name,phone,company_name,governorate,city,site_code,category,duration_months,quoted_price_usd,requested_area_m2,status,created_at,tracking_token,booking_no,booking_request_sites(site_id,site_code,site_name,governorate,city,unit_price_usd)",{count:"exact"})
      .order("created_at",{ascending:false}).range(page*PAGE_SIZE,(page+1)*PAGE_SIZE-1);
    if(error)throw error;
    bookings=data||[];
@@ -301,6 +303,8 @@ export function setupAdminBookings({db,getState,toast}){
       .select("id",{count:"exact",head:true}).eq("status","pending");
     if(pendingError)throw pendingError;
     $("dashBookingBadge").textContent=pending?String(pending):"";
+    $("dashBookingTotalMetric").textContent=Number(totalCount).toLocaleString("ar-IQ");
+    $("dashBookingPendingMetric").textContent=Number(pending||0).toLocaleString("ar-IQ");
     count.textContent="عرض "+(totalCount?page*PAGE_SIZE+1:0)+"–"+Math.min(totalCount,(page+1)*PAGE_SIZE)+" من "+totalCount+" طلب • "+pending+" بانتظار المراجعة";
     pager.hidden=totalCount<=PAGE_SIZE;
     pager.querySelector("[data-page-label]").textContent="صفحة "+(page+1)+" من "+Math.max(1,Math.ceil(totalCount/PAGE_SIZE));
@@ -311,7 +315,7 @@ export function setupAdminBookings({db,getState,toast}){
     const chips=requested.map(s=>
       '<span class="booking-admin-site">'+safe(s.site_code)+'<small>'+safe(s.governorate)+' / '+safe(s.city)+'</small></span>').join("");
     const countText=requested.length?requested.length+" قطع مختارة":"طلب عام / بدون قطع";
-    return '<tr><td><strong>RF-'+safe(b.id.replace(/-/g,"").slice(0,8).toUpperCase())+'</strong><small>'+new Date(b.created_at).toLocaleString("ar-IQ")+'</small></td>'+
+    return '<tr><td><strong>RA-'+safe(b.booking_no)+'</strong><small>'+new Date(b.created_at).toLocaleString("ar-IQ")+'</small></td>'+
      '<td>'+safe(b.customer_name)+'<small dir="ltr">'+safe(b.phone)+'</small></td>'+
      '<td>'+safe(b.company_name)+'<small>'+safe(b.governorate)+' / '+safe(b.city)+'</small></td>'+
      '<td><strong>فئة '+safe(b.category)+'</strong> • '+safe(b.duration_months||"كشف موقع")+' أشهر'+
@@ -319,19 +323,19 @@ export function setupAdminBookings({db,getState,toast}){
      '<small>'+countText+(b.category==='E'&&b.requested_area_m2?' • المساحة: '+safe(b.requested_area_m2)+' م²':'')+'</small><div class="booking-admin-total">'+(b.quoted_price_usd?money(b.quoted_price_usd):"بعد الكشف")+'</div>'+
      requested.map(s=>s.site_id?'<a class="booking-admin-map-link" href="'+safe(location.origin+location.pathname+'#site='+encodeURIComponent(s.site_id))+'" target="_blank" rel="noopener noreferrer"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> '+safe(s.site_code)+'</a>':"").join(" ")+
      '</td>'+
-     '<td>'+safe(labels[b.status]||b.status)+'</td>'+
+     '<td><span class="raafat-status-chip is-'+safe(b.status)+'">'+safe(labels[b.status]||b.status)+'</span></td>'+
      '<td><select class="input" data-booking-status="'+safe(b.id)+'" '+(b.status==="completed"?"disabled":"")+'>'+
      Object.entries(labels).map(([key,label])=>'<option value="'+key+'" '+(b.status===key?"selected":"")+' '+(!(allowed[b.status]||[]).includes(key)?"disabled":"")+'>'+label+'</option>').join("")+
      '</select><button type="button" data-booking-link="'+safe(b.tracking_token)+'">نسخ رابط الزبون</button><button type="button" class="admin-danger-mini" data-booking-delete="'+safe(b.id)+'">حذف الطلب نهائياً</button></td></tr>';
    }).join(""):'<tr><td colspan="6">لا توجد طلبات حجز حتى الآن.</td></tr>';
    table.querySelectorAll("[data-booking-status]").forEach(select=>select.addEventListener("change",async()=>{
     const booking=bookings.find(b=>b.id===select.dataset.bookingStatus);
-    if(!booking||!confirm("هل تريد تغيير حالة الطلب إلى "+labels[select.value]+"؟")){select.value=booking?.status||"pending";return;}
+    if(!booking||!(await raafatConfirm({title:"تغيير حالة الحجز",message:"تريد تغيير حالة "+("RA-"+booking.booking_no)+" إلى «"+labels[select.value]+"»؟",detail:"قد يؤدي هذا الإجراء إلى تحديث توفر القطع تلقائياً.",confirmText:"تأكيد التغيير"}))){select.value=booking?.status||"pending";select.dispatchEvent(new Event("raafat-select-sync"));return;}
     select.disabled=true;
     const {data:updated,error}=await db.from("booking_requests")
        .update({status:select.value,updated_at:new Date().toISOString()})
        .eq("id",booking.id).eq("status",booking.status).select("id").maybeSingle();
-     if(error||!updated){toast("لم يتم اعتماد التغيير: "+(error?.message||"الطلب تغيّر من حساب آخر؛ حدّث القائمة."));select.disabled=false;select.value=booking.status;void load();return;}
+     if(error||!updated){toast("لم يتم اعتماد التغيير: "+(error?.message||"الطلب تغيّر من حساب آخر؛ حدّث القائمة."));select.disabled=false;select.value=booking.status;select.dispatchEvent(new Event("raafat-select-sync"));void load();return;}
     toast("تم تحديث الحجز والقطع المرتبطة به.");
     document.dispatchEvent(new CustomEvent("raafat:inventory-refresh"));
     document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
@@ -343,10 +347,9 @@ export function setupAdminBookings({db,getState,toast}){
     if(!getState().staffName?.trim()){
       toast("يرجى تسجيل اسمك داخل لوحة الإدارة قبل الحذف النهائي.");return;
     }
-    const ref="RF-"+booking.id.replace(/-/g,"").slice(0,8).toUpperCase();
-    const answer=prompt("الحذف نهائي ولا يمكن استرجاع الطلب أو رابط العميل. اكتب رقم الحجز للتأكيد:\\n"+ref);
-    if(answer===null)return;
-    if(answer.trim()!==ref){toast("رقم التأكيد غير مطابق، لم يُحذف الطلب.");return;}
+    const ref="RA-"+booking.booking_no;
+    const verified=await raafatVerify({title:"حذف طلب الحجز نهائياً",message:"هذا الحذف نهائي، ورابط متابعة الزبون يتوقف عن العمل. اكتب رقم الطلب بالضبط للتأكيد.",detail:"إذا الحجز محجوز أو مكتمل، يتم تحديث توفر قطعه المرتبطة حسب القواعد.",expected:ref});
+    if(!verified)return;
     btn.disabled=true;
     try{
       const {data,error}=await db.rpc("hard_delete_booking",{p_booking_id:booking.id});
@@ -362,8 +365,9 @@ export function setupAdminBookings({db,getState,toast}){
    table.querySelectorAll("[data-booking-link]").forEach(btn=>btn.addEventListener("click",async()=>{
     const url=location.origin+location.pathname+"#booking="+btn.dataset.bookingLink;
     try{await navigator.clipboard.writeText(url);toast("تم نسخ رابط متابعة الزبون.");}
-    catch{prompt("رابط المتابعة",url);}
+    catch{await raafatCopy({title:"رابط متابعة الحجز",message:"تگدر تنسخ الرابط من هالنافذة.",value:url});}
    }));
+   enhanceAdminSelects(table);
   }catch(err){count.textContent="تعذر تحميل الطلبات: "+(err.message||"حدث خطأ");}
   finally{loading=false;}
  }

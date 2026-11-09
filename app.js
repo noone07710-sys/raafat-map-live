@@ -4,6 +4,7 @@ import { createGoogleMapLayer } from "./google-basemap.js";
 import { createAdminDashboard } from "./admin-dashboard.js";
 import { setupBookings, setupAdminBookings, packageForSite } from "./booking.js";
 import { createRaafatNavigation } from "./routing.js";
+import { raafatConfirm, raafatVerify } from "./ui-dialog.js";
 // The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -1006,7 +1007,8 @@ async function renderDetail(){
 async function removePhoto(site,photoId){
  if(!state.staff||!db)return;
  const photo=(site.site_photos||[]).find(p=>p.id===photoId);
- if(!photo||!confirm("حذف هذه الصورة من موقع القطعة نهائياً؟"))return;
+ if(!photo)return;
+ if(!(await raafatConfirm({title:"حذف صورة اللوحة",message:"سيتم حذف الصورة من معرض القطعة نهائياً.",danger:true,confirmText:"حذف الصورة"})))return;
  try{
    // A database failure must never leave a broken image reference.
   const {data,error:dbError}=await db.from("site_photos").delete().eq("id",photo.id).select("id").maybeSingle();
@@ -1265,9 +1267,8 @@ async function deleteSite(site){
  if(!state.staffName?.trim()){
   toast("سجّل اسمك من لوحة الإدارة قبل الحذف النهائي.");adminDashboard?.open();return;
  }
- const confirmation=prompt("حذف القطعة نهائياً لا يمكن التراجع عنه. اكتب رمز القطعة للتأكيد:\\n"+site.code);
- if(confirmation===null)return;
- if(confirmation.trim()!==site.code){toast("رمز التأكيد غير مطابق، لم تُحذف القطعة.");return;}
+ const confirmed=await raafatVerify({title:"حذف القطعة نهائياً",message:"سيتم حذف الموقع من المنصة ولا يمكن استرجاعه. اكتب رمز القطعة حتى نضمن عدم الحذف بالخطأ.",detail:"أي حجز فعّال مرتبط بالقطعة يجب معالجته أولاً.",expected:site.code});
+ if(!confirmed)return;
  try{
   const {data,error}=await db.rpc("hard_delete_site",{p_site_id:site.id});
   if(error)throw error;
@@ -1435,8 +1436,8 @@ function events(){
    },err=>toast("تعذر تحديد الموقع. تحقق من صلاحيات GPS وHTTPS: "+err.message),
    {enableHighAccuracy:true,maximumAge:0,timeout:20000});
  });
- function requestCloseSiteModal(){
-   if(siteFormDirty&&!confirm("توجد بيانات قطعة غير محفوظة. هل تريد إغلاق النافذة وفقدانها؟"))return;
+ async function requestCloseSiteModal(){
+   if(siteFormDirty&&!(await raafatConfirm({title:"الخروج من تحرير القطعة",message:"عندك تغييرات ما محفوظة بعد. تريد تغلق النموذج وتفقد التغييرات؟",danger:true,confirmText:"تجاهل التغييرات"})))return;
    siteFormDirty=false;closeModal("siteModal");
  }
  el("siteForm").addEventListener("input",()=>{siteFormDirty=true;});
