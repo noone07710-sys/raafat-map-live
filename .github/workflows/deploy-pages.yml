@@ -154,15 +154,16 @@ jobs:
           // A native image chooser must never trigger the global Escape handler
           // and hide the site editor. Check the independent upload button, preview
           // gallery and guard for Windows/iOS chooser focus-return events.
-          assert.match(ui,/id="fPhotosTrigger" type="button"/,'Upload picker must not submit or close the form');
-          assert.match(ui,/id="photoPreviews"/,'Image preview gallery must be present');
+          const photoUi=fs.readFileSync('index.html','utf8');
+          assert.match(photoUi,/id="fPhotosTrigger" type="button"/,'Upload picker must not submit or close the form');
+          assert.match(photoUi,/id="photoPreviews"/,'Image preview gallery must be present');
           assert.match(app,/function photoPickerGuardActive\(/,'Native picker guard is required');
           assert.match(app,/photoPickerGuardActive\(\)\|\|document\.querySelector\("\.raafat-select-menu"\)/,
             'Escape must not dismiss the site editor while choosing photos');
           assert.match(app,/fileInput\.addEventListener\("change"/,'File-selection handler missing');
           assert.match(app,/previewSelectedPhotos\(\)/,'Selected images must preview immediately');
           assert.match(app,/URL\.revokeObjectURL/,'Image previews must release their blob URLs');
-          assert.ok(!ui.includes('class="raafat-file-drop" for="fPhotos"'),
+          assert.ok(!photoUi.includes('class="raafat-file-drop" for="fPhotos"'),
             'Never use a nested file picker label again');
           assert.match(theme,/#bookingModal \.booking-tier-card>strong/,'Day mode cards must use dark text');
           assert.match(theme,/#bookingModal \.booking-step-title span/,'Day mode headings must use dark text');
