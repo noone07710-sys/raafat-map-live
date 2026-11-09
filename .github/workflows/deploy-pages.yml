@@ -102,6 +102,24 @@ jobs:
           assert.ok(bookingSample.includes('RA-5'),'Short booking reference absent');
           assert.ok(bookingSample.includes('07801234567'),'Iraqi phone corrupted');
           assert.ok(bookingSample.includes('"بانتظار المراجعة"'),'Booking state translation missing');
+          // Customer-booking regression: dropdowns MUST render over the z=13000
+          // booking backdrop and must remain open when scrolling the form.
+          const dropdown=fs.readFileSync('admin-dropdown.js','utf8');
+          const theme=fs.readFileSync('theme-day.css','utf8');
+          assert.match(dropdown,/menu\.style\.zIndex="25000"/,'Select portal must clear booking modal');
+          assert.match(theme,/\.raafat-select-menu\s*\{z-index:25000!important/,'Custom menus must have high stacking order');
+          assert.match(dropdown,/schedulePosition\(\)/,'Modal scroll must reposition dropdown, not close it');
+          assert.match(dropdown,/filter\(option=>!option\.hidden\)/,'Hidden months must stay hidden');
+          assert.match(dropdown,/focus\(\{preventScroll:true\}\)/,'Opening a dropdown must not scroll the modal away');
+          assert.match(dropdown,/select\.setAttribute\("aria-hidden","true"\)/,'Native select must not steal user touch');
+          assert.match(theme,/#bookingModal select\.raafat-native-select\s*\{\s*display:none!important/,'Native picker must be hidden');
+          assert.match(app,/state\.osmBasemap=osm/,'OSM layer must persist for daytime switching');
+          assert.match(app,/if\(visualTheme\(\)==="day"\)revealFallbackIfReady\(\)/,'Daytime map must show original readable OSM tiles');
+          assert.match(app,/request!==premiumMapGeneration/,'An obsolete dark tile load must not override day theme');
+          assert.match(theme,/#bookingModal \.booking-tier-card>strong/,'Day mode cards must use dark text');
+          assert.match(theme,/#bookingModal \.booking-step-title span/,'Day mode headings must use dark text');
+          const ui=fs.readFileSync('index.html','utf8');
+          assert.match(ui,/id="bookingClose"[\s\S]{0,350}<svg class="raafat-booking-close-icon"/,'Booking close must have branded SVG');
           console.log('Booking, navigation and inventory regression contracts passed');
           MODULE
           node <<'NODE'
