@@ -1,0 +1,776 @@
+/* RAAFAT • DAYLIGHT SYSTEM / 2026-11-09
+   Single final-scope daytime palette. This stylesheet loads LAST and never
+   changes night mode or the actual original logo image.
+   Paper #FFFCF8, ivory #F7F0E7, ink #352F2B, copper #A95C25.
+*/
+html[data-raafat-theme="day"]{
+ color-scheme:light;
+ --day-canvas:#f8f5f0;--day-paper:#fffcf8;--day-paper-alt:#f7efe5;
+ --day-paper-hover:#f2e3d1;--day-ink:#352f2b;--day-ink-strong:#282724;
+ --day-muted:#71675e;--day-edge:#e4d2bc;--day-accent:#a95c25;
+ --day-accent-dark:#98531f;--day-shadow:0 9px 28px rgba(101,72,44,.075);
+}
+html[data-raafat-theme="day"] body,
+html[data-raafat-theme="day"] .app-shell{
+ background:var(--day-canvas)!important;color:var(--day-ink)!important;
+}
+/* HEADER: no backdrop for the logo, no broad green background anywhere. */
+html[data-raafat-theme="day"] .header{
+ background:#fffcf8!important;border-bottom:1px solid var(--day-edge)!important;
+ box-shadow:0 3px 17px rgba(101,72,44,.07)!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .header .identity,
+html[data-raafat-theme="day"] .header .logo,
+html[data-raafat-theme="day"] .header .brand-text{
+ background:none!important;border:0!important;box-shadow:none!important;
+ backdrop-filter:none!important;
+}
+html[data-raafat-theme="day"] .header .brand{color:var(--day-ink-strong)!important}
+html[data-raafat-theme="day"] .header .brand span{color:var(--day-accent)!important}
+html[data-raafat-theme="day"] .header .brand-caption{color:var(--day-muted)!important}
+html[data-raafat-theme="day"] .header .logo img{
+ filter:none!important;-webkit-filter:none!important;
+ mix-blend-mode:normal!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] .header-actions .raafat-header-icon,
+html[data-raafat-theme="day"] .header-actions #raafatThemeToggle{
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .header-actions .raafat-header-icon:hover,
+html[data-raafat-theme="day"] .header-actions #raafatThemeToggle:hover{
+ background:var(--day-paper-hover)!important;border-color:#d1a779!important;
+}
+html[data-raafat-theme="day"] .header-actions #bookNow{
+ background:var(--day-accent)!important;color:#fff!important;
+ border:1px solid var(--day-accent-dark)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .header-actions #bookNow :is(span,svg){color:#fff!important;stroke:currentColor}
+/* MAIN CATALOG & FILTERS. */
+html[data-raafat-theme="day"] .panel.browse,
+html[data-raafat-theme="day"] .browse,
+html[data-raafat-theme="day"] .panel.details,
+html[data-raafat-theme="day"] .details{
+ background:var(--day-canvas)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .browse :is(h1,h2,h3,h4,.catalog-title,.list-heading,.list-heading strong,.coverage-head,.coverage-head span,.input-label,.location-card strong,.region-group-title){
+ color:var(--day-ink-strong)!important;text-shadow:none!important;
+}
+html[data-raafat-theme="day"] .browse :is(p,small,.hint,.empty,.card-address,.location-card small,.listing-straight-distance){
+ color:var(--day-muted)!important;opacity:1!important;text-shadow:none!important;
+}
+html[data-raafat-theme="day"] .browse :is(.coverage-box,.filter-disclosure,.stats .stat,.region-group,.city-chip,.listing,.location-card){
+ background:var(--day-paper)!important;
+ border-color:var(--day-edge)!important;color:var(--day-ink)!important;
+ box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .browse .listing{
+ background:transparent!important;box-shadow:none!important;border:0!important;
+}
+html[data-raafat-theme="day"] .browse :is(.coverage-box,.filter-disclosure,.stats .stat){
+ background:var(--day-paper)!important;
+}
+html[data-raafat-theme="day"] .browse .coverage-head{
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .browse .region-group summary,
+html[data-raafat-theme="day"] .browse .region-group-title,
+html[data-raafat-theme="day"] .browse .region-group-trailing{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .browse .region-group summary:hover,
+html[data-raafat-theme="day"] .browse .city-chip:hover{
+ background:var(--day-paper-hover)!important;
+}
+html[data-raafat-theme="day"] .browse .region-group-icon,
+html[data-raafat-theme="day"] .browse .region-arrow,
+html[data-raafat-theme="day"] .browse .filter-disclosure-chevron{
+ background:var(--day-paper-alt)!important;color:var(--day-accent)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .browse .region-group-icon svg,
+html[data-raafat-theme="day"] .browse .filter-disclosure svg{
+ color:var(--day-accent)!important;stroke:currentColor!important;
+}
+html[data-raafat-theme="day"] .browse .stats .stat :is(strong,b){
+ color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] .browse .stats .stat :is(span,small){color:var(--day-muted)!important}
+html[data-raafat-theme="day"] .browse input,
+html[data-raafat-theme="day"] .browse select{
+ background:var(--day-paper)!important;border:1px solid var(--day-edge)!important;
+ color:var(--day-ink)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .browse input::placeholder{color:#8b7d6f!important;opacity:1}
+html[data-raafat-theme="day"] .browse :is(input,select):focus{
+ border-color:var(--day-accent)!important;box-shadow:0 0 0 3px rgba(182,106,49,.12)!important;
+}
+html[data-raafat-theme="day"] .browse :is(.filter-disclosure>summary,.filter-disclosure>summary span){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .browse .clear-filters{
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .browse .clear-filters svg{
+ color:var(--day-accent-dark)!important;stroke:currentColor!important;
+}
+/* Featured available spaces, no dark-green cards or greyed-out type. */
+html[data-raafat-theme="day"] .browse .list-heading{
+ border-color:var(--day-edge)!important;color:var(--day-ink-strong)!important;
+ background:transparent!important;
+}
+html[data-raafat-theme="day"] .browse .list-heading span{
+ background:#f6e9d8!important;color:var(--day-accent-dark)!important;
+ border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .browse .listing-quick-actions{background:transparent!important}
+html[data-raafat-theme="day"] .browse .listing-quick-button{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .browse .listing-quick-button svg{
+ color:var(--day-accent)!important;stroke:currentColor!important;
+}
+html[data-raafat-theme="day"] .browse .listing-quick-button:hover,
+html[data-raafat-theme="day"] .browse .listing-quick-button[aria-pressed="true"]{
+ background:var(--day-paper-hover)!important;color:var(--day-accent-dark)!important;
+ border-color:#cfa477!important;
+}
+html[data-raafat-theme="day"] .browse .location-card,
+html[data-raafat-theme="day"] .browse .location-card:hover{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .browse .location-card.active{
+ background:#fff1df!important;border:1px solid #c98d55!important;
+ box-shadow:inset 3px 0 var(--day-accent),var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .browse .location-card :is(strong,b,.location-name){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] .browse .location-card :is(small,.card-address,.listing-straight-distance){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] .browse .location-card .card-meta span{
+ background:var(--day-paper-alt)!important;color:#695e51!important;
+ border:1px solid var(--day-edge)!important;opacity:1!important;
+}
+/* Category class remains visually recognizable, but no emerald fills. */
+html[data-raafat-theme="day"] .browse .listing-category-tag,
+html[data-raafat-theme="day"] .browse .detail-category-tag{
+ background:#f4dfc8!important;color:#8f4c1e!important;
+ border:1px solid #ddb58c!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .browse .listing-category-tag.category-B{
+ background:#eaf0fa!important;color:#355d8a!important;border-color:#c1d2e8!important;
+}
+html[data-raafat-theme="day"] .browse .listing-category-tag.category-C{
+ background:#f1e9f8!important;color:#6b507f!important;border-color:#d5c1e4!important;
+}
+html[data-raafat-theme="day"] .browse .listing-category-tag.category-E{
+ background:#fae9e5!important;color:#9d594d!important;border-color:#ecc9c1!important;
+}
+html[data-raafat-theme="day"] .browse .status,
+html[data-raafat-theme="day"] .browse .status.available{
+ background:#f9ecdc!important;color:#805123!important;
+ border:1px solid #e3c59c!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] .browse .status.reserved{
+ background:#fff0d7!important;color:#966021!important;border-color:#e8c89e!important;
+}
+html[data-raafat-theme="day"] .browse .status.booked{
+ background:#eaf0f8!important;color:#3b6186!important;border-color:#bfd1e5!important;
+}
+html[data-raafat-theme="day"] .browse .status.maintenance{
+ background:#fae8e4!important;color:#984d45!important;border-color:#dfb9b0!important;
+}
+html[data-raafat-theme="day"] .browse .empty,
+html[data-raafat-theme="day"] .browse .list-empty{
+ background:var(--day-paper)!important;color:var(--day-muted)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+/* DETAIL PANEL: all surfaces ivory, text charcoal, copper accents. */
+html[data-raafat-theme="day"] .details,
+html[data-raafat-theme="day"] .details .details-content{
+ background:var(--day-canvas)!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .details :is(h2,h3,h4,h5,h6,.detail-name){
+ color:var(--day-ink-strong)!important;text-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details :is(.detail-location,.detail-code,.detail-description,.detail-line span){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty{
+ background:var(--day-paper)!important;color:var(--day-muted)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty .empty-icon{
+ background:var(--day-paper-alt)!important;color:var(--day-accent)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .detail-empty :is(span,p,small){color:var(--day-muted)!important;opacity:1!important}
+html[data-raafat-theme="day"] .details :is(.vip-site-detail,.vip-site-overview,.vip-site-status-row,.vip-site-metric-grid,.vip-site-action-stack,.vip-site-action-grid,.vip-site-secondary-actions,.vip-site-specification,.vip-site-description){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-detail{
+ border:1px solid var(--day-edge)!important;box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-hero.no-photo,
+html[data-raafat-theme="day"] .details .vip-site-hero.no-photo .vip-site-hero-fallback{
+ background:#f3e7d8!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-hero.no-photo .vip-site-hero-shade{
+ background:none!important;opacity:0!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-hero.no-photo :is(h3,strong,b,.vip-detail-ref){
+ color:var(--day-ink-strong)!important;text-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-hero.no-photo :is(p,small,.vip-hero-caption){
+ color:var(--day-muted)!important;text-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-hero.has-photo .vip-site-hero-bottom :is(h3,p){
+ color:#fff!important;text-shadow:0 2px 9px rgba(0,0,0,.6)!important;
+}
+html[data-raafat-theme="day"] .details .vip-detail-ref,
+html[data-raafat-theme="day"] .details .vip-detail-class{
+ background:#f9e8d2!important;color:#8d4d22!important;
+ border:1px solid #dfb58b!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-hero.has-photo .vip-detail-ref,
+html[data-raafat-theme="day"] .details .vip-site-hero.has-photo .vip-detail-class{
+ background:rgba(46,38,31,.78)!important;color:#fff!important;border-color:rgba(255,255,255,.38)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-intro :is(h4,strong){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-intro :is(p,small,.vip-section-eyebrow){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-metric{
+ background:var(--day-paper-alt)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-metric :is(strong,b){
+ color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-metric :is(small,em,span){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-specification,
+html[data-raafat-theme="day"] .details .vip-site-description{
+ background:var(--day-paper)!important;border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-specification>summary{
+ background:var(--day-paper-alt)!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-specification>summary :is(b,strong){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-specification>summary small,
+html[data-raafat-theme="day"] .details .vip-site-description p{color:var(--day-muted)!important}
+html[data-raafat-theme="day"] .details .vip-spec-arrow{
+ background:#f2dfc8!important;color:var(--day-accent-dark)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-spec-grid{
+ background:var(--day-edge)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-spec-cell{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-spec-cell strong{
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-spec-cell small{
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-description strong{color:var(--day-ink-strong)!important}
+html[data-raafat-theme="day"] .details .vip-site-action-grid :is(.btn,.btn-ghost),
+html[data-raafat-theme="day"] .details .vip-site-secondary-actions :is(.btn,.btn-ghost){
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;
+ border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-action-grid :is(svg,span),
+html[data-raafat-theme="day"] .details .vip-site-secondary-actions svg{
+ color:var(--day-accent-dark)!important;stroke:currentColor!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-book-button,
+html[data-raafat-theme="day"] .details .vip-site-action-stack .vip-site-book-button{
+ background:var(--day-accent)!important;color:#fff!important;
+ border-color:var(--day-accent-dark)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-book-button :is(svg,span){
+ color:#fff!important;stroke:currentColor!important;
+}
+html[data-raafat-theme="day"] .details .vip-site-state{
+ color:var(--day-accent-dark)!important;background:#f7ebda!important;
+ border:1px solid var(--day-edge)!important;
+}
+/* MAP UI CHROME ONLY. Actual roads, water and parks retain cartographic colors. */
+html[data-raafat-theme="day"] .map-area{
+ background:#f4efe8!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .map-area :is(.map-chip,.map-region-label,.vip-tool-button,.vip-legend,.map-site-cta,.raafat-location-announcer,.booking-map-picker,.raafat-route-panel,.raafat-route-compact,.vip-beacon-label){
+ background:rgba(255,252,248,.97)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;
+ box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .map-area :is(.map-chip,.map-region-label,.vip-tool-button,.vip-legend,.map-site-cta,.booking-map-picker,.raafat-route-panel) :is(strong,b,p,span,small){
+ color:var(--day-ink)!important;text-shadow:none!important;
+}
+html[data-raafat-theme="day"] .map-area :is(.map-chip,.map-region-label,.vip-legend,.booking-map-picker) :is(small,p){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] .map-area .vip-beacon-label :is(strong,small){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .map-area :is(.vip-tool-button,.map-home,.raafat-gps-locate,.raafat-route-fab){
+ background:var(--day-paper)!important;color:var(--day-accent-dark)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .map-area :is(.vip-tool-button,.map-home,.raafat-gps-locate,.raafat-route-fab) svg{
+ color:var(--day-accent-dark)!important;stroke:currentColor!important;
+}
+html[data-raafat-theme="day"] .map-area .raafat-route-fab.is-active{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] .map-area .raafat-route-fab.is-active svg{
+ color:#fff!important;stroke:#fff!important;
+}
+html[data-raafat-theme="day"] .map-area .map-site-cta :is(.map-site-eyebrow,.vip-site-state){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] .map-area .map-site-cta .map-site-buttons :is(button,a){
+ background:var(--day-accent)!important;color:#fff!important;
+ border-color:var(--day-accent-dark)!important;
+}
+/* CONTROL CENTER: remove the entire green-tinted hierarchy in day mode. */
+html[data-raafat-theme="day"] #adminDashboard.raafat-control-v3{
+ --ra-bg:var(--day-canvas);--ra-surface:var(--day-paper);
+ --ra-surface2:var(--day-paper-alt);--ra-line:var(--day-edge);
+ --ra-text:var(--day-ink);--ra-muted:var(--day-muted);
+ --ra-mint:var(--day-accent);--ra-gold:var(--day-accent);
+ background:rgba(62,47,33,.27)!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-shell{
+ background:var(--day-canvas)!important;border-color:var(--day-edge)!important;
+ box-shadow:0 20px 70px rgba(70,51,34,.15)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-sidebar{
+ background:#f5ecdf!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-workspace{
+ background:var(--day-canvas)!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-dashboard-header,.admin-dashboard-footer){
+ background:var(--day-paper)!important;color:var(--day-muted)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-sidebar-logo{
+ background:transparent!important;border:0!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-sidebar-brand strong,.raafat-sidebar-brand div>span,.raafat-sidebar-brand small,.raafat-sidebar-nav-title,.raafat-sidebar-security,.raafat-sidebar-security span){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs button[data-dash-tab]{
+ background:transparent!important;color:var(--day-ink)!important;
+ border:1px solid transparent!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs button[data-dash-tab]:hover{
+ background:var(--day-paper-hover)!important;color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs button[data-dash-tab].active{
+ background:#edd6ba!important;border:1px solid #d5ad82!important;
+ color:var(--day-accent-dark)!important;box-shadow:inset 3px 0 var(--day-accent)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-tabs .raafat-admin-svg{
+ color:var(--day-accent)!important;stroke:currentColor!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-identity-ready,.raafat-admin-identity,.raafat-user-avatar){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-identity-ready,.raafat-admin-identity) :is(strong,small,em,label){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-identity button{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-dashboard-title h2,.admin-section-heading h3,.admin-section-heading h4,.raafat-top-user strong,.raafat-workspace-breadcrumb strong,.raafat-identity-ready strong){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-dashboard-eyebrow,.admin-section-heading p,.raafat-workspace-breadcrumb,.raafat-top-user small,.admin-note,.admin-table-empty,.admin-staff-row small){
+ color:var(--day-muted)!important;
+}
+/* Home/overview and KPI cards. */
+html[data-raafat-theme="day"] #adminDashboard .raafat-overview-welcome{
+ background:linear-gradient(110deg,#fff9f0,#f4e2cd)!important;
+ border:1px solid var(--day-edge)!important;color:var(--day-ink)!important;
+ box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-copy h3{
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-copy p{
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-overline,.raafat-welcome-art,.raafat-welcome-art small){
+ color:var(--day-accent)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-art-orbit{
+ background:#f0ddc4!important;color:var(--day-accent)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-ctas button{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-welcome-ctas button+button{
+ background:var(--day-paper)!important;color:var(--day-accent-dark)!important;border-color:#d8b593!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-overview-stat,.admin-widget,.raafat-booking-insights>div,.admin-inventory-tools,.admin-bulkbar,.admin-table-scroll,.admin-staff-row,.admin-settings-group,.admin-staff-form,.admin-settings-save,.raafat-activity-table){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-overview-stat:before{
+ background:var(--day-accent)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-overview-stat strong,.raafat-booking-insights strong,.admin-chart-item strong,.admin-widget h4,.admin-widget-title h4){
+ color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-overview-stat small,.raafat-booking-insights small,.admin-chart-item span,.admin-chart-item small,.admin-staff-row small,.admin-note){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-chart-track{
+ background:#eee1d1!important;border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-chart-track i{
+ background:linear-gradient(90deg,#dca66f,#b96d37)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-shortcuts button{
+ background:var(--day-paper-alt)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;
+}
+/* Data tables, audit log, staff, filters and settings. */
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel{
+ color:var(--day-ink)!important;background:transparent!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(h2,h3,h4,h5,h6,label,p,time){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel :is(small,.admin-note,.admin-section-heading p,.raafat-activity-table time){
+ color:var(--day-muted)!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) thead th{
+ background:#f0e1cd!important;color:#5d4734!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) tbody td{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:#eadcc9!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) tbody tr:hover td{
+ background:#faf0e2!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) tbody :is(strong,b,small,span){
+ color:var(--day-ink)!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) tbody small{
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) .admin-row-actions button:not(.admin-danger-mini),
+html[data-raafat-theme="day"] #adminDashboard .admin-staff-actions button:not(.admin-danger-mini),
+html[data-raafat-theme="day"] #adminDashboard .admin-bulkbar button{
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;
+ border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table .admin-danger-mini,
+html[data-raafat-theme="day"] #adminDashboard .admin-danger-mini{
+ background:#f9e9e4!important;color:#9b4b40!important;border:1px solid #e7c2b8!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-activity-table .audit-action{
+ background:#f5e9d9!important;color:#92591d!important;border:1px solid #e5ca9f!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-activity-table .audit-action.is-delete{
+ background:#f9e6e2!important;color:#9b4b40!important;border-color:#e1b8ae!important;
+}
+/* Specificity below intentionally beats generic table span/strong colors. */
+html[data-raafat-theme="day"] #adminDashboard .raafat-activity-table .audit-action,
+html[data-raafat-theme="day"] #adminDashboard .raafat-activity-table td span.audit-action{
+ color:#92591d!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-activity-table .audit-action.is-delete{
+ color:#9b4b40!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(input.input,textarea.input,input:not([type=checkbox]),textarea,.raafat-select-trigger,.input){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border:1px solid #d5bfa7!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(input,textarea)::placeholder{
+ color:#887969!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-select-trigger svg{
+ color:var(--day-accent-dark)!important;stroke:currentColor!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-settings-save .btn-primary,
+html[data-raafat-theme="day"] #adminDashboard .admin-staff-form .btn-primary,
+html[data-raafat-theme="day"] #adminDashboard .raafat-admin-identity button{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.admin-booking-pager button,.raafat-audit-pager button,.admin-link){
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;
+ border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;border-color:var(--day-edge)!important;
+ box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu button{
+ background:transparent!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu button:hover{
+ background:var(--day-paper-hover)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-export-menu :is(strong,small){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-top-actions :is(.raafat-header-icon,.secondary,.admin-close){
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;
+ border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-top-actions #dashAddSite{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+/* Meaningful statuses, muted rather than fluorescent. */
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-status-chip.is-pending,.admin-table-status.reserved){
+ background:#f9ecd8!important;color:#8d591f!important;border:1px solid #e4c69e!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-status-chip.is-approved,.admin-table-status.available,.admin-publication.yes){
+ background:#f0e8d9!important;color:#805724!important;border:1px solid #ddc9a7!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-status-chip.is-rejected,.admin-table-status.maintenance){
+ background:#f9e5e1!important;color:#9b4943!important;border:1px solid #e5bcb3!important;
+}
+html[data-raafat-theme="day"] #adminDashboard :is(.raafat-status-chip.is-completed,.admin-table-status.booked){
+ background:#e9eff8!important;color:#3e6283!important;border:1px solid #c5d3e4!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-publication.no{
+ background:#f0eee9!important;color:#676159!important;border:1px solid #d9d1c5!important;
+}
+/* Preserve badge status colors, including inside grid/table cells. */
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table td .raafat-status-chip.is-approved{
+ color:#805724!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table td .raafat-status-chip.is-rejected{
+ color:#9b4943!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-data-table td .raafat-status-chip.is-completed{
+ color:#3e6283!important;
+}
+/* BOOKING & TRACKING: remove old green panels, preserve strong contrast. */
+html[data-raafat-theme="day"] :is(#bookingModal,#bookingTracking) :is(.booking-modal,.booking-track-card){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #bookingModal :is(.booking-form,.booking-grid,.booking-sites-picker,.booking-site-chip,.booking-no-sites,.booking-inclusions,.booking-price-card,.booking-total-summary,.booking-package-info,.booking-success,.booking-tier-card,.booking-result-actions){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-modal-head{
+ background:#f6e9d9!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-modal-head :is(h2,strong){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-modal-head :is(p,small){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] #bookingModal :is(.booking-step-title,.booking-tier-card strong,.booking-sites-header strong,.booking-package-info strong,.booking-success h3,.booking-total-summary b,.booking-site-chip strong){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] #bookingModal :is(.booking-tier-card small,.booking-tier-bottom,.booking-legal,.booking-hint,.booking-no-sites,.booking-site-chip small,.booking-price-card small,.booking-package-info p,.booking-success p){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-tier-card.selected{
+ background:#f6e4ce!important;border:2px solid #cb8a50!important;
+ box-shadow:0 0 0 2px rgba(182,106,49,.12)!important;
+}
+html[data-raafat-theme="day"] #bookingModal :is(.booking-price-card,.booking-total-summary,.booking-sites-picker,.booking-inclusions){
+ background:var(--day-paper-alt)!important;
+}
+html[data-raafat-theme="day"] #bookingModal :is(.booking-price-card strong,.booking-total-summary b,.booking-tier-bottom){
+ color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #bookingModal :is(input,.raafat-select-trigger,textarea){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border:1px solid #d5bea2!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-open-map,
+html[data-raafat-theme="day"] #bookingModal .booking-result-actions .btn-primary,
+html[data-raafat-theme="day"] #bookingModal .booking-submit{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-result-actions .btn-ghost{
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-site-chip-code,
+html[data-raafat-theme="day"] #bookingModal .tracking-state,
+html[data-raafat-theme="day"] #bookingTracking .tracking-state{
+ background:#f1e2cc!important;color:var(--day-accent-dark)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .raafat-select-menu{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border:1px solid #d8b99b!important;box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .raafat-select-option{
+ background:transparent!important;color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .raafat-select-option:hover,
+html[data-raafat-theme="day"] .raafat-select-option:focus-visible,
+html[data-raafat-theme="day"] .raafat-select-option[aria-selected="true"]{
+ background:var(--day-paper-hover)!important;color:var(--day-accent-dark)!important;
+}
+/* EDITOR & AUTH MODALS. Custom dropdowns, upload and dialogs get identical colors. */
+html[data-raafat-theme="day"] #siteModal .modal.wide,
+html[data-raafat-theme="day"] #siteModal #siteForm,
+html[data-raafat-theme="day"] #siteModal .raafat-package-picker,
+html[data-raafat-theme="day"] #siteModal .raafat-package-size-summary{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #siteModal .modal-head,
+html[data-raafat-theme="day"] #siteModal .modal.wide>.modal-head{
+ background:var(--day-paper-alt)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #siteModal :is(h2,h3,label,.raafat-package-picker-heading strong,.section-caption,.raafat-package-size-summary strong){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] #siteModal :is(.hint,.raafat-dimension-note,.raafat-package-picker-heading small,.raafat-package-size-summary small,.raafat-package-size-summary span){
+ color:var(--day-muted)!important;
+}
+html[data-raafat-theme="day"] #siteModal :is(.input,.raafat-select-trigger,textarea){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card{
+ background:var(--day-paper-alt)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card.is-active{
+ background:#f1ddc2!important;border:2px solid #c38446!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-package-card :is(strong,small){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-package-symbol{
+ color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #siteModal .section-caption,
+html[data-raafat-theme="day"] #siteModal .raafat-dimension-note{
+ background:var(--day-paper-alt)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-file-drop,
+html[data-raafat-theme="day"] #siteModal .publish-line,
+html[data-raafat-theme="day"] #siteModal .coordinate-buttons button{
+ background:var(--day-paper-alt)!important;border-color:var(--day-edge)!important;
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-file-drop :is(strong,small){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-file-pill,
+html[data-raafat-theme="day"] #siteModal .form-actions .btn-primary{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] #siteModal .form-actions .btn-ghost{
+ background:var(--day-paper-alt)!important;color:var(--day-accent-dark)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] #siteModal .raafat-site-editor-close{
+ background:var(--day-paper)!important;color:var(--day-accent-dark)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .modal-backdrop:not(#siteModal):not(#bookingModal) .modal{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;box-shadow:var(--day-shadow)!important;
+}
+html[data-raafat-theme="day"] .modal-backdrop:not(#siteModal):not(#bookingModal) .modal :is(label,h2,h3,strong){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .modal-backdrop:not(#siteModal):not(#bookingModal) .modal :is(.input,textarea){
+ background:var(--day-paper)!important;color:var(--day-ink)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .raafat-dialog-layer .raafat-dialog-card{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .raafat-dialog-layer :is(h2,.raafat-dialog-message,.raafat-dialog-detail,.raafat-dialog-label){
+ color:var(--day-ink)!important;
+}
+html[data-raafat-theme="day"] .raafat-dialog-layer :is(.raafat-dialog-verification,.raafat-dialog-input,.raafat-dialog-copy){
+ background:var(--day-paper-alt)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .raafat-dialog-layer .raafat-dialog-confirm{
+ background:var(--day-accent)!important;color:#fff!important;border-color:var(--day-accent-dark)!important;
+}
+html[data-raafat-theme="day"] .raafat-dialog-layer .raafat-dialog-cancel{
+ background:var(--day-paper-alt)!important;color:var(--day-ink)!important;border-color:var(--day-edge)!important;
+}
+html[data-raafat-theme="day"] .toast{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border-color:var(--day-edge)!important;box-shadow:var(--day-shadow)!important;
+}
+/* On mobile, each table row must be paper not charcoal; maintain text contrast. */
+@media(max-width:640px){
+ html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) tbody tr{
+  background:var(--day-paper)!important;color:var(--day-ink)!important;
+  border:1px solid var(--day-edge)!important;box-shadow:var(--day-shadow)!important;
+ }
+ html[data-raafat-theme="day"] #adminDashboard :is(.admin-data-table,.raafat-activity-table) tbody td{
+  background:transparent!important;color:var(--day-ink)!important;
+ }
+ html[data-raafat-theme="day"] #adminDashboard .admin-dashboard-content{
+  background:var(--day-canvas)!important;
+ }
+}
+
+/* Extra-specific rules beat older admin-tab-panel dark selectors. */
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-staff-row,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-settings-group{
+ background:var(--day-paper)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-staff-row :is(strong,small,span),
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-settings-group :is(strong,small,span){
+ color:var(--day-ink)!important;opacity:1!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-table-status.available,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-publication.yes,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-status-chip.is-approved{
+ background:#f0e8d9!important;color:#805724!important;border:1px solid #ddc9a7!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-table-status.reserved,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-status-chip.is-pending{
+ background:#f9ecd8!important;color:#8d591f!important;border:1px solid #e4c69e!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .admin-table-status.booked,
+html[data-raafat-theme="day"] #adminDashboard .admin-tab-panel .raafat-status-chip.is-completed{
+ background:#e9eff8!important;color:#3e6283!important;border:1px solid #c5d3e4!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-sites-picker{
+ background:var(--day-paper-alt)!important;color:var(--day-ink)!important;
+ border:1px solid var(--day-edge)!important;box-shadow:none!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-sites-picker :is(strong,b){
+ color:var(--day-ink-strong)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-sites-picker :is(small,p,span){
+ color:var(--day-muted)!important;
+}
