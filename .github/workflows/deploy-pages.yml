@@ -6,6 +6,9 @@ on:
     paths:
       - 'index.html'
       - 'style.css'
+      - 'admin-v3.css'
+      - 'ui-dialog.js'
+      - 'admin-dropdown.js'
       - 'app.js'
       - 'booking.js'
       - 'routing.js'
@@ -41,14 +44,16 @@ jobs:
       - name: Validate JavaScript and essential UI controls
         shell: bash
         run: |
-          for file in app.js routing.js booking.js admin-dashboard.js brand-map.js google-basemap.js config.js; do
+          for file in app.js routing.js booking.js admin-dashboard.js ui-dialog.js admin-dropdown.js brand-map.js google-basemap.js config.js; do
             node --input-type=module --check < "$file"
           done
           node --input-type=module <<'MODULE'
           import fs from 'node:fs';
           import assert from 'node:assert/strict';
           const code = fs.readFileSync('booking.js', 'utf8');
-          const { packageForSite } = await import('data:text/javascript;base64,' + Buffer.from(code).toString('base64'));
+          const pricingFn = code.match(/export function packageForSite\(site\)\{[\s\S]*?\n\}/)?.[0];
+          assert.ok(pricingFn, 'Site classification function must exist');
+          const { packageForSite } = await import('data:text/javascript;base64,' + Buffer.from(pricingFn).toString('base64'));
           for (const [w,h,expected] of [[1.2,2,'A'],[2,3,'B'],[2.5,3.5,'C'],[3,4,'D']]) {
             assert.equal(packageForSite({width_m:w,height_m:h}), expected);
           }
@@ -60,6 +65,15 @@ jobs:
           assert.match(code,/\.eq\("status",booking\.status\)/);
           assert.match(app,/if\(currentRequest!==siteLoadSequence\)return/);
           assert.match(admin,/visibleIds\.has\(id\)/);
+          assert.match(code,/booking_no/,'Booking management must use sequential numbers');
+          assert.match(admin,/dashIdentityLocked/,'Staff name must be locked');
+          for(const p of ['app.js','booking.js','admin-dashboard.js']){
+            const src=fs.readFileSync(p,'utf8');
+            assert.ok(!/\b(?:window\.)?(?:confirm|prompt|alert)\s*\(/.test(src),'Native browser dialog found in '+p);
+          }
+          for(const p of ['ui-dialog.js','admin-dropdown.js']){
+            assert.ok(fs.existsSync(p),'Missing custom UI: '+p);
+          }
           assert.match(app,/hard_delete_site/, 'Site deletion must use audited server RPC');
           assert.match(code,/hard_delete_booking/, 'Booking deletion must use audited server RPC');
           assert.match(admin,/set_my_staff_name/, 'Staff identity editor must exist');
@@ -80,18 +94,21 @@ jobs:
             'dashActivityTab', 'dashActivityRows', 'dashActivityCount',
             'dashActivitySearch', 'dashActivityEntity',
             'dashActivityRefresh', 'dashActivityPrev', 'dashActivityNext',
-            'dashStaffName'
+            'dashStaffName','dashIdentityLocked','dashAdminGreeting',
+            'dashCurrentSection','dashBookingTotalMetric','dashBookingPendingMetric'
           ];
           const missing = required.filter(id => !html.includes('id="' + id + '"'));
           if (missing.length) throw new Error('Missing essential UI elements: ' + missing.join(', '));
-          const css = fs.readFileSync('style.css', 'utf8');
-          let depth = 0;
-          for (const char of css) {
-            if (char === '{') depth++;
-            else if (char === '}') depth--;
-            if (depth < 0) throw new Error('Unbalanced CSS closing brace');
+          for(const file of ['style.css','admin-v3.css']){
+            const css = fs.readFileSync(file,'utf8');
+            let depth=0;
+            for(const char of css){
+              if(char==='{')depth++;
+              else if(char==='}')depth--;
+              if(depth<0)throw Error('Unbalanced CSS closing brace: '+file);
+            }
+            if(depth!==0)throw Error('Unbalanced CSS opening brace: '+file);
           }
-          if (depth !== 0) throw new Error('Unbalanced CSS opening brace');
           console.log('Raafat static checks passed');
           NODE
 
@@ -99,7 +116,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          cp index.html style.css app.js booking.js routing.js admin-dashboard.js brand-map.js google-basemap.js config.js _site/
+          cp index.html style.css admin-v3.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js brand-map.js google-basemap.js config.js _site/
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
