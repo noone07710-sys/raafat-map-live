@@ -55,6 +55,56 @@ let adminDashboard=null;
 let bookingController=null;
 let navigationController=null;
 let siteFormDirty=false;
+let sitePhotoPickerActive=false;
+let sitePhotoPickerGuardUntil=0;
+let sitePhotoPreviewUrls=[];
+function photoPickerGuardActive(){
+ return sitePhotoPickerActive||Date.now()<sitePhotoPickerGuardUntil;
+}
+function finishPhotoPicker(){
+ sitePhotoPickerActive=false;
+ // Native Windows/iOS file pickers can forward their close/Escape event.
+ // Keep the editor open until the OS dialog finishes handing focus back.
+ sitePhotoPickerGuardUntil=Date.now()+1800;
+}
+function resetPhotoPreviews(){
+ for(const url of sitePhotoPreviewUrls)URL.revokeObjectURL(url);
+ sitePhotoPreviewUrls=[];
+ const previews=el("photoPreviews");
+ if(previews){previews.replaceChildren();previews.hidden=true;}
+}
+function previewSelectedPhotos(){
+ const input=el("fPhotos");
+ const selected=[...(input.files||[])];
+ resetPhotoPreviews();
+ const accepted=new Set(["image/jpeg","image/png","image/webp"]);
+ const invalid=selected.find(file=>!accepted.has(file.type)||file.size<=0||file.size>5*1024*1024);
+ if(selected.length>12||invalid){
+   input.value="";
+   el("photoInfo").textContent="اختر حتى 12 صورة JPG أو PNG أو WebP، وأقل من 5 ميغابايت للصورة.";
+   toast(selected.length>12?"الحد الأقصى 12 صورة في المرة الواحدة.":"الصورة "+(invalid?.name||"")+" غير مدعومة أو تتجاوز 5 ميغابايت.");
+   return;
+ }
+ const previews=el("photoPreviews");
+ for(const file of selected){
+   const url=URL.createObjectURL(file);
+   sitePhotoPreviewUrls.push(url);
+   const card=document.createElement("figure");
+   card.className="raafat-photo-preview";
+   const photo=document.createElement("img");
+   photo.src=url;photo.alt="معاينة "+file.name;photo.loading="lazy";
+   const caption=document.createElement("figcaption");
+   caption.textContent=file.name.length>32?file.name.slice(0,28)+"…":file.name;
+   card.append(photo,caption);
+   previews.appendChild(card);
+ }
+ previews.hidden=!selected.length;
+ el("photoInfo").textContent=selected.length
+   ?"تم اختيار "+selected.length+" صورة، وستُرفع عند الضغط على «حفظ القطعة»."
+   :"اختر صوراً لإضافتها إلى معرض القطعة.";
+ if(selected.length)siteFormDirty=true;
+}
+
 let premiumMapGeneration=0;
 function visualTheme(){return document.documentElement.dataset.raafatTheme==="day"?"day":"night";}
 function setVisualTheme(mode,{save=false}={}){
@@ -1173,6 +1223,9 @@ function openEditor(site=null){
  if(!state.staff){toast("هذا الإجراء للموظفين المصرح لهم فقط.");return;}
  state.editorId=site?.id||null;
  el("siteForm").reset();
+ resetPhotoPreviews();
+ sitePhotoPickerActive=false;
+ sitePhotoPickerGuardUntil=0;
  el("formTitle").textContent=site?"تعديل قطعة إعلانية":"إضافة موقع إعلاني";
  el("photoInfo").textContent=site?"الصور القديمة ستبقى. الصور الجديدة تُضاف عند الحفظ.":"الصور الجديدة تُرفع بعد حفظ موقع القطعة.";
  const get=(field,defaultValue="") => site?.[field]??defaultValue;
@@ -1303,6 +1356,7 @@ async function saveSite(event){
    if(error)throw error;
    const photoErrors=await uploadPhotos(data.id,files);
    siteFormDirty=false;
+   resetPhotoPreviews();
    closeModal("siteModal");
    state.editorId=null;
    await loadSites();
@@ -1519,12 +1573,30 @@ function events(){
  });
  async function requestCloseSiteModal(){
    if(siteFormDirty&&!(await raafatConfirm({title:"الخروج من تحرير القطعة",message:"عندك تغييرات ما محفوظة بعد. تريد تغلق النموذج وتفقد التغييرات؟",danger:true,confirmText:"تجاهل التغييرات"})))return;
-   siteFormDirty=false;closeModal("siteModal");
+   siteFormDirty=false;resetPhotoPreviews();closeModal("siteModal");
  }
  el("siteForm").addEventListener("input",()=>{siteFormDirty=true;});
- el("fPhotos").addEventListener("change",()=>{
-   const count=el("fPhotos").files?.length||0;
-   el("photoInfo").textContent=count?("تم اختيار "+count+" صورة • تُرفع بعد حفظ القطعة."):"اختر صوراً لإضافتها إلى معرض القطعة.";
+ const fileInput=el("fPhotos");
+ el("fPhotosTrigger").addEventListener("click",()=>{
+   if(state.busy)return;
+   sitePhotoPickerActive=true;
+   sitePhotoPickerGuardUntil=Date.now()+2500;
+   try{fileInput.click();}
+   catch(error){finishPhotoPicker();toast("تعذر فتح اختيار الصور. حاول مرة ثانية.");}
+ });
+ fileInput.addEventListener("change",()=>{
+   finishPhotoPicker();
+   previewSelectedPhotos();
+ });
+ // When a native picker is cancelled, a focus event usually arrives without
+ // a change event. Do not interpret the OS dismissal as a request to exit.
+ window.addEventListener("focus",()=>{
+   if(!sitePhotoPickerActive)return;
+   window.setTimeout(()=>{if(sitePhotoPickerActive)finishPhotoPicker();},250);
+ });
+ document.addEventListener("visibilitychange",()=>{
+   if(!document.hidden&&sitePhotoPickerActive)
+     window.setTimeout(()=>{if(sitePhotoPickerActive)finishPhotoPicker();},300);
  });
  el("siteForm").addEventListener("change",()=>{siteFormDirty=true;});
  document.querySelectorAll("[data-close]").forEach(button=>button.addEventListener("click",()=>{
@@ -1535,9 +1607,15 @@ function events(){
    modal.addEventListener("click",e=>{if(e.target===modal)closeModal(modal.id)});
  });
  document.addEventListener("keydown",e=>{
-   if(e.key==="Escape"){state.pick=false;el("mapPicking").hidden=true;
+   if(e.key==="Escape"){
+   // Chrome and iOS can forward the native file chooser's dismiss key.
+   // Never blur/close the editor during or just after a picture selection.
+   if(photoPickerGuardActive()||document.querySelector(".raafat-select-menu")||
+      document.querySelector(".raafat-dialog-layer"))return;
+   state.pick=false;el("mapPicking").hidden=true;
    for(const id of ["loginModal","passwordModal"])closeModal(id);
-   if(!el("siteModal").hidden)requestCloseSiteModal();}
+   if(!el("siteModal").hidden)void requestCloseSiteModal();
+ }
  });
 }
 async function main(){
