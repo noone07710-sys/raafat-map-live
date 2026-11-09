@@ -5,6 +5,7 @@ import { createAdminDashboard } from "./admin-dashboard.js";
 import { setupBookings, setupAdminBookings, packageForSite } from "./booking.js";
 import { createRaafatNavigation } from "./routing.js";
 import { raafatConfirm, raafatVerify } from "./ui-dialog.js";
+import {enhanceAdminSelects} from "./admin-dropdown.js";
 // The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -622,6 +623,7 @@ function renderAdminCities(selectedCity=""){
  const cities=REGIONS[gov]||[];
  el("fCity").innerHTML=cities.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join("");
  el("fCity").value=cities.includes(selectedCity)?selectedCity:(cities[0]||"");
+ el("fCity").dispatchEvent(new Event("raafat-select-sync"));
 }
 function renderFilters(){
  renderCityOptions();
@@ -1156,6 +1158,7 @@ function openEditor(site=null){
  el("fDescription").value=get("description");
  el("fCoords").value=site?site.latitude+", "+site.longitude:"";
  el("fPublished").checked=Boolean(get("published",false));
+ el("siteModal").querySelectorAll("select").forEach(select=>select.dispatchEvent(new Event("raafat-select-sync")));
  openModal("siteModal");
 }
 function updatePackageHint(){
@@ -1287,6 +1290,7 @@ async function signIn(event){
  event.preventDefault();
  if(!db){toast("يجب ربط Supabase أولاً.");return;}
  const email=el("email").value.trim(), password=el("password").value;
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!password){toast("أدخل البريد الإلكتروني وكلمة المرور أولاً.");return;}
  const button=el("loginForm").querySelector('button[type="submit"]');
  button.disabled=true;
  try{
@@ -1441,6 +1445,10 @@ function events(){
    siteFormDirty=false;closeModal("siteModal");
  }
  el("siteForm").addEventListener("input",()=>{siteFormDirty=true;});
+ el("fPhotos").addEventListener("change",()=>{
+   const count=el("fPhotos").files?.length||0;
+   el("photoInfo").textContent=count?("تم اختيار "+count+" صورة • تُرفع بعد حفظ القطعة."):"اختر صوراً لإضافتها إلى معرض القطعة.";
+ });
  el("siteForm").addEventListener("change",()=>{siteFormDirty=true;});
  document.querySelectorAll("[data-close]").forEach(button=>button.addEventListener("click",()=>{
    if(button.dataset.close==="siteModal")requestCloseSiteModal();else closeModal(button.dataset.close);
@@ -1479,6 +1487,7 @@ async function main(){
  setupAdminBookings({db,getState:()=>state,toast});
  initializeCatalogLayout();
  initializeMap();events();
+ enhanceAdminSelects(el("siteModal"));
  if(state.map){
    try{
      navigationController=createRaafatNavigation({

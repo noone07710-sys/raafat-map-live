@@ -182,7 +182,7 @@
           <span class="raafat-user-avatar" aria-hidden="true"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 8 4v6c0 5-3.5 8.2-8 10-4.5-1.8-8-5-8-10V6l8-4Z"/><path d="m9 12 2 2 4-4"/></svg></span>
           <div><small>حساب الإدارة المعتمد</small><strong id="dashIdentityName">مدير</strong><em>الاسم مثبت في سجل النشاط</em></div>
         </div>
-        <form id="dashMyNameForm" class="raafat-admin-identity">
+        <form id="dashMyNameForm" novalidate class="raafat-admin-identity">
           <strong>أهلاً بك في فريق رأفت</strong>
           <label for="dashMyName">ثبّت اسمك مرة واحدة</label>
           <input class="input" id="dashMyName" maxlength="80" minlength="2" required autocomplete="name" placeholder="اسمك الكامل">
@@ -304,7 +304,7 @@
  <section class="admin-tab-panel" data-dash-panel="staff" hidden>
          <div class="admin-section-heading"><div><h3>إدارة المستخدمين والصلاحيات</h3><p>أنشئ حساب مدير أو محرر جديداً، وحدد من يمكنه تعديل المواقع</p></div></div>
          <div class="admin-widget-grid">
-           <form id="dashStaffForm" class="admin-widget admin-staff-form">
+           <form id="dashStaffForm" novalidate class="admin-widget admin-staff-form">
              <h4>إنشاء حساب موظف</h4>
              <label for="dashStaffName">الاسم الكامل للموظف</label>
              <input id="dashStaffName" class="input" minlength="2" maxlength="80" required autocomplete="off" placeholder="مثال: أحمد علي">
@@ -330,7 +330,7 @@
        </section>
        <section class="admin-tab-panel" data-dash-panel="settings" hidden>
          <div class="admin-section-heading"><div><h3>تخصيص الموقع</h3><p>تغييرات مباشرة تظهر للزبائن بعد الحفظ</p></div></div>
-         <form id="dashSettingsForm">
+         <form id="dashSettingsForm" novalidate>
            <div class="admin-widget-grid">
              <div class="admin-widget admin-settings-group">
                <h4>معلومات الشركة والتواصل</h4>
@@ -361,7 +361,7 @@
   <div class="modal small" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
    <div class="modal-head"><div><h2 id="loginTitle">تسجيل دخول الإدارة</h2></div><button type="button" class="x" data-close="loginModal" aria-label="إغلاق">×</button></div>
    <p class="hint">الدخول مخصص للموظفين المعتمدين في قاعدة بيانات الشركة.</p>
-   <form id="loginForm">
+   <form id="loginForm" novalidate>
      <label for="email">البريد الإلكتروني</label><input class="input" id="email" type="email" autocomplete="username" required>
      <label for="password">كلمة المرور</label><input class="input" id="password" type="password" autocomplete="current-password" required minlength="6">
      <button class="btn btn-primary full-button" type="submit">دخول آمن</button>
@@ -374,7 +374,7 @@
  <div class="modal-backdrop" id="passwordModal" hidden>
   <div class="modal small" role="dialog" aria-modal="true" aria-labelledby="passwordTitle">
    <div class="modal-head"><h2 id="passwordTitle">تغيير كلمة المرور</h2><button type="button" class="x" data-close="passwordModal" aria-label="إغلاق">×</button></div>
-   <form id="changePasswordForm">
+   <form id="changePasswordForm" novalidate>
      <label for="newAdminPassword">كلمة المرور الجديدة</label>
      <input class="input" id="newAdminPassword" type="password" required minlength="14" autocomplete="new-password">
      <label for="confirmAdminPassword">تأكيد كلمة المرور</label>
@@ -388,7 +388,7 @@
   <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="formTitle">
    <div class="modal-head"><div><div class="eyebrow">INVENTORY / MANAGEMENT</div><h2 id="formTitle">إضافة موقع إعلاني</h2></div><button type="button" class="x" data-close="siteModal" aria-label="إغلاق">×</button></div>
    <p class="hint">القطع غير المنشورة لا تظهر للزبائن. تأكد من الإحداثيات قبل اختيار «نشر».</p>
-   <form id="siteForm">
+   <form id="siteForm" novalidate>
     <div class="form-grid">
       <div class="span2"><label for="fPackageClass">فئة الباقة المرتبطة بالقياس</label><select class="input" id="fPackageClass"><option value="auto">تحديد تلقائي للمقاسات القياسية</option><option value="A">A • 120 سم × 2 م</option><option value="B">B • 2 × 3 م</option><option value="C">C • 2.5 × 3.5 م</option><option value="D">D • 3 × 4 م</option><option value="E">E • أسطح / قياس خاص</option></select><div class="hint small-hint" id="fPackageHint">تتحدد الفئة تلقائياً من العرض والارتفاع.</div></div>
       <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
@@ -409,7 +409,7 @@
       <div class="span2"><label for="fCoords">الإحداثيات (Latitude, Longitude) *</label><input class="input coordinate" id="fCoords" dir="ltr" placeholder="34.60, 43.68" required><div class="coordinate-buttons"><button class="btn btn-ghost" id="pickMap" type="button"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>تحديد على الخريطة</span></button><button class="btn btn-ghost" id="getGPS" type="button"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>موقعي الحالي GPS</span></button></div><div class="hint small-hint">يمكن لصق إحداثيات Google Maps. GPS يحتاج HTTPS وموافقة الموقع.</div></div>
       <div class="span2 section-caption">معلومات إضافية تظهر للزبون ضمن تفاصيل الموقع</div>
       <div class="span2"><label for="fDescription">تفاصيل إضافية</label><textarea class="input" id="fDescription" maxlength="2000" rows="3"></textarea></div>
-      <div class="span2"><label for="fPhotos">صور القطعة (حتى 5 ميغابايت للصورة)</label><input class="input" id="fPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple><div id="photoInfo" class="hint small-hint">بعد الحفظ تُرفع الصور إلى التخزين الخاص بالشركة.</div></div>
+      <div class="span2"><label for="fPhotos">صور القطعة (حتى 5 ميغابايت للصورة)</label><label class="raafat-file-drop" for="fPhotos"><svg class="raafat-file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="3"/><circle cx="12" cy="13" r="3"/><path d="M8 6l1.2-3h5.6L16 6"/></svg><span><strong>إضافة صور جديدة للقطعة</strong><small>اضغط لاختيار الصور • PNG / JPG / WEBP</small></span><span class="raafat-file-pill">تصفح الملفات</span></label><input class="raafat-file-input" id="fPhotos" type="file" accept="image/png,image/jpeg,image/webp" multiple><div id="photoInfo" class="hint small-hint">بعد الحفظ تُرفع الصور إلى التخزين الخاص بالشركة.</div></div>
       <div class="span2 publish-line"><label class="check-line"><input type="checkbox" id="fPublished"> <strong>نشر القطعة للزبائن</strong></label><span>بدون تحديد الخيار ستبقى القطعة داخل لوحة الإدارة فقط.</span></div>
     </div>
     <div class="form-actions">
@@ -422,7 +422,7 @@
  <div class="modal-backdrop booking-backdrop" id="bookingModal" hidden>
   <div class="modal wide booking-modal" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
    <div class="booking-modal-head"><div class="booking-kicker">RAAFAT • RESERVATIONS</div><h2 id="bookingTitle">طلب حجز موقع إعلاني</h2><p>صلاح الدين بالكامل وكركوك • اختر الباقة والموقع وقدّم طلبك</p><button type="button" id="bookingClose" class="booking-x" aria-label="إغلاق">×</button></div>
-   <form id="bookingForm" class="booking-form">
+   <form id="bookingForm" novalidate class="booking-form">
     <div class="booking-step-title">01 <span>بيانات الزبون والجهة</span></div>
     <div class="booking-grid">
      <label>اسم الزبون الكامل *<input class="input" id="bookingName" required minlength="2" maxlength="120" autocomplete="name" placeholder="الاسم الثلاثي"></label>

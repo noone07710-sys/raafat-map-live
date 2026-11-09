@@ -232,6 +232,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     const email=$("dashStaffEmail").value.trim(),password=$("dashStaffPassword").value,display_name=$("dashStaffName").value.trim();
     if(display_name.length<2||display_name.length>80){staffMessage("اكتب اسم الموظف الصحيح.",true);return;}
     const role=$("dashStaffRole").value;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){staffMessage("اكتب بريد إلكتروني صحيح للموظف.",true);return;}
     if(password.length<14){staffMessage("كلمة المرور يجب أن تتكون من 14 حرفاً على الأقل.",true);return;}
     if(!(await raafatConfirm({title:"إنشاء حساب إداري",message:"سيتم إنشاء حساب جديد باسم "+display_name+" ("+email+") بصلاحية "+(roles[role]||role)+".",confirmText:"إنشاء الحساب"})))return;
     button.disabled=true;staffMessage("جاري إنشاء الحساب…");
@@ -267,6 +268,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
       show_map_glow:$("dashGlow").checked,
       updated_at:new Date().toISOString()
     };
+    if(!patch.headline||patch.headline.length<2){$("dashSettingsMessage").textContent="اكتب عنواناً مناسباً للموقع قبل الحفظ.";return;}
     if(patch.whatsapp_number && !/^\d{10,15}$/.test(patch.whatsapp_number)){
       $("dashSettingsMessage").textContent="رقم واتساب يجب أن يكون من 10 إلى 15 رقماً.";return;
     }

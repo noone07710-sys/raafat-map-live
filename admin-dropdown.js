@@ -10,7 +10,7 @@ function closeOpened({returnFocus=false}={}){
 export function enhanceAdminSelects(scope=document){
  const root=scope||document;
  root.querySelectorAll("select:not([data-raafat-select])").forEach(select=>{
-  if(!select.closest("#adminDashboard"))return;
+  if(!select.closest("#adminDashboard,#siteModal"))return;
   select.setAttribute("data-raafat-select","yes");
   const holder=document.createElement("span");
   holder.className="raafat-select-shell";
@@ -83,7 +83,7 @@ export function enhanceAdminSelects(scope=document){
   button.addEventListener("keydown",event=>{if(["ArrowDown","ArrowUp","Enter"," "].includes(event.key)){event.preventDefault();open();}});
   select.addEventListener("change",sync);
   select.addEventListener("raafat-select-sync",sync);
-  new MutationObserver(sync).observe(select,{attributes:true,attributeFilter:["disabled"]});
+  new MutationObserver(sync).observe(select,{attributes:true,childList:true,subtree:true,attributeFilter:["disabled","selected"]});
   sync();
  });
 }

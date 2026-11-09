@@ -195,6 +195,7 @@ export function setupBookings({db,getState,toast}){
      p_duration_months:Number(duration.value),
      p_site_ids:selected.map(s=>s.id),p_e_area_m2:category.value==="E"&&!selected.length?Number(eArea.value):null
    };
+   if(payload.p_customer_name.length<2||payload.p_company_name.length<2){toast("اكتب اسم الزبون واسم الجهة الإعلانية بشكل صحيح.");return;}
    if(!/^\d{11}$/.test(payload.p_phone)){toast("رقم الهاتف يجب أن يكون 11 رقماً بالضبط.");return}
    busy=true;$("bookingSend").disabled=true;$("bookingSend").textContent="جاري إرسال الطلب…";
    try{

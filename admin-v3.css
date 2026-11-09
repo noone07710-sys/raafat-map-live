@@ -522,3 +522,100 @@
  #adminDashboard .admin-bulkbar .raafat-select-shell{flex:1 1 150px;width:100%}
  #adminDashboard .admin-staff-actions .raafat-select-shell{width:135px}
 }
+
+
+/* Inventory editor now uses the same design language as the command center. */
+#siteModal.modal-backdrop{
+ z-index:4100!important;background:rgba(1,15,19,.88)!important;
+ backdrop-filter:blur(14px);padding:clamp(8px,2vw,20px)!important;
+}
+#siteModal .modal.wide{
+ display:flex;flex-direction:column;max-width:980px;width:min(980px,100%);
+ max-height:calc(100dvh - 24px);overflow-y:auto;min-height:0;
+ background:linear-gradient(158deg,#112f35,#0a242c 90%)!important;
+ border:1px solid rgba(212,183,139,.32)!important;border-radius:22px!important;
+ box-shadow:0 38px 110px rgba(0,0,0,.61),inset 0 1px rgba(255,255,255,.08)!important;
+ color:#e7f2ea;font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
+ scrollbar-color:#557e75 #102e31;
+}
+#siteModal .modal-head{
+ display:flex;align-items:center;justify-content:space-between;gap:15px;
+ padding:23px 27px 17px!important;margin:0!important;
+ background:rgba(12,39,43,.86);border-bottom:1px solid rgba(198,188,155,.18);
+ position:sticky;top:0;z-index:5;backdrop-filter:blur(10px);
+}
+#siteModal .modal-head .eyebrow{color:#d7b57b;font:800 10px Arial,sans-serif;letter-spacing:1.2px}
+#siteModal .modal-head h2{font-size:clamp(17px,2vw,24px);line-height:1.6;color:#fbf7eb;font-weight:850}
+#siteModal .modal-head .x{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:rgba(117,61,64,.14);border:1px solid rgba(226,144,140,.26);color:#f7dddb;font-size:20px;cursor:pointer}
+#siteModal .modal-head .x:hover{background:rgba(149,60,64,.24)}
+#siteModal .modal>.hint{margin:0!important;padding:13px 27px!important;background:#142d32;color:#a8c5b7;font-size:11px}
+#siteModal #siteForm{padding:19px 27px 25px!important}
+#siteModal .form-grid{gap:14px 16px}
+#siteModal .form-grid>div{min-width:0}
+#siteModal label{display:block;margin-bottom:6px;color:#c6d9cb;font-size:11px;font-weight:800}
+#siteModal .input,#siteModal textarea,#siteModal input:not([type=checkbox]),#siteModal select{
+ min-height:44px;max-width:100%;color:#edf6ef;
+ border:1px solid rgba(130,174,156,.40)!important;background:#0c2930!important;
+ border-radius:11px!important;padding:11px 13px;font-family:inherit;font-size:12px;
+ outline:none;box-shadow:none!important;transition:border .18s;
+}
+#siteModal textarea{resize:vertical}
+#siteModal .input:focus,#siteModal textarea:focus,#siteModal input:focus{border-color:#e3bd86!important;box-shadow:0 0 0 3px rgba(222,187,127,.12)!important}
+#siteModal input::placeholder{color:#709b92}
+#siteModal input[type=number]{-moz-appearance:textfield;appearance:textfield}
+#siteModal input[type=number]::-webkit-inner-spin-button,
+#siteModal input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+#siteModal .raafat-select-shell{display:inline-flex;width:100%;min-width:0;position:relative}
+#siteModal .raafat-select-shell select.raafat-native-select{
+ position:absolute!important;opacity:0!important;pointer-events:none!important;
+ height:1px!important;min-height:0!important;width:1px!important;overflow:hidden!important;padding:0!important;
+}
+#siteModal .raafat-select-trigger{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;
+ background:#0c2930;color:#edf6ef;border:1px solid rgba(130,174,156,.40);
+ border-radius:11px;padding:10px 13px;text-align:right;font-family:inherit;font-size:12px;font-weight:750;cursor:pointer;
+}
+#siteModal .raafat-select-trigger[aria-expanded="true"],#siteModal .raafat-select-trigger:hover{border-color:#dfbe86;background:#13383a}
+#siteModal .raafat-select-text{flex:1;min-width:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+#siteModal .raafat-select-trigger svg{width:17px;height:17px;color:#e4c08a;flex:0 0 17px}
+#siteModal .raafat-select-trigger:disabled{opacity:.55;cursor:not-allowed}
+#siteModal .section-caption{
+ background:rgba(227,184,112,.07);color:#efd4a2;font-size:12px;font-weight:850;
+ border:1px solid rgba(214,181,124,.17);border-radius:12px;padding:12px 15px;
+}
+#siteModal .hint.small-hint{font-size:10px;color:#91b0a5;margin-top:8px;line-height:1.85}
+#siteModal .coordinate-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+#siteModal .coordinate-buttons button{display:inline-flex;align-items:center;gap:8px;background:#174443;border:1px solid rgba(170,198,182,.29);color:#f5f4e8;border-radius:11px;font-size:11px;min-height:39px}
+#siteModal .publish-line{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:7px 0;padding:15px;border:1px solid rgba(194,188,153,.19);border-radius:13px;background:rgba(25,68,61,.28)}
+#siteModal .publish-line input{accent-color:#cfa970;width:19px;height:19px;min-height:0}
+#siteModal .form-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:20px;padding:16px 0 0;border-top:1px solid rgba(188,205,180,.14)}
+#siteModal .form-actions button{min-height:44px;padding:10px 19px;border-radius:11px;font-size:12px;font-weight:850}
+#siteModal .form-actions .btn-primary{background:#d8b47e!important;color:#19322f!important;border:1px solid #efd5ab!important}
+#siteModal .form-actions .btn-ghost{background:#1a4545!important;color:#e7f2e7!important;border:1px solid rgba(168,191,177,.28)!important}
+#siteModal .raafat-file-input{
+ position:absolute!important;width:1px!important;height:1px!important;
+ opacity:0!important;pointer-events:none!important;min-height:0!important;overflow:hidden!important;
+}
+#siteModal .raafat-file-drop{
+ display:flex;align-items:center;justify-content:flex-start;gap:13px;
+ min-height:88px;padding:16px;border-radius:14px;border:1px dashed rgba(222,191,134,.50);
+ background:rgba(27,68,65,.28);cursor:pointer;transition:background .18s,border .18s;
+}
+#siteModal .raafat-file-drop:hover,#siteModal .raafat-file-drop:focus-within{background:rgba(35,88,75,.42);border-color:#dcb986}
+#siteModal .raafat-file-drop .raafat-file-icon{display:block;width:32px;height:32px;flex:0 0 32px;color:#e2c28d}
+#siteModal .raafat-file-drop>span:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+#siteModal .raafat-file-drop strong{font-size:12px;color:#f6ebd7}
+#siteModal .raafat-file-drop small{font-size:10px;color:#8cb4a6}
+#siteModal .raafat-file-pill{display:inline-flex;padding:8px 13px;flex:0 0 auto;border-radius:9px;background:#d7b37b;color:#17322e;font-size:10px;font-weight:850}
+@media(max-width:640px){
+ #siteModal.modal-backdrop{padding:4px!important}
+ #siteModal .modal.wide{max-height:calc(100dvh - 8px);border-radius:15px!important}
+ #siteModal .modal-head{padding:14px 15px!important}
+ #siteModal .modal>.hint{padding:11px 15px!important}
+ #siteModal #siteForm{padding:14px!important}
+ #siteModal .form-grid{gap:10px}
+ #siteModal .form-actions button{flex:1;min-width:0}
+ #siteModal .raafat-file-drop{flex-wrap:wrap}
+ #siteModal .raafat-file-pill{flex:1 1 100%;justify-content:center}
+ #adminDashboard .raafat-pass-action{display:inline-flex!important;min-width:33px}
+}
