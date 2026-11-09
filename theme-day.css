@@ -437,3 +437,375 @@ html[data-raafat-theme="day"] .booking-tier-card.selected{
  border-color:#c98245!important;background:#ffe7c9!important;
  box-shadow:0 0 0 2px rgba(211,132,60,.1)!important;
 }
+
+
+/* ========================================================================
+   RAAFAT BOOKING REPAIR • November 2026
+   High-contrast text, stable mobile modal and brand-native controls.
+   ======================================================================== */
+/* Portal is appended to body, so it must be ABOVE the booking backdrop (13000).
+   The previous 11000 stacking order hid every customer option behind the modal. */
+.raafat-select-menu{z-index:25000!important;box-sizing:border-box;padding:7px!important;
+ min-width:170px;max-width:calc(100vw - 20px);border-radius:13px;
+ overscroll-behavior:contain;touch-action:pan-y;isolation:isolate;}
+.raafat-select-menu .raafat-select-option{width:100%;text-align:right;min-height:43px;
+ display:block;line-height:1.65!important;white-space:normal!important;
+ overflow-wrap:anywhere!important;box-sizing:border-box;flex:0 0 auto;}
+.raafat-select-empty{padding:15px 12px;color:#c7d9d3;font-size:12px;text-align:center;}
+#bookingModal .booking-modal{box-sizing:border-box;min-width:0}
+#bookingModal .booking-modal-head{
+ position:sticky!important;top:0!important;z-index:8!important;min-width:0;
+ padding-left:clamp(65px,10vw,82px)!important;
+ box-sizing:border-box;
+}
+#bookingModal .booking-modal-head h2{line-height:1.5!important;letter-spacing:0!important;
+ overflow-wrap:anywhere;max-width:100%;margin:8px 0 6px!important;}
+#bookingModal .booking-modal-head p{line-height:1.8!important;max-width:100%;overflow-wrap:anywhere;}
+#bookingModal #bookingClose,
+#bookingTracking #bookingTrackClose{
+ position:absolute!important;top:16px!important;left:16px!important;right:auto!important;
+ inset-inline-end:16px!important;inset-inline-start:auto!important;
+ width:42px!important;height:42px!important;min-width:42px!important;
+ min-height:42px!important;display:grid!important;place-items:center!important;
+ padding:0!important;margin:0!important;
+ border-radius:13px!important;border:1px solid rgba(224,195,156,.43)!important;
+ color:#f6efdd!important;background:#173840!important;
+ transform:none!important;float:none!important;line-height:0!important;
+ z-index:12!important;cursor:pointer;
+}
+#bookingModal #bookingClose .raafat-booking-close-icon,
+#bookingTracking #bookingTrackClose .raafat-booking-close-icon{width:20px;height:20px;
+ display:block!important;stroke:currentColor!important;pointer-events:none;}
+#bookingModal #bookingClose:hover,#bookingTracking #bookingTrackClose:hover{
+ border-color:#e3ba82!important;background:#335b57!important;
+}
+#bookingModal .booking-form,#bookingModal .booking-grid,#bookingModal .booking-sites-picker,
+#bookingModal .booking-price-card,#bookingModal .booking-total-summary,#bookingModal .booking-inclusions{
+ min-width:0;max-width:100%;box-sizing:border-box;
+}
+#bookingModal .booking-grid label{min-width:0;width:100%;max-width:100%;line-height:1.7!important;
+ overflow-wrap:anywhere;align-content:start;}
+#bookingModal .booking-grid .input,#bookingModal .booking-grid input{
+ box-sizing:border-box;min-width:0;width:100%;max-width:100%;
+ font-size:13px!important;line-height:1.6!important;
+}
+#bookingModal .booking-step-title{line-height:1.7!important;overflow-wrap:anywhere}
+#bookingModal .booking-step-title span{min-width:0;line-height:1.5!important;letter-spacing:0!important}
+#bookingModal .booking-tier-card{
+ min-width:0;box-sizing:border-box;overflow:hidden;
+ padding:15px!important;gap:8px;min-height:156px;
+}
+#bookingModal .booking-tier-card>strong{font-size:16px!important;line-height:1.5!important}
+#bookingModal .booking-tier-card>small{line-height:1.75!important;overflow-wrap:anywhere}
+#bookingModal .booking-tier-bottom{line-height:1.7!important;overflow-wrap:anywhere}
+#bookingModal .booking-sites-header>*{min-width:0}
+#bookingModal .booking-sites-header p{line-height:1.9!important;overflow-wrap:anywhere}
+#bookingModal .booking-site-chip-info{overflow-wrap:anywhere;min-width:0}
+#bookingModal .booking-price-card{min-width:0;gap:9px}
+#bookingModal .booking-price-card strong{white-space:normal!important;overflow-wrap:anywhere;font-size:clamp(23px,3vw,31px)!important}
+#bookingModal .booking-total-summary b{overflow-wrap:anywhere}
+#bookingModal .booking-selected-sites{grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+#bookingModal .raafat-select-shell{max-width:100%;min-width:0}
+#bookingModal .raafat-select-text{line-height:1.7!important;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#bookingModal .raafat-select-trigger{min-height:47px!important;min-width:0!important;
+ padding:10px 13px!important;box-sizing:border-box;line-height:1.6!important;
+ white-space:normal;align-items:center}
+#bookingModal select.raafat-native-select{pointer-events:none!important}
+#bookingModal .booking-no-sites{line-height:1.8!important;overflow-wrap:anywhere}
+#bookingModal .booking-result-actions{min-width:0}
+#bookingModal .booking-result-actions>*{min-width:0}
+#bookingTracking .booking-track-card{padding:60px 22px 26px!important}
+#bookingTracking #bookingTrackClose{top:14px!important;left:14px!important}
+@media(max-width:700px){
+ #bookingModal .booking-modal-head{padding:17px 17px 15px 62px!important;
+  min-height:90px!important}
+ #bookingModal .booking-kicker{font-size:9px!important;letter-spacing:1.2px!important}
+ #bookingModal .booking-modal-head h2{font-size:20px!important;line-height:1.55!important}
+ #bookingModal .booking-modal-head p{font-size:11px!important;line-height:1.6!important}
+ #bookingModal #bookingClose{width:38px!important;height:38px!important;
+   min-width:38px!important;min-height:38px!important;top:18px!important;left:12px!important;
+   inset-inline-end:12px!important;inset-inline-start:auto!important}
+ #bookingModal .booking-form{padding:18px 15px 30px!important}
+ #bookingModal .booking-grid{grid-template-columns:minmax(0,1fr)!important;gap:13px!important}
+ #bookingModal .booking-tier-card{min-height:138px;padding:12px!important}
+ #bookingModal .booking-step-title:not(:first-child){margin-top:21px!important;padding-top:16px!important}
+ #bookingModal .booking-sites-picker{padding:14px!important}
+}
+@media(max-width:400px){
+ #bookingModal .booking-modal-head{padding-left:56px!important}
+ #bookingModal .booking-package-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #bookingModal .booking-tier-card{padding:10px!important}
+ #bookingModal .booking-tier-card>strong{font-size:14px!important}
+ #bookingModal .booking-price-card strong{font-size:24px!important}
+}
+/* Daytime customer UI: all text inherits a DARK foreground on white surfaces.
+   Earlier CSS painted the cards white but left their content WHITE too. */
+html[data-raafat-theme="day"] .booking-backdrop{
+ background:rgba(66,55,43,.40)!important;backdrop-filter:blur(7px)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-modal{
+ background:#fffdf9!important;border:1px solid #d9b58a!important;
+ color:#263c35!important;box-shadow:0 25px 85px rgba(84,64,41,.23)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-modal-head{
+ background:linear-gradient(125deg,#fffaf2,#f3e6d5)!important;
+ border-color:#e5ccb0!important;color:#2d4138!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-kicker{color:#a96633!important}
+html[data-raafat-theme="day"] #bookingModal .booking-modal-head h2{color:#293d34!important}
+html[data-raafat-theme="day"] #bookingModal .booking-modal-head p{color:#5b6e62!important}
+html[data-raafat-theme="day"] #bookingModal #bookingClose,
+html[data-raafat-theme="day"] #bookingTracking #bookingTrackClose{
+ color:#8d4c2d!important;background:#fff5e9!important;border-color:#d7b58d!important;
+}
+html[data-raafat-theme="day"] #bookingModal #bookingClose:hover,
+html[data-raafat-theme="day"] #bookingTracking #bookingTrackClose:hover{
+ background:#f4e1c9!important;border-color:#b7834b!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-form{background:#fffdf9!important}
+html[data-raafat-theme="day"] #bookingModal .booking-step-title{
+ color:#ad6630!important;border-color:#e8d5bc!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-step-title span{color:#263d34!important}
+html[data-raafat-theme="day"] #bookingModal .booking-grid label{
+ color:#374c40!important;font-weight:750;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-grid input,
+html[data-raafat-theme="day"] #bookingModal .booking-grid .input,
+html[data-raafat-theme="day"] #bookingModal .raafat-select-trigger{
+ background:#fffdfa!important;color:#253d33!important;border-color:#d1b18d!important;
+}
+html[data-raafat-theme="day"] #bookingModal input::placeholder{
+ color:#8c8c81!important;opacity:1;
+}
+html[data-raafat-theme="day"] #bookingModal .raafat-select-trigger[aria-expanded="true"]{
+ background:#fff2e2!important;border-color:#c07937!important;
+ box-shadow:0 0 0 3px rgba(205,126,58,.12)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .raafat-select-trigger svg{color:#995623!important}
+html[data-raafat-theme="day"] #bookingModal .booking-tier-card{
+ background:linear-gradient(160deg,#fffbf5,#f9efe3)!important;
+ border:1px solid #e0c4a4!important;color:#34473b!important;
+ box-shadow:0 5px 16px rgba(142,95,45,.055)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-tier-card.selected{
+ background:linear-gradient(155deg,#fff0d9,#ffe5c6)!important;
+ border:2px solid #cb8241!important;
+ box-shadow:0 0 0 3px rgba(205,131,66,.14)!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-tier-card>strong,
+html[data-raafat-theme="day"] #bookingModal .booking-tier-top b{
+ color:#263e34!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-tier-top{color:#9d6538!important}
+html[data-raafat-theme="day"] #bookingModal .booking-tier-card>small{color:#56675d!important}
+html[data-raafat-theme="day"] #bookingModal .booking-tier-bottom{color:#9b551f!important}
+html[data-raafat-theme="day"] #bookingModal .booking-sites-picker{
+ background:linear-gradient(140deg,#fff9ef,#f8eddf)!important;
+ border:1px solid #dec09c!important;box-shadow:none!important;
+ color:#293e35!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-sites-header strong,
+html[data-raafat-theme="day"] #bookingModal .booking-site-chip-info strong{
+ color:#293e34!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-sites-header p,
+html[data-raafat-theme="day"] #bookingModal .booking-site-chip-info small,
+html[data-raafat-theme="day"] #bookingModal .booking-no-sites{
+ color:#5b6e64!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-site-chip,
+html[data-raafat-theme="day"] #bookingModal .booking-no-sites{
+ background:#fffdf8!important;border:1px solid #e4cbb0!important;
+ color:#34473c!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-site-chip-code{
+ color:#fffdf7!important;background:#be763d!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-site-chip button{
+ background:#f8e9d8!important;border-color:#e4c2a3!important;
+ color:#a36035!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-selection-actions{
+ color:#88582f!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-selection-actions button{
+ color:#a15927!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-package-info,
+html[data-raafat-theme="day"] #bookingModal .booking-inclusions{
+ background:#f9f0e4!important;border:1px solid #e3c8a9!important;
+ color:#33473b!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-package-info strong{
+ color:#985720!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-package-info p,
+html[data-raafat-theme="day"] #bookingModal .booking-inclusions summary,
+html[data-raafat-theme="day"] #bookingModal .booking-inclusions div{
+ color:#405649!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-e-area small{color:#627469!important}
+html[data-raafat-theme="day"] #bookingModal .booking-price-card,
+html[data-raafat-theme="day"] #bookingModal .booking-total-summary{
+ background:linear-gradient(115deg,#fff8ec,#f5e7d3)!important;
+ border:1px solid #ddb98f!important;color:#36483c!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-price-card small,
+html[data-raafat-theme="day"] #bookingModal .booking-price-card span,
+html[data-raafat-theme="day"] #bookingModal .booking-total-summary span{
+ color:#526658!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-price-card strong,
+html[data-raafat-theme="day"] #bookingModal .booking-total-summary b{
+ color:#985522!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-legal,
+html[data-raafat-theme="day"] #bookingModal .booking-hint{color:#657467!important}
+html[data-raafat-theme="day"] #bookingModal .booking-success{
+ background:#fffdf9!important;color:#304439!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-success h3{color:#2c4436!important}
+html[data-raafat-theme="day"] #bookingModal .booking-success p{color:#52685a!important}
+html[data-raafat-theme="day"] #bookingModal .booking-success label{color:#344b3b!important}
+html[data-raafat-theme="day"] #bookingModal .booking-success>strong{color:#aa611f!important}
+html[data-raafat-theme="day"] #bookingModal .booking-result-actions .btn-ghost{
+ background:#fff5e8!important;color:#80471e!important;border-color:#d9b18b!important;
+}
+html[data-raafat-theme="day"] #bookingModal .booking-result-actions .btn-primary{
+ background:#cf8746!important;color:#fffdf9!important;border-color:#dca566!important;
+}
+html[data-raafat-theme="day"] #bookingTracking .booking-track-card{
+ background:#fffaf3!important;color:#334b3d!important;border-color:#d6b58c!important;
+}
+html[data-raafat-theme="day"] #bookingTracking .booking-track-card h2{color:#2e4438!important}
+html[data-raafat-theme="day"] #bookingTracking .booking-track-card p{color:#56695d!important}
+html[data-raafat-theme="day"] #bookingTracking .tracking-state{
+ background:#f6e9d9!important;color:#9b5728!important;border:1px solid #dfc3a6!important;
+}
+html[data-raafat-theme="day"] .booking-map-picker{
+ background:#fff9f0!important;border-color:#d5a96e!important;
+ color:#33483d!important;box-shadow:0 16px 38px rgba(96,72,49,.20)!important;
+}
+html[data-raafat-theme="day"] .booking-map-picker strong,
+html[data-raafat-theme="day"] .booking-map-picker-icon{color:#a96129!important}
+html[data-raafat-theme="day"] .booking-map-picker small{color:#586e60!important}
+html[data-raafat-theme="day"] .booking-map-picker-footer button{
+ color:#fff!important;background:#c98441!important;border-color:#c78c53!important;
+}
+html[data-raafat-theme="day"] .booking-map-picker-footer button:last-child{
+ color:#815026!important;background:#fff3e5!important;border-color:#d8b68e!important;
+}
+/* High contrast controls, listings and map cards beyond the booking modal. */
+html[data-raafat-theme="day"] .browse .empty,
+html[data-raafat-theme="day"] .browse .filter-fields label,
+html[data-raafat-theme="day"] .browse .list-heading,
+html[data-raafat-theme="day"] .browse .coverage-head,
+html[data-raafat-theme="day"] .browse .input-label,
+html[data-raafat-theme="day"] .browse .city-chip span{
+ color:#354c40!important;
+}
+html[data-raafat-theme="day"] .browse .listing .listing-quick-button,
+html[data-raafat-theme="day"] .browse .list-heading button{
+ background:#fdf4e8!important;color:#985525!important;border-color:#d7b58c!important;
+}
+html[data-raafat-theme="day"] .details .detail-line strong,
+html[data-raafat-theme="day"] .details .detail-line b,
+html[data-raafat-theme="day"] .details .detail-pill strong,
+html[data-raafat-theme="day"] .details .detail-name{
+ color:#293f34!important;
+}
+html[data-raafat-theme="day"] .map-chip span,
+html[data-raafat-theme="day"] .map-site-cta strong,
+html[data-raafat-theme="day"] .map-region-label{
+ color:#32473d!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .admin-staff-row strong,
+html[data-raafat-theme="day"] #adminDashboard .admin-staff-row small,
+html[data-raafat-theme="day"] #adminDashboard .admin-widget .admin-shortcuts button{
+ color:#354a3c!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-status-chip.is-pending{
+ color:#985c21!important;background:#fff0dd!important;border-color:#d8b98c!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-status-chip.is-approved{
+ color:#1f7050!important;background:#e6f4e8!important;border-color:#a8cdb4!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-status-chip.is-rejected{
+ color:#9f433a!important;background:#fceae8!important;border-color:#dfa6a0!important;
+}
+html[data-raafat-theme="day"] #adminDashboard .raafat-status-chip.is-completed{
+ color:#38668b!important;background:#eaf2fa!important;border-color:#a8c7dd!important;
+}
+
+
+/* Maps stay legible against the untinted OpenStreetMap daytime cartography. */
+html[data-raafat-theme="day"] .map-area #mapHome.raafat-gps-locate,
+html[data-raafat-theme="day"] .map-area #mapNavigationToggle.raafat-route-fab,
+html[data-raafat-theme="day"] .map-area .vip-tool-button,
+html[data-raafat-theme="day"] .map-area .leaflet-control-zoom a{
+ background:#fffaf2!important;color:#885322!important;
+ border:1px solid rgba(174,115,64,.46)!important;
+ box-shadow:0 4px 17px rgba(80,67,50,.14)!important;
+}
+html[data-raafat-theme="day"] .map-area #mapHome .raafat-target-icon,
+html[data-raafat-theme="day"] .map-area #mapNavigationToggle.raafat-route-fab svg,
+html[data-raafat-theme="day"] .map-area .vip-tool-button svg{
+ color:#9f5a24!important;stroke:#9f5a24!important;
+}
+html[data-raafat-theme="day"] .map-area #mapNavigationToggle.raafat-route-fab.is-active{
+ background:#ae672b!important;color:#fffdf8!important;border-color:#cc9d65!important;
+}
+html[data-raafat-theme="day"] .map-area #mapNavigationToggle.raafat-route-fab.is-active svg{
+ color:#fff!important;stroke:#fff!important;
+}
+html[data-raafat-theme="day"] .map-area .vip-legend,
+html[data-raafat-theme="day"] .map-area .raafat-route-panel.raafat-route-compact{
+ background:rgba(255,250,243,.98)!important;color:#30483c!important;
+ border:1px solid rgba(188,130,76,.33)!important;
+ box-shadow:0 10px 31px rgba(91,73,47,.16)!important;
+}
+html[data-raafat-theme="day"] .map-area .vip-legend strong,
+html[data-raafat-theme="day"] .map-area .vip-legend>small,
+html[data-raafat-theme="day"] .map-area .vip-legend div,
+html[data-raafat-theme="day"] .map-area .raafat-route-mini-info strong{
+ color:#2c4337!important;
+}
+html[data-raafat-theme="day"] .map-area .raafat-route-mini-info small,
+html[data-raafat-theme="day"] .map-area .raafat-route-mini-status{
+ color:#805b3f!important;
+}
+html[data-raafat-theme="day"] .map-area .raafat-route-mini-close{
+ background:#f9efe3!important;color:#8b4d2a!important;
+ border-color:#dec3a4!important;
+}
+html[data-raafat-theme="day"] .map-area .raafat-route-mini-icon{
+ color:#fff!important;background:#c67c39!important;
+}
+html[data-raafat-theme="day"] .map-area .map-site-cta{
+ background:#fffaf2!important;border:1px solid rgba(196,130,73,.34)!important;
+ box-shadow:0 8px 30px rgba(84,68,45,.13)!important;
+}
+html[data-raafat-theme="day"] .map-area .map-site-cta .map-site-identity strong,
+html[data-raafat-theme="day"] .map-area .map-site-cta .map-site-eyebrow{
+ color:#2e4238!important;
+}
+html[data-raafat-theme="day"] .map-area .map-site-cta .vip-site-state{
+ color:#87552e!important;
+}
+html[data-raafat-theme="day"] .map-area .map-site-cta .map-site-buttons button{
+ background:#d18a48!important;color:#fff!important;border-color:#d29b67!important;
+}
+html[data-raafat-theme="day"] .map-area .raafat-location-announcer{
+ background:rgba(255,251,245,.96)!important;color:#355043!important;
+ border:1px solid #d8ba96!important;box-shadow:0 6px 19px rgba(94,72,48,.10)!important;
+}
+
+
+/* All selection buttons are bespoke. Original selects hold values only:
+   hiding them avoids the native Android/Chrome picker when a label is tapped. */
+#adminDashboard select.raafat-native-select,
+#siteModal select.raafat-native-select,
+#bookingModal select.raafat-native-select{
+ display:none!important;visibility:hidden!important;
+}
