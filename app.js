@@ -1237,7 +1237,10 @@ async function saveSite(event){
    toast(photoErrors.length?"تم حفظ القطعة، لكن بعض الصور لم تُرفع: "+photoErrors.join(" | "):"تم حفظ القطعة والصور بنجاح.");
  }catch(error){
    console.error("Save failed:",error.message);
-   toast(error.code==="23505"?"رمز القطعة مستخدم مسبقاً. اختر رمزاً مختلفاً.":"تعذر الحفظ: "+(error.message||"تحقق من البيانات والصلاحيات."));
+   if(/Set your staff display name|Admin name and admin permission required/i.test(error.message||"")){
+   toast("لازم تحفظ اسمك من لوحة الإدارة قبل إضافة أو تعديل القطع.");
+   adminDashboard?.open();
+ }else toast(error.code==="23505"?"رمز القطعة مستخدم مسبقاً. اختر رمزاً مختلفاً.":"تعذر الحفظ: "+(error.message||"تحقق من البيانات والصلاحيات."));
  }finally{actionBusy(false)}
 }
 async function cleanPendingPhotoFiles({silent=true}={}){
@@ -1514,6 +1517,7 @@ async function main(){
   return;
  }
  await authCheck();
+ if(state.staffRole==="admin")void cleanPendingPhotoFiles();
  await loadSiteSettings();
  if(ADMIN_ENTRY&&!state.staff)openModal("loginModal");
  await loadSites();
