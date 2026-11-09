@@ -3,14 +3,14 @@
  * All user management is delegated to the protected Supabase admin-staff
  * Edge Function; no service key or privileged database credential lives here.
  */
-export function createAdminDashboard({db,getState,toast,openEditor,loadSites,selectSite,applySettings}) {
+export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,loadSites,selectSite,applySettings}) {
   const $=id=>document.getElementById(id);
   const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const cities=["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","كركوك","الحويجة","داقوق","الدبس"];
   const labels={available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
   const roles={admin:"مدير كامل",editor:"محرر مواقع"};
   const chosen=new Set();
-  let staffLoaded=false,activeTab="overview",settingsLoaded=false;
+  let staffLoaded=false,activeTab="overview",settingsLoaded=false,activityPage=0,activityTotal=0;
   const isAdmin=()=>getState().staffRole==="admin";
 
   function open(){
@@ -20,10 +20,14 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     document.body.classList.add("dashboard-open");
     $("dashStaffTab").hidden=!isAdmin();
     $("dashSettingsTab").hidden=!isAdmin();
+    $("dashActivityTab").hidden=!isAdmin();
+    $("dashMyName").value=state.staffName||"";
+    $("dashMyNameNote").textContent=state.staffName?"اسمك المعتمد يظهر في سجل العمليات.":"يرجى تسجيل اسمك قبل تنفيذ الحذف النهائي.";
+    if(!state.staffName)requestAnimationFrame(()=>$("dashMyName").focus());
     document.querySelector('[data-dash-tab="bookings"]').hidden=!isAdmin();
     for(const id of ["dashApplyStatus","dashBulkPublish","dashBulkHide"])$(id).hidden=!isAdmin();
     $("dashBulkStatus").disabled=!isAdmin();
-    $("dashSessionRole").textContent=(state.user?.email||"حساب موظف")+" • "+(roles[state.staffRole]||"موظف");
+    $("dashSessionRole").textContent=(state.staffName||"الاسم غير مسجل")+" • "+(roles[state.staffRole]||"موظف");
     switchTab("overview");
     document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
   }
@@ -32,7 +36,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     document.body.classList.remove("dashboard-open");
   }
   function switchTab(tab){
-    if(["staff","settings","bookings"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
+    if(["staff","settings","bookings","activity"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
     activeTab=tab;
     document.querySelectorAll("[data-dash-tab]").forEach(btn=>{
       const selected=btn.dataset.dashTab===tab;
@@ -44,6 +48,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     if(tab==="bookings")document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
     if(tab==="staff"&&!staffLoaded)void loadStaff();
     if(tab==="settings")loadSettingsForm();
+    if(tab==="activity")void loadActivity();
   }
   function render(){
     const sites=getState().sites||[];
@@ -84,7 +89,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
       '<td>'+Number(s.width_m).toLocaleString("ar-IQ")+' × '+Number(s.height_m).toLocaleString("ar-IQ")+' م</td>'+
       '<td><span class="admin-table-status '+escape(s.status)+'">'+escape(labels[s.status]||s.status)+'</span></td>'+
       '<td><span class="admin-publication '+(s.published?"yes":"no")+'">'+(s.published?"منشورة":"مسودة")+'</span></td>'+
-      '<td><div class="admin-row-actions"><button type="button" data-dash-view="'+escape(s.id)+'">عرض</button><button type="button" data-dash-edit="'+escape(s.id)+'">تعديل</button><button type="button" data-dash-duplicate="'+escape(s.id)+'">نسخ</button></div></td></tr>'
+      '<td><div class="admin-row-actions"><button type="button" data-dash-view="'+escape(s.id)+'">عرض</button><button type="button" data-dash-edit="'+escape(s.id)+'">تعديل</button><button type="button" data-dash-duplicate="'+escape(s.id)+'">نسخ</button>'+(isAdmin()?'<button type="button" class="admin-danger-mini" data-dash-delete="'+escape(s.id)+'">حذف نهائي</button>':'')+'</div></td></tr>'
     ).join(""):'<tr><td colspan="7" class="admin-table-empty">لا توجد قطع مطابقة للبحث.</td></tr>';
     $("dashInventoryCount").textContent=items.length+" قطعة من أصل "+state.sites.length;
     $("dashSelectedCount").textContent=chosen.size+" محددة";
@@ -103,6 +108,10 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     }));
     $("dashInventoryRows").querySelectorAll("[data-dash-edit]").forEach(el=>el.addEventListener("click",()=>{
       const s=find(el.dataset.dashEdit);if(!s)return;close();openEditor(s);
+    }));
+    $("dashInventoryRows").querySelectorAll("[data-dash-delete]").forEach(el=>el.addEventListener("click",()=>{
+      const item=find(el.dataset.dashDelete);if(!item||!isAdmin())return;
+      close();void deleteSite(item);
     }));
     $("dashInventoryRows").querySelectorAll("[data-dash-duplicate]").forEach(el=>el.addEventListener("click",()=>{
       const s=find(el.dataset.dashDuplicate);if(!s)return;close();
@@ -127,6 +136,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
       chosen.clear();
       await loadSites();
       render();
+      document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
       toast("تم "+description+" بنجاح.");
     }catch(err){toast("تعذر التعديل: "+(err.message||"خطأ غير متوقع"));}
   }
@@ -187,7 +197,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
       staffLoaded=true;
       const staff=data.staff||[];
       $("dashStaffList").innerHTML=staff.length?staff.map(m=>
-        '<div class="admin-staff-row"><div><strong>'+escape(m.email)+'</strong><small>'+escape(roles[m.role]||m.role)+(m.is_self?" • حسابك":"")+'</small></div>'+
+        '<div class="admin-staff-row"><div><strong>'+escape(m.display_name||"الاسم غير مسجل")+'</strong><small>'+escape(m.email)+' • '+escape(roles[m.role]||m.role)+(m.is_self?" • حسابك":"")+'</small></div>'+
         (m.is_self?'<span class="admin-self-tag">الحساب الحالي</span>':
           '<div class="admin-staff-actions"><select data-staff-role="'+escape(m.id)+'" aria-label="صلاحية '+escape(m.email)+'">'+
           '<option value="editor" '+(m.role==="editor"?"selected":"")+'>محرر</option>'+
@@ -209,15 +219,16 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
   async function createStaff(event){
     event.preventDefault();if(!isAdmin())return;
     const button=$("dashCreateStaff");
-    const email=$("dashStaffEmail").value.trim(),password=$("dashStaffPassword").value;
+    const email=$("dashStaffEmail").value.trim(),password=$("dashStaffPassword").value,display_name=$("dashStaffName").value.trim();
+    if(display_name.length<2||display_name.length>80){staffMessage("اكتب اسم الموظف الصحيح.",true);return;}
     const role=$("dashStaffRole").value;
     if(password.length<14){staffMessage("كلمة المرور يجب أن تتكون من 14 حرفاً على الأقل.",true);return;}
     if(!confirm("إنشاء "+(roles[role]||role)+" للبريد "+email+"؟"))return;
     button.disabled=true;staffMessage("جاري إنشاء الحساب…");
     try{
-      await staffAction({action:"create",email,password,role});
+      await staffAction({action:"create",email,password,role,display_name});
       staffMessage("تم إنشاء الحساب. احفظ كلمة المرور المؤقتة وشاركها مع الموظف بشكل خاص.");
-      $("dashStaffEmail").value="";
+      $("dashStaffEmail").value="";$("dashStaffName").value="";
       staffLoaded=false;await loadStaff();
     }catch(err){staffMessage("تعذر إنشاء الحساب: "+err.message,true)}
     finally{button.disabled=false}
@@ -260,6 +271,60 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     }catch(err){$("dashSettingsMessage").textContent="تعذر الحفظ: "+(err.message||"راجع الصلاحيات.");}
     finally{button.disabled=false}
   }
+  async function saveMyName(event){
+    event.preventDefault();
+    const name=$("dashMyName").value.trim();
+    if(name.length<2||name.length>80){$("dashMyNameNote").textContent="الاسم يجب أن يكون من حرفين إلى 80 حرفاً.";return;}
+    const button=$("dashSaveMyName");button.disabled=true;
+    try{
+      const {data,error}=await db.rpc("set_my_staff_name",{p_name:name});
+      if(error)throw error;
+      getState().staffName=data;
+      $("dashMyNameNote").textContent="تم حفظ الاسم. كل عملية قادمة تظهر باسمك.";
+      $("dashSessionRole").textContent=data+" • "+(roles[getState().staffRole]||"موظف");
+      document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
+      toast("تم حفظ اسم الموظف بنجاح.");
+    }catch(error){$("dashMyNameNote").textContent="تعذر الحفظ: "+(error.message||"خطأ غير معروف");}
+    finally{button.disabled=false}
+  }
+  async function loadActivity(){
+    if(!isAdmin())return;
+    const table=$("dashActivityRows"),count=$("dashActivityCount");
+    count.textContent="جاري تحميل سجل النشاط…";
+    const size=50;
+    let query=db.from("activity_logs")
+      .select("id,created_at,actor_name,action,entity_type,summary",{count:"exact"})
+      .order("created_at",{ascending:false});
+    const kind=$("dashActivityEntity").value;
+    if(kind)query=query.eq("entity_type",kind);
+    const staffName=$("dashActivitySearch").value.trim().replace(/[\\%_]/g,"");
+    if(staffName)query=query.ilike("actor_name","%"+staffName+"%");
+    try{
+      const {data,error,count:total}=await query.range(activityPage*size,(activityPage+1)*size-1);
+      if(error)throw error;
+      activityTotal=total||0;
+      if(activityPage>0&&activityPage*size>=activityTotal){activityPage=0;return void loadActivity();}
+      const types={sites:"القطع",booking_requests:"الحجوزات",site_photos:"الصور",staff_members:"الموظفون",site_settings:"الإعدادات"};
+      const actions={
+        "site.insert":"إضافة قطعة","site.update":"تعديل قطعة","site.delete":"حذف قطعة",
+        "booking.insert":"طلب حجز جديد","booking.update":"تعديل حجز","booking.delete":"حذف حجز",
+        "photo.insert":"إضافة صورة","photo.delete":"حذف صورة",
+        "staff.insert":"إضافة موظف","staff.update":"تعديل موظف","staff.delete":"سحب موظف",
+        "staff.create":"إنشاء حساب","staff.change_role":"تغيير صلاحية","staff.revoke":"سحب صلاحية",
+        "settings.update":"إعدادات المنصة"
+      };
+      table.innerHTML=(data||[]).map(item=>
+        '<tr><td><strong>'+escape(item.actor_name)+'</strong></td>'+
+        '<td><span class="audit-action '+(item.action.endsWith(".delete")?"is-delete":"")+'">'+escape(actions[item.action]||item.action)+'</span></td>'+
+        '<td>'+escape(types[item.entity_type]||item.entity_type)+'</td>'+
+        '<td>'+escape(item.summary)+'</td>'+
+        '<td><time datetime="'+escape(item.created_at)+'">'+new Date(item.created_at).toLocaleString("ar-IQ")+'</time></td></tr>'
+      ).join("")||'<tr><td colspan="5" class="admin-table-empty">ماكو عمليات مطابقة حالياً.</td></tr>';
+      count.textContent=activityTotal+" عملية • صفحة "+(activityPage+1)+" • يحتفظ بالسجل لمدة 30 يوماً";
+      $("dashActivityPrev").disabled=activityPage===0;
+      $("dashActivityNext").disabled=(activityPage+1)*size>=activityTotal;
+    }catch(error){count.textContent="تعذر عرض السجل: "+(error.message||"خطأ غير معروف");}
+  }
   function initialize(){
     document.querySelectorAll("[data-dash-tab]").forEach(el=>el.addEventListener("click",()=>switchTab(el.dataset.dashTab)));
     document.querySelectorAll("[data-dash-go]").forEach(el=>el.addEventListener("click",()=>switchTab(el.dataset.dashGo)));
@@ -300,6 +365,13 @@ export function createAdminDashboard({db,getState,toast,openEditor,loadSites,sel
     $("dashStaffForm").addEventListener("submit",event=>void createStaff(event));
     $("dashReloadStaff").addEventListener("click",()=>void loadStaff());
     $("dashSettingsForm").addEventListener("submit",event=>void saveSettings(event));
+    $("dashMyNameForm").addEventListener("submit",event=>void saveMyName(event));
+    $("dashActivityRefresh").addEventListener("click",()=>void loadActivity());
+    $("dashActivityEntity").addEventListener("change",()=>{activityPage=0;if(activeTab==="activity")void loadActivity();});
+    $("dashActivitySearch").addEventListener("input",()=>{activityPage=0;if(activeTab==="activity")void loadActivity();});
+    $("dashActivityPrev").addEventListener("click",()=>{if(activityPage>0){activityPage--;void loadActivity();}});
+    $("dashActivityNext").addEventListener("click",()=>{if((activityPage+1)*50<activityTotal){activityPage++;void loadActivity();}});
+    document.addEventListener("raafat:activity-changed",()=>{if(activeTab==="activity"&&isAdmin())void loadActivity();});
   }
   initialize();
   return {open,close,render,loadStaff};

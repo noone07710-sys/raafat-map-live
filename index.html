@@ -173,10 +173,17 @@
          <button class="admin-close" id="closeAdminDashboard" type="button" aria-label="إغلاق لوحة التحكم">×</button>
        </div>
      </header>
+     <form id="dashMyNameForm" class="raafat-admin-identity">
+       <label for="dashMyName">اسمك في سجل الإدارة</label>
+       <input class="input" id="dashMyName" maxlength="80" minlength="2" required autocomplete="name" placeholder="اكتب اسمك الحقيقي">
+       <button type="submit" id="dashSaveMyName">حفظ الاسم</button>
+       <small id="dashMyNameNote" role="status">كل عملية تُسجّل باسم الحساب الذي نفذها.</small>
+     </form>
      <nav class="admin-dashboard-tabs" aria-label="أقسام لوحة التحكم">
        <button type="button" data-dash-tab="overview" class="active" aria-selected="true">نظرة عامة</button>
        <button type="button" data-dash-tab="inventory" aria-selected="false">إدارة القطع</button>
        <button type="button" data-dash-tab="bookings" aria-selected="false">طلبات الحجز <span id="dashBookingBadge" class="booking-notice-badge"></span></button>
+       <button type="button" data-dash-tab="activity" id="dashActivityTab" aria-selected="false">سجل النشاط</button>
        <button type="button" data-dash-tab="staff" id="dashStaffTab" aria-selected="false">الموظفون والصلاحيات</button>
        <button type="button" data-dash-tab="settings" id="dashSettingsTab" aria-selected="false">إعدادات الموقع</button>
      </nav>
@@ -233,11 +240,41 @@
  <p id="dashBookingCount" class="admin-note">جاري تحميل الطلبات…</p>
  <div class="admin-table-scroll"><table class="admin-data-table booking-admin-table"><thead><tr><th>المرجع والتاريخ</th><th>الزبون</th><th>الجهة والمنطقة</th><th>الباقة والقطعة</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="dashBookingRows"></tbody></table></div>
  </section>
+ <section class="admin-tab-panel" data-dash-panel="activity" hidden>
+         <div class="admin-section-heading">
+           <div><h3>سجل نشاط الإدارة</h3><p>اسم المنفذ، العملية، التفاصيل والوقت. تُحذف السجلات الأقدم من 30 يوماً تلقائياً.</p></div>
+           <button class="admin-link" id="dashActivityRefresh" type="button">تحديث السجل</button>
+         </div>
+         <div class="admin-inventory-tools">
+           <label for="dashActivitySearch" class="admin-sr-only">بحث باسم الموظف</label>
+           <input id="dashActivitySearch" class="input" placeholder="ابحث باسم الموظف" autocomplete="off">
+           <label for="dashActivityEntity" class="admin-sr-only">نوع العملية</label>
+           <select id="dashActivityEntity" class="input">
+             <option value="">جميع العمليات</option>
+             <option value="sites">القطع</option>
+             <option value="booking_requests">الحجوزات</option>
+             <option value="site_photos">الصور</option>
+             <option value="staff_members">الموظفون</option>
+             <option value="site_settings">الإعدادات</option>
+           </select>
+         </div>
+         <p id="dashActivityCount" class="admin-note">جاري تحميل السجل…</p>
+         <div class="admin-table-scroll"><table class="admin-data-table raafat-activity-table">
+           <thead><tr><th>الموظف</th><th>العملية</th><th>القسم</th><th>التفاصيل</th><th>التاريخ والوقت</th></tr></thead>
+           <tbody id="dashActivityRows"></tbody>
+         </table></div>
+         <div class="raafat-audit-pager">
+           <button id="dashActivityPrev" type="button">السابق</button>
+           <button id="dashActivityNext" type="button">التالي</button>
+         </div>
+       </section>
  <section class="admin-tab-panel" data-dash-panel="staff" hidden>
          <div class="admin-section-heading"><div><h3>إدارة المستخدمين والصلاحيات</h3><p>أنشئ حساب مدير أو محرر جديداً، وحدد من يمكنه تعديل المواقع</p></div></div>
          <div class="admin-widget-grid">
            <form id="dashStaffForm" class="admin-widget admin-staff-form">
              <h4>إنشاء حساب موظف</h4>
+             <label for="dashStaffName">الاسم الكامل للموظف</label>
+             <input id="dashStaffName" class="input" minlength="2" maxlength="80" required autocomplete="off" placeholder="مثال: أحمد علي">
              <label for="dashStaffEmail">البريد الإلكتروني</label><input id="dashStaffEmail" type="email" class="input" required autocomplete="off" placeholder="staff@example.com">
              <label for="dashStaffRole">نوع الصلاحية</label>
              <select class="input" id="dashStaffRole"><option value="editor">محرر مواقع</option><option value="admin">مدير كامل</option></select>

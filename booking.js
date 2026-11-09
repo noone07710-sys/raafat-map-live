@@ -322,7 +322,7 @@ export function setupAdminBookings({db,getState,toast}){
      '<td>'+safe(labels[b.status]||b.status)+'</td>'+
      '<td><select class="input" data-booking-status="'+safe(b.id)+'" '+(b.status==="completed"?"disabled":"")+'>'+
      Object.entries(labels).map(([key,label])=>'<option value="'+key+'" '+(b.status===key?"selected":"")+' '+(!(allowed[b.status]||[]).includes(key)?"disabled":"")+'>'+label+'</option>').join("")+
-     '</select><button type="button" data-booking-link="'+safe(b.tracking_token)+'">نسخ رابط الزبون</button></td></tr>';
+     '</select><button type="button" data-booking-link="'+safe(b.tracking_token)+'">نسخ رابط الزبون</button><button type="button" class="admin-danger-mini" data-booking-delete="'+safe(b.id)+'">حذف الطلب نهائياً</button></td></tr>';
    }).join(""):'<tr><td colspan="6">لا توجد طلبات حجز حتى الآن.</td></tr>';
    table.querySelectorAll("[data-booking-status]").forEach(select=>select.addEventListener("change",async()=>{
     const booking=bookings.find(b=>b.id===select.dataset.bookingStatus);
@@ -333,7 +333,31 @@ export function setupAdminBookings({db,getState,toast}){
        .eq("id",booking.id).eq("status",booking.status).select("id").maybeSingle();
      if(error||!updated){toast("لم يتم اعتماد التغيير: "+(error?.message||"الطلب تغيّر من حساب آخر؛ حدّث القائمة."));select.disabled=false;select.value=booking.status;void load();return;}
     toast("تم تحديث الحجز والقطع المرتبطة به.");
+    document.dispatchEvent(new CustomEvent("raafat:inventory-refresh"));
+    document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
     await load();
+   }));
+   table.querySelectorAll("[data-booking-delete]").forEach(btn=>btn.addEventListener("click",async()=>{
+    const booking=bookings.find(b=>b.id===btn.dataset.bookingDelete);
+    if(!booking)return;
+    if(!getState().staffName?.trim()){
+      toast("يرجى تسجيل اسمك داخل لوحة الإدارة قبل الحذف النهائي.");return;
+    }
+    const ref="RF-"+booking.id.replace(/-/g,"").slice(0,8).toUpperCase();
+    const answer=prompt("الحذف نهائي ولا يمكن استرجاع الطلب أو رابط العميل. اكتب رقم الحجز للتأكيد:\\n"+ref);
+    if(answer===null)return;
+    if(answer.trim()!==ref){toast("رقم التأكيد غير مطابق، لم يُحذف الطلب.");return;}
+    btn.disabled=true;
+    try{
+      const {data,error}=await db.rpc("hard_delete_booking",{p_booking_id:booking.id});
+      if(error)throw error;
+      toast("تم حذف "+(data?.reference||ref)+" نهائياً وتحديث القطع المرتبطة.");
+      page=0;
+      document.dispatchEvent(new CustomEvent("raafat:inventory-refresh"));
+      document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
+      await load();
+    }catch(error){toast("تعذر حذف الطلب: "+(error.message||"خطأ غير معروف"));}
+    finally{btn.disabled=false;}
    }));
    table.querySelectorAll("[data-booking-link]").forEach(btn=>btn.addEventListener("click",async()=>{
     const url=location.origin+location.pathname+"#booking="+btn.dataset.bookingLink;

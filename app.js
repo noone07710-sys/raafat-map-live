@@ -44,7 +44,7 @@ const state = {
  basemap: null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false,
  locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null,
  gpsFixTime:0,gpsFixAccuracy:Infinity,gpsFixHeading:null,gpsFixSpeed:null,nearestFirst:false,nearestLastRefresh:0,
- staffRole:null,siteSettings:null,googleActive:false,
+ staffRole:null,staffName:"",siteSettings:null,googleActive:false,
  vipDirectLink:null,vipDirectLinkEnabled:false
 };
 let toastTimeout;
@@ -1015,8 +1015,15 @@ async function removePhoto(site,photoId){
   state.photoUrls.delete(photo.storage_path);
   const {error:storageError}=await db.storage.from("site-photos").remove([photo.storage_path]);
   await loadSites();
-  if(storageError){console.warn("Orphaned image cleanup:",storageError.message);toast("حذفت الصورة؛ تنظيف الملف المخزن يحتاج مراجعة.");}
-  else toast("تم حذف الصورة من الموقع.");
+  if(storageError){console.warn("Orphaned image cleanup:",storageError.message);toast("تم حذف الصورة من الموقع، وسيُعاد تنظيف ملفها لاحقاً.");}
+  else{
+    if(state.staffRole==="admin"){
+      const ack=await db.rpc("acknowledge_photo_cleanup",{p_paths:[photo.storage_path]});
+      if(ack.error)console.warn("Photo cleanup acknowledgement:",ack.error.message);
+    }
+    toast("تم حذف الصورة من الموقع.");
+  }
+  document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
  }catch(e){toast("تعذر حذف الصورة: "+(e.message||"خطأ غير معروف"));}
 }
 function refreshAdmin(){
@@ -1032,10 +1039,10 @@ async function authCheck(){
  const {data:auth}=await db.auth.getUser();
  state.user=auth?.user||null;
  state.staff=false;
- state.staffRole=null;
+ state.staffRole=null;state.staffName="";
  if(state.user){
-  const {data,error}=await db.from("staff_members").select("role").eq("user_id",state.user.id).maybeSingle();
-  if(!error && data && ["admin","editor"].includes(data.role)){state.staff=true;state.staffRole=data.role;}
+  const {data,error}=await db.from("staff_members").select("role,display_name").eq("user_id",state.user.id).maybeSingle();
+  if(!error && data && ["admin","editor"].includes(data.role)){state.staff=true;state.staffRole=data.role;state.staffName=data.display_name||"";}
  }
  refreshAdmin();
   syncLiveChannels();
@@ -1226,38 +1233,51 @@ async function saveSite(event){
    state.editorId=null;
    await loadSites();
    selectSite(data.id);
+   document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
    toast(photoErrors.length?"تم حفظ القطعة، لكن بعض الصور لم تُرفع: "+photoErrors.join(" | "):"تم حفظ القطعة والصور بنجاح.");
  }catch(error){
    console.error("Save failed:",error.message);
    toast(error.code==="23505"?"رمز القطعة مستخدم مسبقاً. اختر رمزاً مختلفاً.":"تعذر الحفظ: "+(error.message||"تحقق من البيانات والصلاحيات."));
  }finally{actionBusy(false)}
 }
+async function cleanPendingPhotoFiles({silent=true}={}){
+ if(!db||state.staffRole!=="admin")return;
+ try{
+  const {data,error}=await db.from("photo_cleanup_queue").select("storage_path").order("created_at").limit(75);
+  if(error)throw error;
+  const paths=(data||[]).map(row=>row.storage_path).filter(Boolean);
+  if(!paths.length)return;
+  const removed=await db.storage.from("site-photos").remove(paths);
+  if(removed.error)throw removed.error;
+  const ack=await db.rpc("acknowledge_photo_cleanup",{p_paths:paths});
+  if(ack.error)throw ack.error;
+  if(!silent)toast("تم تنظيف ملفات الصور المحذوفة.");
+ }catch(error){
+  console.warn("Pending photo cleanup deferred:",error.message);
+  if(!silent)toast("تم الحذف من قاعدة البيانات؛ تنظيف بعض ملفات الصور معلّق لإعادة المحاولة.");
+ }
+}
 async function deleteSite(site){
  if(state.staffRole!=="admin"||!db)return;
+ if(!state.staffName?.trim()){
+  toast("سجّل اسمك من لوحة الإدارة قبل الحذف النهائي.");adminDashboard?.open();return;
+ }
+ const confirmation=prompt("حذف القطعة نهائياً لا يمكن التراجع عنه. اكتب رمز القطعة للتأكيد:\\n"+site.code);
+ if(confirmation===null)return;
+ if(confirmation.trim()!==site.code){toast("رمز التأكيد غير مطابق، لم تُحذف القطعة.");return;}
  try{
-  const [references,legacy]=await Promise.all([
-    db.from("booking_request_sites").select("id",{count:"exact",head:true}).eq("site_id",site.id),
-    db.from("booking_requests").select("id",{count:"exact",head:true}).eq("site_id",site.id)
-  ]);
-  if(references.error||legacy.error)throw(references.error||legacy.error);
-  if(Number(references.count||0)+Number(legacy.count||0)>0){
-    if(!confirm("هذه القطعة مرتبطة بحجوزات سابقة. هل تريد إخفاءها عن الزبائن مع حفظ التاريخ؟"))return;
-    const {error}=await db.from("sites").update({published:false}).eq("id",site.id);
-    if(error)throw error;
-    await loadSites();toast("تم إخفاء القطعة وحفظ روابط حجوزاتها.");return;
-  }
-  if(!confirm("هل تريد حذف القطعة "+site.code+" نهائياً؟ لا يمكن التراجع."))return;
-  const paths=(site.site_photos||[]).map(p=>p.storage_path);
-  const {error}=await db.from("sites").delete().eq("id",site.id);
+  const {data,error}=await db.rpc("hard_delete_site",{p_site_id:site.id});
   if(error)throw error;
-  if(paths.length){
-    const result=await db.storage.from("site-photos").remove(paths);
-    if(result.error)console.warn("Orphaned photo cleanup:",result.error.message);
-  }
-  state.selected=null;
+  if(state.selected===site.id){state.selected=null;history.replaceState(null,"",location.pathname+location.search);}
   await loadSites();
-  toast("تم حذف القطعة.");
- }catch(error){toast("تعذر حذف الموقع: "+error.message)}
+  document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
+  await cleanPendingPhotoFiles({silent:false});
+  toast("تم حذف القطعة "+(data?.code||site.code)+" نهائياً وتسجيل العملية.");
+ }catch(error){
+  console.warn("Delete site:",error.message);
+  const active=/active booking|booking first|حجز/i.test(error.message||"");
+  toast(active?"القطعة مرتبطة بحجز فعّال. احذف الحجز أو سوِّ وضعه أولاً، ثم احذف القطعة.":"تعذر حذف القطعة: "+(error.message||"خطأ غير معروف"));
+ }
 }
 async function signIn(event){
  event.preventDefault();
@@ -1279,6 +1299,7 @@ async function signIn(event){
   closeModal("loginModal");
   await loadSites();
   adminDashboard?.open();
+  if(state.staffRole==="admin")void cleanPendingPhotoFiles();
   toast("مرحباً بك في لوحة إدارة شركة رأفت.");
  }catch(error){
   const wrong=/invalid login credentials|invalid_credentials/i.test(String(error.message||""));
@@ -1327,7 +1348,7 @@ async function signOut(){
  if(!db)return;
  try{await db.auth.signOut()}catch(e){console.warn(e)}
  adminDashboard?.close();
- state.user=null;state.staff=false;state.staffRole=null;state.selected=null;state.photoUrls.clear();
+ state.user=null;state.staff=false;state.staffRole=null;state.staffName="";state.selected=null;state.photoUrls.clear();
  refreshAdmin();await loadSites();toast("تم تسجيل الخروج.");
 }
 function events(){
@@ -1447,9 +1468,10 @@ async function main(){
      }
    });
  }
- adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,loadSites,selectSite,applySettings:applySiteSettings});
+ adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,deleteSite,loadSites,selectSite,applySettings:applySiteSettings});
  bookingController=setupBookings({db,getState:()=>state,toast});
  document.addEventListener("raafat:booking-selection-changed",()=>render());
+ document.addEventListener("raafat:inventory-refresh",()=>scheduleInventoryReload());
  setupAdminBookings({db,getState:()=>state,toast});
  initializeCatalogLayout();
  initializeMap();events();

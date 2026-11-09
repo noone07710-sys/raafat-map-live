@@ -3948,3 +3948,49 @@ body .map-area #mapHome.raafat-gps-locate.is-realtime::after{
 @media(prefers-reduced-motion:reduce){
  .header .header-actions #bookNow.booking-top-button,.vip-site-action-stack .vip-site-book-button{transition:none!important;transform:none!important}
 }
+
+
+/* RAAFAT admin activity journal, named staff, and permanent deletion controls. */
+.raafat-admin-identity{
+ display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+ margin:12px 18px 0;padding:11px 13px;border-radius:14px;
+ background:linear-gradient(120deg,rgba(17,64,63,.72),rgba(15,43,52,.78));
+ border:1px solid rgba(205,176,119,.28);
+}
+.raafat-admin-identity label{font-size:12px;font-weight:800;color:#e9d3a6;white-space:nowrap}
+.raafat-admin-identity .input{width:min(270px,100%);flex:1 1 180px;min-height:39px;background:#0b2b31;font-size:12px}
+.raafat-admin-identity button{min-height:39px;padding:8px 17px;border-radius:10px;background:#24675d;color:#f7faf5;border:1px solid #729787;font-size:12px;font-weight:800}
+.raafat-admin-identity small{font-size:10px;line-height:1.7;color:#a6c9be;flex:1 1 180px}
+.raafat-admin-identity button:hover{background:#30766a}
+.raafat-admin-identity button:disabled{opacity:.55}
+.admin-sr-only{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}
+.admin-danger-mini{
+ display:inline-flex;align-items:center;justify-content:center;min-height:32px;
+ margin:3px 2px;padding:6px 9px;border-radius:9px;
+ background:rgba(134,47,49,.13);color:#f7a7a1;
+ border:1px solid rgba(233,129,128,.44);
+ font-size:11px;font-weight:750;line-height:1.5;cursor:pointer;
+ white-space:nowrap;
+}
+.admin-danger-mini:hover{background:rgba(169,55,55,.30);border-color:#e69690;color:#ffe4de}
+.admin-danger-mini:disabled{opacity:.5;cursor:not-allowed}
+.raafat-activity-table{width:100%}
+.raafat-activity-table td{vertical-align:middle;line-height:1.75;font-size:11px;overflow-wrap:anywhere}
+.raafat-activity-table td:nth-child(4){min-width:195px;max-width:370px}
+.raafat-activity-table time{font-size:10px;color:#b5d0c7;white-space:nowrap}
+.audit-action{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:8px;border:1px solid rgba(121,189,159,.24);background:rgba(31,95,77,.28);font-size:10px;color:#c7efdb;white-space:nowrap}
+.audit-action.is-delete{border-color:rgba(232,147,135,.39);background:rgba(129,41,45,.20);color:#ffb4ad}
+.raafat-audit-pager{display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 0 18px}
+.raafat-audit-pager button{min-width:90px;min-height:36px;border-radius:10px;border:1px solid #66877f;background:#194848;color:#f0f4ee;font-size:11px;font-weight:750;cursor:pointer}
+.raafat-audit-pager button:hover:not(:disabled){background:#285e57}
+.raafat-audit-pager button:disabled{opacity:.45;cursor:not-allowed}
+.booking-admin-table td:last-child .admin-danger-mini{width:100%;margin-top:9px}
+@media(max-width:680px){
+ .raafat-admin-identity{margin:9px 10px 0;padding:11px;gap:8px}
+ .raafat-admin-identity label{flex:1 1 100%}
+ .raafat-admin-identity .input{min-width:0;width:100%;flex:1 1 100%}
+ .raafat-admin-identity button{flex:1 1 100%}
+ .raafat-admin-identity small{flex:1 1 100%}
+ .raafat-activity-table td:nth-child(4){min-width:180px}
+ .raafat-audit-pager button{min-width:105px}
+}
