@@ -8,6 +8,7 @@ on:
       - 'style.css'
       - 'admin-v3.css'
       - 'theme-day.css'
+      - 'raafat-finish.css'
       - 'arabic-export.js'
       - 'ui-dialog.js'
       - 'admin-dropdown.js'
@@ -120,6 +121,13 @@ jobs:
           assert.match(theme,/#bookingModal \.booking-modal-head\s*\{\s*position:relative!important/,'Booking header must not follow page scroll');
           assert.match(theme,/html\[data-raafat-theme="day"\] \.header \.logo img/,'Day mode logo must be restored');
           assert.match(theme,/html\[data-raafat-theme="day"\] \.details \.detail-empty/,'Day mode empty cards must be legible');
+          const finishCss=fs.readFileSync('raafat-finish.css','utf8');
+          assert.match(finishCss,/html\[data-raafat-theme="day"\] \.browse \.location-card/,'Day listing must have readable cards');
+          assert.match(finishCss,/html\[data-raafat-theme="day"\] \.vip-site-metric/,'Day metrics need matching text contrast');
+          assert.match(finishCss,/#siteModal \.raafat-package-card-grid/,'Editor package cards required');
+          assert.match(finishCss,/#siteModal \.modal\.wide>\.modal-head/,'Editor header must scroll naturally');
+          assert.match(fs.readFileSync('app.js','utf8'),/data-raafat-package/,'Package cards require click behavior');
+          assert.match(fs.readFileSync('index.html','utf8'),/raafat-finish\.css/,'Final style sheet must load last');
           assert.match(app,/request!==premiumMapGeneration/,'An obsolete dark tile load must not override day theme');
           assert.match(theme,/#bookingModal \.booking-tier-card>strong/,'Day mode cards must use dark text');
           assert.match(theme,/#bookingModal \.booking-step-title span/,'Day mode headings must use dark text');
@@ -146,7 +154,7 @@ jobs:
           ];
           const missing = required.filter(id => !html.includes('id="' + id + '"'));
           if (missing.length) throw new Error('Missing essential UI elements: ' + missing.join(', '));
-          for(const file of ['style.css','admin-v3.css','theme-day.css']){
+          for(const file of ['style.css','admin-v3.css','theme-day.css','raafat-finish.css']){
             const css = fs.readFileSync(file,'utf8');
             let depth=0;
             for(const char of css){
@@ -163,7 +171,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          cp index.html style.css admin-v3.css theme-day.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
+          cp index.html style.css admin-v3.css theme-day.css raafat-finish.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
