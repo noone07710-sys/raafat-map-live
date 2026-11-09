@@ -7,6 +7,8 @@ on:
       - 'index.html'
       - 'style.css'
       - 'admin-v3.css'
+      - 'theme-day.css'
+      - 'arabic-export.js'
       - 'ui-dialog.js'
       - 'admin-dropdown.js'
       - 'app.js'
@@ -44,7 +46,7 @@ jobs:
       - name: Validate JavaScript and essential UI controls
         shell: bash
         run: |
-          for file in app.js routing.js booking.js admin-dashboard.js ui-dialog.js admin-dropdown.js brand-map.js google-basemap.js config.js; do
+          for file in app.js routing.js booking.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js; do
             node --input-type=module --check < "$file"
           done
           node --input-type=module <<'MODULE'
@@ -79,6 +81,27 @@ jobs:
           assert.match(admin,/set_my_staff_name/, 'Staff identity editor must exist');
           assert.match(admin,/activity_logs/, 'Admin activity journal must exist');
           assert.match(admin,/dashActivityRows/, 'Audit rows must render');
+          assert.match(admin,/fetchAllForExport/,'Export must fetch all pages');
+          assert.match(code,/enhanceAdminSelects\(modal\)/,'Customer booking dropdowns must be custom');
+          assert.match(app,/STANDARD_PACKAGES/,'Fixed A-D dimensions required');
+          assert.match(app,/setVisualTheme/,'Theme control required');
+          assert.match(app,/recolorRaafatMap/,'Map palette must switch without navigation reset');
+          const fixed=app.match(/const STANDARD_PACKAGES=Object.freeze\((\{[^;]+\})\);/);
+          assert.ok(fixed,'Standard dimensions unavailable');
+          const prices=JSON.parse(fixed[1].replace(/([A-D]):/g,'"$1":'));
+          assert.deepEqual(prices,{A:[1.2,2],B:[2,3],C:[2.5,3.5],D:[3,4]});
+          const csvCode=fs.readFileSync('arabic-export.js','utf8');
+          const {makeArabicCsv,packageName}=await import('data:text/javascript;base64,'+Buffer.from(csvCode).toString('base64'));
+          const sample=makeArabicCsv([{code:'A-1',name:'=2+3',width_m:1.2,height_m:2,status:'available',type:'billboard'}]);
+          assert.ok(sample.startsWith('\uFEFFsep=,\r\n'),'Arabic Excel signature missing');
+          assert.ok(sample.includes("\"'=2+3\""),'Formula injection not escaped');
+          assert.ok(sample.includes('"متاحة"')&&sample.includes('"لوحة إعلانية"'),'Export missing Arabic translations');
+          assert.ok(!sample.includes('"available"')&&!sample.includes('"billboard"'),'Raw English enums leaked');
+          assert.equal(packageName({width_m:2,height_m:3}),'B');
+          const bookingSample=makeArabicCsv([{booking_no:5,phone:'07801234567',status:'pending',created_at:'2026-11-09T09:00:00Z'}],'bookings');
+          assert.ok(bookingSample.includes('RA-5'),'Short booking reference absent');
+          assert.ok(bookingSample.includes('07801234567'),'Iraqi phone corrupted');
+          assert.ok(bookingSample.includes('"بانتظار المراجعة"'),'Booking state translation missing');
           console.log('Booking, navigation and inventory regression contracts passed');
           MODULE
           node <<'NODE'
@@ -95,11 +118,12 @@ jobs:
             'dashActivitySearch', 'dashActivityEntity',
             'dashActivityRefresh', 'dashActivityPrev', 'dashActivityNext',
             'dashStaffName','dashIdentityLocked','dashAdminGreeting',
-            'dashCurrentSection','dashBookingTotalMetric','dashBookingPendingMetric'
+            'dashCurrentSection','dashBookingTotalMetric','dashBookingPendingMetric',
+            'dashExportMenu','dashExportStatus','raafatThemeToggle','fDimensionHint'
           ];
           const missing = required.filter(id => !html.includes('id="' + id + '"'));
           if (missing.length) throw new Error('Missing essential UI elements: ' + missing.join(', '));
-          for(const file of ['style.css','admin-v3.css']){
+          for(const file of ['style.css','admin-v3.css','theme-day.css']){
             const css = fs.readFileSync(file,'utf8');
             let depth=0;
             for(const char of css){
@@ -116,7 +140,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          cp index.html style.css admin-v3.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js brand-map.js google-basemap.js config.js _site/
+          cp index.html style.css admin-v3.css theme-day.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
