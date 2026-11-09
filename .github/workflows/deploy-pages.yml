@@ -114,7 +114,12 @@ jobs:
           assert.match(dropdown,/select\.setAttribute\("aria-hidden","true"\)/,'Native select must not steal user touch');
           assert.match(theme,/#bookingModal select\.raafat-native-select\s*\{\s*display:none!important/,'Native picker must be hidden');
           assert.match(app,/state\.osmBasemap=osm/,'OSM layer must persist for daytime switching');
-          assert.match(app,/if\(visualTheme\(\)==="day"\)revealFallbackIfReady\(\)/,'Daytime map must show original readable OSM tiles');
+          assert.match(app,/fetchRaafatMapStyle\(config\.cartoApiKey,\{arabicEnabled,theme:visualTheme\(\)\}\)/,'Both themes must use premium vector basemap');
+          assert.match(app,/recolorRaafatMap\(renderer,next\)/,'Daytime map should recolor same basemap');
+          assert.ok(!app.includes('if(visualTheme()==="day")revealFallbackIfReady()'),'Day mode must not switch to plain OSM');
+          assert.match(theme,/#bookingModal \.booking-modal-head\s*\{\s*position:relative!important/,'Booking header must not follow page scroll');
+          assert.match(theme,/html\[data-raafat-theme="day"\] \.header \.logo img/,'Day mode logo must be restored');
+          assert.match(theme,/html\[data-raafat-theme="day"\] \.details \.detail-empty/,'Day mode empty cards must be legible');
           assert.match(app,/request!==premiumMapGeneration/,'An obsolete dark tile load must not override day theme');
           assert.match(theme,/#bookingModal \.booking-tier-card>strong/,'Day mode cards must use dark text');
           assert.match(theme,/#bookingModal \.booking-step-title span/,'Day mode headings must use dark text');
