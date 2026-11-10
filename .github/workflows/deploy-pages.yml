@@ -10,6 +10,7 @@ on:
       - 'theme-day.css'
       - 'raafat-finish.css'
       - 'daylight-unified.css'
+      - 'raafat-numbers.css'
       - 'arabic-export.js'
       - 'ui-dialog.js'
       - 'admin-dropdown.js'
@@ -65,6 +66,20 @@ jobs:
           assert.equal(packageForSite({width_m:5,height_m:5,package_class:'E'}), 'E');
           const app=fs.readFileSync('app.js','utf8');
           const admin=fs.readFileSync('admin-dashboard.js','utf8');
+          const numericCss=fs.readFileSync('raafat-numbers.css','utf8');
+          const uiForFigures=fs.readFileSync('index.html','utf8');
+          assert.ok(uiForFigures.indexOf('raafat-numbers.css')>uiForFigures.indexOf('daylight-unified.css'),'English numerals styles must load last');
+          assert.match(uiForFigures,/family=Inter/,'Inter Latin font must be available');
+          assert.match(numericCss,/font-variant-numeric:lining-nums tabular-nums/,'Tabular Latin numerals required');
+          assert.match(app,/toLocaleString\("en-US"/,'Listing dimensions must use western digits');
+          assert.match(admin,/toLocaleString\("en-US"/,'Admin dimensions must use western digits');
+          for(const [w,h,letter] of [[1.2,2,'A'],[2,3,'B'],[2.5,3.5,'C'],[3,4,'D']]){
+            assert.ok(code.includes(w+' × '+h+' m'),'English size missing for '+letter);
+          }
+          assert.ok(!/[\u0660-\u0669\u06f0-\u06f9]/.test(uiForFigures),'Avoid Arabic-Indic digits in visible static UI');
+          assert.ok(!/[\u0660-\u0669\u06f0-\u06f9]/.test(code),'Booking figures should use Latin digits');
+          assert.match(app,/m²/,'Site area must use Latin metric unit');
+          assert.match(code,/m²/,'Booking area must use Latin metric unit');
           assert.match(code,/clearOnEmptyMap/);
           assert.match(code,/\.eq\("status",booking\.status\)/);
           assert.match(app,/if\(currentRequest!==siteLoadSequence\)return/);
@@ -190,7 +205,7 @@ jobs:
           ];
           const missing = required.filter(id => !html.includes('id="' + id + '"'));
           if (missing.length) throw new Error('Missing essential UI elements: ' + missing.join(', '));
-          for(const file of ['style.css','admin-v3.css','theme-day.css','raafat-finish.css','daylight-unified.css']){
+          for(const file of ['style.css','admin-v3.css','theme-day.css','raafat-finish.css','daylight-unified.css','raafat-numbers.css']){
             const css = fs.readFileSync(file,'utf8');
             let depth=0;
             for(const char of css){
@@ -207,7 +222,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          cp index.html style.css admin-v3.css theme-day.css raafat-finish.css daylight-unified.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
+          cp index.html style.css admin-v3.css theme-day.css raafat-finish.css daylight-unified.css raafat-numbers.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
