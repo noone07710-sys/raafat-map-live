@@ -72,7 +72,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("dashBooked").textContent=count("booked");
     $("dashUnpublished").textContent=sites.filter(s=>!s.published).length;
     $("dashArea").textContent=sites.reduce((n,s)=>n+(Number(s.width_m)||0)*(Number(s.height_m)||0),0)
-      .toLocaleString("ar-IQ",{maximumFractionDigits:1});
+      .toLocaleString("en-US",{maximumFractionDigits:1});
     const counts=cities.map(city=>({city,count:sites.filter(s=>s.city===city).length}));
     const max=Math.max(1,...counts.map(x=>x.count));
     $("dashCitiesChart").innerHTML=counts.map(({city,count})=>
@@ -99,7 +99,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
       '<tr><td><input type="checkbox" data-dash-check="'+escape(s.id)+'" aria-label="تحديد '+escape(s.code)+'" '+(chosen.has(s.id)?"checked":"")+'></td>'+
       '<td><strong>'+escape(s.code)+'</strong></td>'+
       '<td><div class="admin-table-name">'+escape(s.name)+'</div><small>'+escape(s.city)+' • '+escape(s.area||s.street||"")+'</small></td>'+
-      '<td>'+Number(s.width_m).toLocaleString("ar-IQ")+' × '+Number(s.height_m).toLocaleString("ar-IQ")+' م</td>'+
+      '<td><span class="raafat-number">'+Number(s.width_m).toLocaleString("en-US",{maximumFractionDigits:2})+' × '+Number(s.height_m).toLocaleString("en-US",{maximumFractionDigits:2})+' m</span></td>'+
       '<td><span class="admin-table-status '+escape(s.status)+'">'+escape(labels[s.status]||s.status)+'</span></td>'+
       '<td><span class="admin-publication '+(s.published?"yes":"no")+'">'+(s.published?"منشورة":"مسودة")+'</span></td>'+
       '<td><div class="admin-row-actions"><button type="button" data-dash-view="'+escape(s.id)+'">عرض</button><button type="button" data-dash-edit="'+escape(s.id)+'">تعديل</button><button type="button" data-dash-duplicate="'+escape(s.id)+'">نسخ</button>'+(isAdmin()?'<button type="button" class="admin-danger-mini" data-dash-delete="'+escape(s.id)+'">حذف نهائي</button>':'')+'</div></td></tr>'
@@ -358,7 +358,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
         '<td><span class="audit-action '+(item.action.endsWith(".delete")?"is-delete":"")+'">'+escape(actions[item.action]||item.action)+'</span></td>'+
         '<td>'+escape(types[item.entity_type]||item.entity_type)+'</td>'+
         '<td>'+escape(item.summary)+'</td>'+
-        '<td><time datetime="'+escape(item.created_at)+'">'+new Date(item.created_at).toLocaleString("ar-IQ")+'</time></td></tr>'
+        '<td><time datetime="'+escape(item.created_at)+'">'+new Date(item.created_at).toLocaleString("en-GB",{hour12:false})+'</time></td></tr>'
       ).join("")||'<tr><td colspan="5" class="admin-table-empty">ماكو عمليات مطابقة حالياً.</td></tr>';
       count.textContent=activityTotal+" عملية • صفحة "+(activityPage+1)+" • يحتفظ بالسجل لمدة 30 يوماً";
       $("dashActivityPrev").disabled=activityPage===0;

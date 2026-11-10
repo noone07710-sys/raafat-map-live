@@ -1,0 +1,80 @@
+/* Raafat Metrics Typography • one Latin font for all numerical data.
+   Arabic labels keep IBM Plex Sans Arabic; numerals, measurements, prices
+   and area values use Inter with tabular lining figures. Both UI themes. */
+:root{
+ --raafat-figure-font:"Inter",Arial,Helvetica,sans-serif;
+ --raafat-text-font:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
+}
+.raafat-number,
+.raafat-measure,
+.raafat-money,
+#bookingModal #bookingPrice,
+#bookingModal #bookingSummaryPrice,
+#bookingModal #bookingSummaryCount,
+#bookingModal .booking-tier-card .booking-tier-top b,
+#bookingModal .booking-tier-card .booking-tier-bottom,
+#bookingModal .booking-price-card strong,
+#bookingModal .booking-total-summary b,
+#siteModal .raafat-package-size-summary strong,
+#siteModal .raafat-package-symbol,
+#siteModal .raafat-package-card small.raafat-number,
+.browse .stat strong,
+.browse .card-meta .raafat-number,
+.browse .listing-category-tag,
+.details .vip-site-metric strong.raafat-number,
+.details .vip-site-spec-cell strong.raafat-number,
+#adminDashboard .admin-overview-stat strong,
+#adminDashboard .raafat-booking-insights strong,
+#adminDashboard .admin-chart-item strong,
+#adminDashboard #dashArea,
+#adminDashboard .raafat-booking-insights .raafat-number,
+#adminDashboard .booking-admin-total,
+#adminDashboard .admin-data-table .raafat-number,
+#adminDashboard #dashBookingTotalMetric,
+#adminDashboard #dashBookingPendingMetric,
+#adminDashboard #dashBookingBadge,
+#adminDashboard .booking-admin-site,
+#adminDashboard .raafat-status-chip .raafat-number{
+ font-family:var(--raafat-figure-font)!important;
+ font-variant-numeric:lining-nums tabular-nums!important;
+ font-feature-settings:"lnum" 1,"tnum" 1!important;
+ letter-spacing:-.025em;
+}
+.raafat-number,.raafat-measure,.raafat-money{
+ direction:ltr;
+ unicode-bidi:isolate;
+ display:inline-block;
+ white-space:nowrap;
+}
+/* Mixed Arabic sentences with numbers use Arabic fallback for letters;
+   Latin numeric glyphs remain consistent even inside longer notes. */
+#bookingModal :is(.booking-price-card,.booking-total-summary,.booking-price-card span,.booking-tier-bottom,.booking-package-info),
+#adminDashboard :is(.booking-admin-total,.booking-admin-sites,.raafat-booking-insights),
+#siteModal :is(.raafat-package-size-summary,.raafat-package-card small),
+.browse .card-meta{
+ font-family:var(--raafat-figure-font),var(--raafat-text-font),sans-serif!important;
+ font-variant-numeric:lining-nums tabular-nums!important;
+}
+#bookingModal :is(#bookingPrice,#bookingSummaryPrice),
+#siteModal .raafat-package-size-summary strong,
+#adminDashboard .admin-overview-stat strong,
+.browse .stat strong{
+ font-weight:800!important;
+}
+#bookingModal .booking-price-card strong,
+#bookingModal .booking-total-summary b{
+ unicode-bidi:plaintext;
+}
+#siteModal :is(#fWidth,#fHeight,#fFaces,#fCoords),
+#bookingModal :is(#bookingEArea,#bookingPhone),
+#adminDashboard input[type="number"]{
+ font-family:var(--raafat-figure-font)!important;
+ font-variant-numeric:lining-nums tabular-nums!important;
+ direction:ltr;
+ text-align:left;
+}
+/* Keep dimensions together; wrap surrounding Arabic text naturally. */
+.browse .card-meta .raafat-number,
+#adminDashboard .admin-data-table .raafat-number{
+ white-space:nowrap;
+}

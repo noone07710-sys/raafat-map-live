@@ -33,7 +33,7 @@ const STANDARD_PACKAGES=Object.freeze({A:[1.2,2],B:[2,3],C:[2.5,3.5],D:[3,4]});
 const byId = id => document.getElementById(id);
 const el = byId;
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const format = value => Number(value).toLocaleString("ar-IQ",{maximumFractionDigits:2});
+const format = value => Number(value).toLocaleString("en-US",{maximumFractionDigits:2});
 const number = value => Number(value);
 const config = window.RAAFAT_CONFIG || {};
 const hasConfig = /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(config.supabaseUrl || "") && String(config.supabaseAnonKey || "").length > 20;
@@ -721,7 +721,7 @@ function renderFilters(){
  const dims=[...new Map(state.sites.map(s=>[sizeKey(s),s])).entries()]
    .sort((a,b)=>(Number(a[1].width_m)*Number(a[1].height_m))-(Number(b[1].width_m)*Number(b[1].height_m)));
  el("sizeFilter").innerHTML='<option value="">جميع القياسات</option>'+
-   dims.map(([key,s])=>'<option value="'+escapeHtml(key)+'">'+format(s.width_m)+' × '+format(s.height_m)+' م</option>').join("");
+   dims.map(([key,s])=>'<option value="'+escapeHtml(key)+'">'+format(s.width_m)+' × '+format(s.height_m)+' m</option>').join("");
  el("sizeFilter").value=dims.some(([key])=>key===selectedSize)?selectedSize:"";
 }
 function renderCityChips(){
@@ -783,7 +783,7 @@ function render(){
   '<button type="button" class="location-card '+(state.selected===s.id?'active':'')+'" data-site="'+escapeHtml(s.id)+'">'+
    '<div class="card-row"><strong>'+escapeHtml(s.name)+'</strong>'+badge(s)+'</div>'+
    '<small><span class="listing-category-tag category-'+(packageForSite(s)||"custom")+'">'+(packageForSite(s)?"فئة "+packageForSite(s):"قياس خاص")+'</span> '+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
-   '<div class="card-meta"><span>'+format(s.width_m)+' × '+format(s.height_m)+' م</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
+   '<div class="card-meta"><span class="raafat-number">'+format(s.width_m)+' × '+format(s.height_m)+' m</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
    (position?'<small class="listing-straight-distance">≈ '+format(straightLineMeters(s,position)/1000)+' كم بخط مستقيم</small>':'')+
   '</button>'
  ).join("") : '<div class="empty">لا توجد قطع مطابقة. '+(state.staff?'يمكن إضافة قطعة من زر «إضافة موقع».':'غيّر الفلاتر لعرض قطع أخرى.')+'</div>';
@@ -1003,8 +1003,8 @@ async function renderDetail(){
    ["المدينة / القضاء",site.city],["المنطقة / الحي",site.area||"—"],
    ["الشارع",site.street||"—"],["أقرب معلم",site.landmark||"—"],
    ["نوع الإعلان",types[site.type]||site.type],
-   ["العرض",format(site.width_m)+" متر"],["الارتفاع",format(site.height_m)+" متر"],
-   ["المساحة الإعلانية",format(site.width_m*site.height_m)+" م²"],
+   ["العرض",format(site.width_m)+" m"],["الارتفاع",format(site.height_m)+" m"],
+   ["المساحة الإعلانية",format(site.width_m*site.height_m)+" m²"],
    ["عدد الأوجه",site.faces],["الإنارة",site.lighting?"مضاءة":"غير مضاءة"],
    ["اتجاه مواجهة الإعلان",site.facing||"—"],["الخامة / المادة",site.material||"—"]
  ];
@@ -1032,9 +1032,9 @@ async function renderDetail(){
       '<div class="vip-site-status-row"><span class="detail-category-tag category-'+category+'">'+(category==="custom"?"قياس خاص":"فئة "+category)+'</span>'+badge(site)+(site.published?'':'<span class="draft">غير منشورة</span>')+'</div>'+
       '<div class="vip-site-intro"><span class="vip-section-eyebrow">ADVERTISING LOCATION</span><h4>'+safeName+'</h4><p>'+safeArea+'</p></div>'+
       '<div class="vip-site-metric-grid">'+
-        '<div class="vip-site-metric"><small>قياس اللوحة</small><strong dir="ltr">'+dims+' <em>م</em></strong></div>'+
-        '<div class="vip-site-metric"><small>المساحة</small><strong dir="ltr">'+format(site.width_m*site.height_m)+' <em>م²</em></strong></div>'+
-        '<div class="vip-site-metric"><small>عدد الأوجه</small><strong>'+escapeHtml(site.faces||1)+'</strong></div>'+
+        '<div class="vip-site-metric"><small>قياس اللوحة</small><strong class="raafat-number" dir="ltr">'+dims+' <em>m</em></strong></div>'+
+        '<div class="vip-site-metric"><small>المساحة</small><strong class="raafat-number" dir="ltr">'+format(site.width_m*site.height_m)+' <em>m²</em></strong></div>'+
+        '<div class="vip-site-metric"><small>عدد الأوجه</small><strong class="raafat-number">'+escapeHtml(site.faces||1)+'</strong></div>'+
         '<div class="vip-site-metric"><small>نوع الإعلان</small><strong>'+safeType+'</strong></div>'+
       '</div>'+
       '<div class="vip-site-action-stack">'+
@@ -1044,7 +1044,7 @@ async function renderDetail(){
           '<button type="button" class="btn btn-ghost" id="copyInquiry">'+raafatIcon("copy")+'<span>نسخ للاستفسار</span></button>')+'</div>'+
       '</div>'+
       '<details class="vip-site-specification"><summary><span><b>المواصفات الكاملة</b><small>العنوان والأبعاد والتجهيزات</small></span><span class="vip-spec-arrow" aria-hidden="true"><svg class="vip-spec-chevron-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>'+
-        '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
+        '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong '+(['العرض','الارتفاع','المساحة الإعلانية','عدد الأوجه'].includes(label)?'class="raafat-number" dir="ltr"':'')+'>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
       '</details>'+
       (site.description?'<div class="vip-site-description"><span class="vip-section-eyebrow">ABOUT THE LOCATION</span><strong>وصف الموقع</strong><p>'+escapeHtml(site.description)+'</p></div>':"")+
       '<div class="vip-site-secondary-actions"><button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">'+raafatIcon("copy")+'<span>نسخ رابط القطعة</span></button>'+
@@ -1085,7 +1085,7 @@ async function renderDetail(){
  if(!whatsapp){
    el("copyInquiry").addEventListener("click",async()=>{
      const summary=COMPANY+"\nاستفسار عن قطعة إعلانية\nالرمز: "+site.code+"\nالموقع: "+(site.governorate||"صلاح الدين")+" / "+site.city+" / "+(site.area||"")+
-       "\nالقياس: "+format(site.width_m)+" × "+format(site.height_m)+" متر\nالرابط: "+location.origin+location.pathname+"#site="+encodeURIComponent(site.id);
+       "\nالقياس: "+format(site.width_m)+" × "+format(site.height_m)+" m\nالرابط: "+location.origin+location.pathname+"#site="+encodeURIComponent(site.id);
      try{await navigator.clipboard.writeText(summary);toast("تم نسخ تفاصيل القطعة. أرسلها لفريق المبيعات.");}
      catch(e){toast("تعذر النسخ التلقائي؛ يمكنك نسخ الرمز: "+site.code);}
    });
@@ -1266,7 +1266,7 @@ function updatePackageHint({selectionChanged=false}={}){
  if(fixed){
    width.value=String(fixed[0]);
    height.value=String(fixed[1]);
-   el("fPackageHint").textContent="الفئة "+selected+" • القياس ثابت: "+fixed[0]+" × "+fixed[1]+" متر، ولا يحتاج إدخاله يدوياً.";
+   el("fPackageHint").textContent="الفئة "+selected+" • القياس ثابت: "+fixed[0]+" × "+fixed[1]+" m، ولا يحتاج إدخاله يدوياً.";
  }else{
    if(selectionChanged){width.value="";height.value="";}
    el("fPackageHint").textContent="الفئة E • أدخل العرض والارتفاع بالمتر حسب قياس موقع الإعلان.";
@@ -1282,7 +1282,7 @@ function updatePackageHint({selectionChanged=false}={}){
  if(summary){
    const strong=summary.querySelector("strong"),label=summary.querySelector("span"),note=summary.querySelector("small");
    if(label)label.textContent=selected==="E"?"الفئة E — قياس خاص":"قياس الفئة "+selected;
-   if(strong)strong.textContent=fixed?(fixed[0]+" × "+fixed[1]+" متر"):"عرض وارتفاع حسب القطعة";
+   if(strong)strong.textContent=fixed?(fixed[0]+" × "+fixed[1]+" m"):"عرض وارتفاع حسب القطعة";
    if(note)note.textContent=fixed?"محسوب تلقائياً — ما يحتاج إدخال":"أدخل القياس من الحقول أدناه";
  }
  el("fDimensionHint").textContent=fixed

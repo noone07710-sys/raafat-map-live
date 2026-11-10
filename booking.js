@@ -2,11 +2,11 @@
 import {raafatConfirm,raafatVerify,raafatCopy} from "./ui-dialog.js";
 import {enhanceAdminSelects} from "./admin-dropdown.js";
 const PACKAGES = Object.freeze({
- A:{size:"عرض ١٢٠ سم • ارتفاع ٢ م",prices:{3:280,6:430,12:670}},
- B:{size:"عرض ٢ م • ارتفاع ٣ م",prices:{3:520,6:760,12:1120}},
- C:{size:"عرض ٢٫٥ م • ارتفاع ٣٫٥ م",prices:{3:760,6:1100,12:1800}},
- D:{size:"عرض ٣ م • ارتفاع ٤ م",prices:{3:800,6:1300,12:2100}},
- E:{size:"إعلانات الأسطح • تسعيرة المتر المربع",prices:{1:15,3:12,6:9,12:6}}
+ A:{size:"1.2 × 2 m",prices:{3:280,6:430,12:670}},
+ B:{size:"2 × 3 m",prices:{3:520,6:760,12:1120}},
+ C:{size:"2.5 × 3.5 m",prices:{3:760,6:1100,12:1800}},
+ D:{size:"3 × 4 m",prices:{3:800,6:1300,12:2100}},
+ E:{size:"إعلانات الأسطح • m²",prices:{1:15,3:12,6:9,12:6}}
 });
 const REGIONS={"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]};
 const $=id=>document.getElementById(id);
@@ -45,15 +45,15 @@ export function setupBookings({db,getState,toast}){
  function renderCards(){
    $("bookingPackageCards").innerHTML=Object.entries(PACKAGES).map(([key,p])=>
      '<button type="button" class="booking-tier-card '+(category.value===key?"selected":"")+'" data-tier="'+key+'" aria-pressed="'+(category.value===key)+'">'+
-     '<span class="booking-tier-top">RAAFAT <b>'+key+'</b></span><strong>فئة '+key+'</strong><small>'+safe(p.size)+'</small>'+
-     '<span class="booking-tier-bottom">'+(key==="E"?"من $6 / م² شهرياً":"لوحة ضوئية • وجهان")+'</span></button>').join("");
+     '<span class="booking-tier-top">RAAFAT <b>'+key+'</b></span><strong>فئة '+key+'</strong><small '+(key==='E'?'':'class="raafat-number" dir="ltr"')+'>'+safe(p.size)+'</small>'+
+     '<span class="booking-tier-bottom">'+(key==="E"?"من $6 / m² شهرياً":"لوحة ضوئية • وجهان")+'</span></button>').join("");
    $("bookingPackageCards").querySelectorAll("[data-tier]").forEach(btn=>btn.addEventListener("click",()=>changeCategory(btn.dataset.tier)));
  }
  function writePackage(){
    const p=PACKAGES[category.value];
    $("bookingPackageInfo").innerHTML=category.value==="E"
      ?'<strong>فئة E • لوحات الأسطح</strong><p>سعر المتر المربع شهرياً حسب المدة: شهر $15، 3 أشهر $12، 6 أشهر $9، 12 شهراً $6. الإجمالي = المساحة × السعر الشهري × عدد الأشهر.</p>'
-     :'<strong>فئة '+category.value+' • '+safe(p.size)+'</strong><p>لوحات ضوئية، والسعر يشمل الإيجار والتصميم والطباعة والتبديل والصيانة • وجهان.</p>';
+     :'<strong>فئة '+category.value+' • <span class="raafat-number">'+safe(p.size)+'</span></strong><p>لوحات ضوئية، والسعر يشمل الإيجار والتصميم والطباعة والتبديل والصيانة • وجهان.</p>';
    if(category.value!=="E"&&duration.value==="1")duration.value="3";
    duration.disabled=false;duration.required=true;
    $("bookingDurationWrap").hidden=false;
@@ -306,8 +306,8 @@ export function setupAdminBookings({db,getState,toast}){
       .select("id",{count:"exact",head:true}).eq("status","pending");
     if(pendingError)throw pendingError;
     $("dashBookingBadge").textContent=pending?String(pending):"";
-    $("dashBookingTotalMetric").textContent=Number(totalCount).toLocaleString("ar-IQ");
-    $("dashBookingPendingMetric").textContent=Number(pending||0).toLocaleString("ar-IQ");
+    $("dashBookingTotalMetric").textContent=Number(totalCount).toLocaleString("en-US");
+    $("dashBookingPendingMetric").textContent=Number(pending||0).toLocaleString("en-US");
     count.textContent="عرض "+(totalCount?page*PAGE_SIZE+1:0)+"–"+Math.min(totalCount,(page+1)*PAGE_SIZE)+" من "+totalCount+" طلب • "+pending+" بانتظار المراجعة";
     pager.hidden=totalCount<=PAGE_SIZE;
     pager.querySelector("[data-page-label]").textContent="صفحة "+(page+1)+" من "+Math.max(1,Math.ceil(totalCount/PAGE_SIZE));
@@ -318,12 +318,12 @@ export function setupAdminBookings({db,getState,toast}){
     const chips=requested.map(s=>
       '<span class="booking-admin-site">'+safe(s.site_code)+'<small>'+safe(s.governorate)+' / '+safe(s.city)+'</small></span>').join("");
     const countText=requested.length?requested.length+" قطع مختارة":"طلب عام / بدون قطع";
-    return '<tr><td><strong>RA-'+safe(b.booking_no)+'</strong><small>'+new Date(b.created_at).toLocaleString("ar-IQ")+'</small></td>'+
+    return '<tr><td><strong>RA-'+safe(b.booking_no)+'</strong><small>'+new Date(b.created_at).toLocaleString("en-GB",{hour12:false})+'</small></td>'+
      '<td>'+safe(b.customer_name)+'<small dir="ltr">'+safe(b.phone)+'</small></td>'+
      '<td>'+safe(b.company_name)+'<small>'+safe(b.governorate)+' / '+safe(b.city)+'</small></td>'+
      '<td><strong>فئة '+safe(b.category)+'</strong> • '+safe(b.duration_months||"كشف موقع")+' أشهر'+
      '<div class="booking-admin-sites">'+(chips||'<span class="booking-admin-site">'+safe(b.site_code||"بدون قطعة محددة")+'</span>')+'</div>'+
-     '<small>'+countText+(b.category==='E'&&b.requested_area_m2?' • المساحة: '+safe(b.requested_area_m2)+' م²':'')+'</small><div class="booking-admin-total">'+(b.quoted_price_usd?money(b.quoted_price_usd):"بعد الكشف")+'</div>'+
+     '<small>'+countText+(b.category==='E'&&b.requested_area_m2?' • المساحة: '+safe(b.requested_area_m2)+' m²':'')+'</small><div class="booking-admin-total raafat-number">'+(b.quoted_price_usd?money(b.quoted_price_usd):"بعد الكشف")+'</div>'+
      requested.map(s=>s.site_id?'<a class="booking-admin-map-link" href="'+safe(location.origin+location.pathname+'#site='+encodeURIComponent(s.site_id))+'" target="_blank" rel="noopener noreferrer"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> '+safe(s.site_code)+'</a>':"").join(" ")+
      '</td>'+
      '<td><span class="raafat-status-chip is-'+safe(b.status)+'">'+safe(labels[b.status]||b.status)+'</span></td>'+
