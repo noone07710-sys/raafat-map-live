@@ -7,7 +7,7 @@ import {compressPhoto, MAX_PHOTO_BYTES} from "./photo-compression.js";
  * All user management is delegated to the protected Supabase admin-staff
  * Edge Function; no service key or privileged database credential lives here.
  */
-export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,loadSites,selectSite,applySettings,reloadStreets}) {
+export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,loadSites,selectSite,applySettings,reloadStreets,refreshSiteCodePreview}) {
   const $=id=>document.getElementById(id);
   const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const cities=["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","كركوك","الحويجة","داقوق","الدبس"];
@@ -140,6 +140,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
       $("formTitle").textContent="إنشاء نسخة جديدة";
       $("photoInfo").textContent="سيتم نسخ تفاصيل القطعة، لكن صورها لا تنسخ تلقائياً.";
       $("fPhotos").value="";
+      void refreshSiteCodePreview();
     }));
   }
   function streetCityOptions(selected=""){
