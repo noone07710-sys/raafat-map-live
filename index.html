@@ -95,6 +95,84 @@
     html[data-raafat-theme="day"] .raafat-street-targets-grid button[aria-pressed="true"]{background:#f8ecd9;border-color:#bc9059}
     @media(max-width:650px){.raafat-street-form{grid-template-columns:1fr}.raafat-street-form-actions,.raafat-street-form #dashStreetMessage{grid-column:1}.raafat-street-targets-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     #siteModal #fCode{font-size:20px!important;font-weight:800!important;letter-spacing:.65px;text-align:center;min-height:47px;}
+
+    /* RAAFAT custom catalog dropdowns • native browser picker is retained only as
+       the underlying accessible value store, with our branded popover on top. */
+    .browse .raafat-select-shell{
+      display:flex;align-items:stretch;width:100%;min-width:0;position:relative;
+      margin:0 0 8px;box-sizing:border-box;
+    }
+    .browse select.raafat-native-select{
+      position:absolute!important;width:1px!important;height:1px!important;
+      min-height:0!important;opacity:0!important;pointer-events:none!important;
+      margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;
+    }
+    .browse .raafat-select-trigger{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      width:100%;min-width:0;min-height:46px;padding:10px 13px;
+      border-radius:12px;border:1px solid rgba(181,214,196,.26);
+      color:#e9f4eb;background:linear-gradient(140deg,#173f3d,#103134);
+      font:650 12px/1.7 "IBM Plex Sans Arabic",Tahoma,sans-serif;
+      text-align:right;box-sizing:border-box;cursor:pointer;
+      box-shadow:inset 0 1px rgba(255,255,255,.05);
+      transition:background .16s,border-color .16s,box-shadow .16s;
+    }
+    .browse .raafat-select-text{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .browse .raafat-select-trigger svg{
+      display:block;flex:0 0 18px;width:18px;height:18px;color:#dfbb83;
+      transition:transform .16s ease;
+    }
+    .browse .raafat-select-trigger:hover{border-color:#c5a77a;background:#1b4c45}
+    .browse .raafat-select-trigger[aria-expanded="true"]{
+      border-color:#e4c291;background:#194842;box-shadow:0 0 0 3px rgba(222,185,128,.12);
+    }
+    .browse .raafat-select-trigger[aria-expanded="true"] svg{transform:rotate(180deg)}
+    .browse .raafat-select-trigger:focus-visible{outline:2px solid #edca91;outline-offset:3px}
+    .browse .raafat-select-trigger:disabled{opacity:.55;cursor:not-allowed}
+    body>.raafat-select-menu.raafat-catalog-options{
+      border:1px solid rgba(217,186,136,.45)!important;
+      border-radius:13px!important;padding:7px!important;gap:4px!important;
+      background:linear-gradient(160deg,#214a42,#102f33)!important;
+      box-shadow:0 16px 46px rgba(0,14,16,.48),inset 0 1px rgba(255,255,255,.1)!important;
+      scrollbar-color:#628b7b #123637;overscroll-behavior:contain;
+    }
+    body>.raafat-select-menu.raafat-catalog-options .raafat-select-option{
+      min-height:42px;border-radius:9px;padding:10px 12px;
+      font:650 12px/1.65 "IBM Plex Sans Arabic",Tahoma,sans-serif;
+      color:#e1f0e8;background:transparent;transition:background .13s;
+    }
+    body>.raafat-select-menu.raafat-catalog-options .raafat-select-option:is(:focus-visible,:hover){
+      background:#316454!important;color:#fff8ec!important;
+    }
+    body>.raafat-select-menu.raafat-catalog-options .raafat-select-option[aria-selected="true"]{
+      color:#f7d9a7!important;background:rgba(222,186,130,.16)!important;
+    }
+    html[data-raafat-theme="day"] .browse .raafat-select-trigger{
+      background:linear-gradient(140deg,#fffdf9,#f5eee3)!important;
+      color:#344d41!important;border-color:#decdbb!important;
+      box-shadow:0 2px 7px rgba(106,75,49,.045)!important;
+    }
+    html[data-raafat-theme="day"] .browse .raafat-select-trigger:hover{
+      background:#fff4e5!important;border-color:#bf976a!important;
+    }
+    html[data-raafat-theme="day"] .browse .raafat-select-trigger[aria-expanded="true"]{
+      background:#fff1df!important;border-color:#b98a55!important;
+      box-shadow:0 0 0 3px rgba(188,142,86,.12)!important;
+    }
+    html[data-raafat-theme="day"] .browse .raafat-select-trigger svg{color:#a76c3e!important}
+    html[data-raafat-theme="day"] body>.raafat-select-menu.raafat-catalog-options{
+      background:#fffaf3!important;color:#2d493b!important;
+      border-color:#d9b790!important;box-shadow:0 16px 38px rgba(105,73,43,.2)!important;
+    }
+    html[data-raafat-theme="day"] body>.raafat-select-menu.raafat-catalog-options .raafat-select-option{
+      color:#344e42!important;background:transparent!important;
+    }
+    html[data-raafat-theme="day"] body>.raafat-select-menu.raafat-catalog-options .raafat-select-option:is(:focus-visible,:hover){
+      color:#885322!important;background:#f5e8d5!important;
+    }
+    html[data-raafat-theme="day"] body>.raafat-select-menu.raafat-catalog-options .raafat-select-option[aria-selected="true"]{
+      color:#89521e!important;background:#f1dfc4!important;
+    }
   </style>
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
