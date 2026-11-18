@@ -55,7 +55,7 @@ export async function compressPhoto(file) {
     const initialScale = Math.min(1, 1920 / maxDimension);
     let width = Math.max(1, Math.round(decoded.width * initialScale));
     let height = Math.max(1, Math.round(decoded.height * initialScale));
-    for (let pass = 0; pass < 12; pass++) {
+    for (let pass = 0; pass < 14; pass++) {
       canvas.width = width;
       canvas.height = height;
       const context = canvas.getContext("2d", { alpha: true });
@@ -63,7 +63,7 @@ export async function compressPhoto(file) {
       context.imageSmoothingEnabled = true;
       context.imageSmoothingQuality = "high";
       context.drawImage(decoded.image, 0, 0, width, height);
-      for (const quality of [0.88, 0.76, 0.65, 0.53, 0.42, 0.32, 0.23]) {
+      for (const quality of [0.86, 0.76, 0.67]) {
         const output = await encodeWebp(canvas, quality);
         if (output.size <= MAX_PHOTO_BYTES && output.size > 0) {
           const name = String(file.name || "raafat-photo").replace(/\.[^.]+$/, "") + ".webp";
@@ -72,8 +72,8 @@ export async function compressPhoto(file) {
         }
       }
       if (width <= 1 && height <= 1) break;
-      width = Math.max(1, Math.floor(width * 0.78));
-      height = Math.max(1, Math.floor(height * 0.78));
+      width = Math.max(1, Math.floor(width * 0.82));
+      height = Math.max(1, Math.floor(height * 0.82));
     }
     throw new Error("لم نتمكن من الوصول إلى 200 كيلوبايت. اختر صورة أخرى.");
   } catch (error) {
