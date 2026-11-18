@@ -185,6 +185,22 @@ jobs:
           assert.match(theme,/#bookingModal \.booking-step-title span/,'Day mode headings must use dark text');
           const ui=fs.readFileSync('index.html','utf8');
           assert.match(ui,/id="bookingClose"[\s\S]{0,350}<svg class="raafat-booking-close-icon"/,'Booking close must have branded SVG');
+          // Street directory regression: never ship a partially wired filter/editor.
+          for(const id of ['streetFilter','streetTargetsWrap','streetTargets','fStreetId',
+            'dashStreetsTab','dashStreetGov','dashStreetCity','dashStreetName',
+            'dashAssignStreet','dashStreetLinkList','dashLinkStreetSites']){
+            assert.ok(ui.includes('id="'+id+'"'),'Street UI control missing: '+id);
+          }
+          assert.ok(!ui.includes('id="fName"'),'Legacy site-name field must not return');
+          assert.match(app,/function renderStreetFilterOptions\(/,'Street search filter must be live');
+          assert.match(app,/function renderAdminStreets\(/,'Editor must use saved street directory');
+          assert.match(app,/await loadStreets\(\)/,'Street directory must load on startup');
+          assert.match(app,/street_id/,'Site changes must persist street references');
+          assert.match(admin,/async function assignStreetSites\(/,'Admin bulk street assignment missing');
+          assert.match(admin,/async function saveStreet\(/,'Admin street creation missing');
+          assert.match(app,/<section class="vip-site-specification"/,'Full specifications should be visible');
+          assert.ok(!app.includes('<details class="vip-site-specification"'),
+            'Specifications must not hide behind an accordion');
           console.log('Booking, navigation and inventory regression contracts passed');
           MODULE
           node <<'NODE'
