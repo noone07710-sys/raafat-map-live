@@ -15,6 +15,7 @@ on:
       - 'ui-dialog.js'
       - 'admin-dropdown.js'
       - 'app.js'
+      - 'photo-compression.js'
       - 'booking.js'
       - 'routing.js'
       - 'admin-dashboard.js'
@@ -49,7 +50,7 @@ jobs:
       - name: Validate JavaScript and essential UI controls
         shell: bash
         run: |
-          for file in app.js routing.js booking.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js; do
+          for file in app.js photo-compression.js routing.js booking.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js; do
             node --input-type=module --check < "$file"
           done
           node --input-type=module <<'MODULE'
@@ -222,7 +223,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site
-          cp index.html style.css admin-v3.css theme-day.css raafat-finish.css daylight-unified.css raafat-numbers.css app.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
+          cp index.html style.css admin-v3.css theme-day.css raafat-finish.css daylight-unified.css raafat-numbers.css app.js photo-compression.js booking.js routing.js admin-dashboard.js ui-dialog.js admin-dropdown.js arabic-export.js brand-map.js google-basemap.js config.js _site/
           mkdir -p _site/admin
           cp admin/index.html _site/admin/index.html
           mkdir -p _site/assets
