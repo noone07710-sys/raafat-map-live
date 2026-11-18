@@ -1569,10 +1569,10 @@ function events(){
  const legend=el("vipLegend");
  network.addEventListener("click",()=>{
    state.selected=null;
-   for(const id of ["search","governorateFilter","cityFilter","statusFilter","typeFilter","sizeFilter"]){
+   for(const id of ["search","governorateFilter","cityFilter","streetFilter","statusFilter","typeFilter","sizeFilter"]){
      el(id).value="";
    }
-   renderCityOptions();render();
+   renderCityOptions();renderStreetFilterOptions();render();
    if(state.map){
      state.map.fitBounds(window.L.latLngBounds(Object.values(CITY_CENTERS)),{
        padding:[58,74],maxZoom:9,animate:!window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -1595,14 +1595,21 @@ function events(){
      if(!navigationController?.isActive()&&!bookingController?.isSelecting())zoomAll();
    },260);
  });
- for(const filter of ["cityFilter","statusFilter","typeFilter","sizeFilter"]){
+ el("cityFilter").addEventListener("change",()=>{renderStreetFilterOptions();render();zoomAll()});
+ for(const filter of ["streetFilter","statusFilter","typeFilter","sizeFilter"]){
    el(filter).addEventListener("change",()=>{render();zoomAll()});
  }
- el("governorateFilter").addEventListener("change",()=>{renderCityOptions();render();zoomAll()});
+ el("governorateFilter").addEventListener("change",()=>{renderCityOptions();renderStreetFilterOptions();render();zoomAll()});
  el("fGovernorate").addEventListener("change",()=>renderAdminCities());
+ el("fCity").addEventListener("change",()=>renderAdminStreets());
+ el("addStreetFromEditor").addEventListener("click",()=>{
+  if(state.staffRole!=="admin"){toast("إضافة شارع جديد للمدير فقط.");return;}
+  closeModal("siteModal");
+  adminDashboard?.openStreets();
+ });
  el("clearFilters").addEventListener("click",()=>{
-  for(const id of ["search","governorateFilter","cityFilter","statusFilter","typeFilter","sizeFilter"])el(id).value="";
-  renderCityOptions();render();zoomAll();
+  for(const id of ["search","governorateFilter","cityFilter","streetFilter","statusFilter","typeFilter","sizeFilter"])el(id).value="";
+  renderCityOptions();renderStreetFilterOptions();render();zoomAll();
  });
  el("newSite").addEventListener("click",()=>openEditor());
  el("loginButton").addEventListener("click",()=>openModal("loginModal"));
@@ -1706,7 +1713,7 @@ async function main(){
  el("raafatThemeToggle")?.addEventListener("click",()=>{
    setVisualTheme(visualTheme()==="day"?"night":"day",{save:true});
  });
- adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,deleteSite,loadSites,selectSite,applySettings:applySiteSettings});
+ adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,deleteSite,loadSites,selectSite,applySettings:applySiteSettings,reloadStreets:loadStreets});
  bookingController=setupBookings({db,getState:()=>state,toast});
  document.addEventListener("raafat:booking-selection-changed",()=>render());
  document.addEventListener("raafat:inventory-refresh",()=>scheduleInventoryReload());
@@ -1755,6 +1762,7 @@ async function main(){
  await authCheck();
  if(state.staffRole==="admin")void cleanPendingPhotoFiles();
  await loadSiteSettings();
+ await loadStreets();
  if(ADMIN_ENTRY&&!state.staff)openModal("loginModal");
  await loadSites();
  // An empty inventory is not a blank map: introduce the service areas.
