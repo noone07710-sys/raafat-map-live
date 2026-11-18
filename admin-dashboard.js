@@ -7,12 +7,14 @@ import {compressPhoto, MAX_PHOTO_BYTES} from "./photo-compression.js";
  * All user management is delegated to the protected Supabase admin-staff
  * Edge Function; no service key or privileged database credential lives here.
  */
-export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,loadSites,selectSite,applySettings}) {
+export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,loadSites,selectSite,applySettings,reloadStreets}) {
   const $=id=>document.getElementById(id);
   const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const cities=["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","كركوك","الحويجة","داقوق","الدبس"];
   const labels={available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
   const roles={admin:"مدير كامل",editor:"محرر مواقع"};
+  const regions={"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]};
+  const streetSiteSelection=new Set();
   const chosen=new Set();
   let staffLoaded=false,activeTab="overview",settingsLoaded=false,activityPage=0,activityTotal=0,exportBusy=false,compressBusy=false;
   const isAdmin=()=>getState().staffRole==="admin";
@@ -25,6 +27,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("dashStaffTab").hidden=!isAdmin();
     $("dashSettingsTab").hidden=!isAdmin();
     $("dashActivityTab").hidden=!isAdmin();
+    $("dashStreetsTab").hidden=!isAdmin();
     $("dashExportBookings").hidden=!isAdmin();
     $("dashMyName").value=state.staffName||"";
     $("dashMyNameForm").hidden=Boolean(state.staffName);
@@ -47,10 +50,10 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     document.body.classList.remove("dashboard-open");
   }
   function switchTab(tab){
-    if(["staff","settings","bookings","activity"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
+    if(["staff","settings","streets","bookings","activity"].includes(tab)&&!isAdmin()){toast("هذا القسم للمدير فقط.");return;}
     activeTab=tab;
     closeExportMenu();
-    const titles={overview:"نظرة عامة",inventory:"إدارة القطع",bookings:"طلبات الحجز",activity:"سجل النشاط",staff:"فريق الإدارة",settings:"الإعدادات"};
+    const titles={overview:"نظرة عامة",inventory:"إدارة القطع",streets:"دليل الشوارع",bookings:"طلبات الحجز",activity:"سجل النشاط",staff:"فريق الإدارة",settings:"الإعدادات"};
     $("dashCurrentSection").textContent=titles[tab]||"إدارة رأفت";
     document.querySelectorAll("[data-dash-tab]").forEach(btn=>{
       const selected=btn.dataset.dashTab===tab;
@@ -59,6 +62,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     });
     document.querySelectorAll("[data-dash-panel]").forEach(panel=>panel.hidden=panel.dataset.dashPanel!==tab);
     if(tab==="inventory")renderInventory();
+    if(tab==="streets")renderStreets();
     if(tab==="bookings")document.dispatchEvent(new CustomEvent("raafat:bookings-tab"));
     if(tab==="staff"&&!staffLoaded)void loadStaff();
     if(tab==="settings")loadSettingsForm();
@@ -79,6 +83,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("dashCitiesChart").innerHTML=counts.map(({city,count})=>
       '<div class="admin-chart-item"><span>'+escape(city)+'</span><div class="admin-chart-track"><i style="width:'+Math.max(0,Math.min(100,count/max*100))+'%"></i></div><strong>'+count+'</strong></div>').join("");
     if(activeTab==="inventory")renderInventory();
+    if(activeTab==="streets")renderStreets();
   }
   function matchingSites(){
     const state=getState();
@@ -86,7 +91,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     const st=$("dashInventoryStatus").value;
     const pub=$("dashInventoryPublication").value;
     return state.sites.filter(s=>
-      (!q||[s.name,s.code,s.governorate,s.city,s.area,s.street,s.landmark].some(t=>
+      (!q||[s.code,s.governorate,s.city,s.area,s.street,s.landmark].some(t=>
         String(t||"").toLocaleLowerCase().includes(q))) &&
       (!st||s.status===st) &&
       (!pub||(pub==="published"?s.published:!s.published))
@@ -99,7 +104,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("dashInventoryRows").innerHTML=items.length?items.map(s=>
       '<tr><td><input type="checkbox" data-dash-check="'+escape(s.id)+'" aria-label="تحديد '+escape(s.code)+'" '+(chosen.has(s.id)?"checked":"")+'></td>'+
       '<td><strong>'+escape(s.code)+'</strong></td>'+
-      '<td><div class="admin-table-name">'+escape(s.name)+'</div><small>'+escape(s.city)+' • '+escape(s.area||s.street||"")+'</small></td>'+
+      '<td><div class="admin-table-name">'+escape(s.street||s.city)+'</div><small>'+escape(s.area||"")+' • '+escape(s.city)+'</small></td>'+
       '<td><span class="raafat-number">'+Number(s.width_m).toLocaleString("en-US",{maximumFractionDigits:2})+' × '+Number(s.height_m).toLocaleString("en-US",{maximumFractionDigits:2})+' m</span></td>'+
       '<td><span class="admin-table-status '+escape(s.status)+'">'+escape(labels[s.status]||s.status)+'</span></td>'+
       '<td><span class="admin-publication '+(s.published?"yes":"no")+'">'+(s.published?"منشورة":"مسودة")+'</span></td>'+
@@ -132,11 +137,132 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
       openEditor(s);
       getState().editorId=null;
       $("fCode").value="";
-      $("fName").value=s.name+" — نسخة";
       $("formTitle").textContent="إنشاء نسخة جديدة";
       $("photoInfo").textContent="سيتم نسخ تفاصيل القطعة، لكن صورها لا تنسخ تلقائياً.";
       $("fPhotos").value="";
     }));
+  }
+  function streetCityOptions(selected=""){
+    const gov=$("dashStreetGov").value,select=$("dashStreetCity"),options=regions[gov]||[];
+    select.innerHTML=options.map(city=>'<option value="'+escape(city)+'">'+escape(city)+'</option>').join("");
+    select.value=options.includes(selected)?selected:options[0]||"";
+    select.dispatchEvent(new Event("raafat-select-sync"));
+  }
+  function resetStreetEditor(){
+    $("dashStreetEditId").value="";
+    $("dashStreetName").value="";
+    $("dashStreetSave").textContent="حفظ الشارع";
+    $("dashStreetCancelEdit").hidden=true;
+  }
+  function renderStreetLinks(){
+    const id=$("dashAssignStreet").value;
+    const street=(getState().streets||[]).find(s=>s.id===id);
+    const target=$("dashStreetLinkList");
+    if(!street){
+      target.innerHTML='<p class="admin-note">اختر الشارع لعرض القطع القابلة للربط.</p>';
+      $("dashLinkStreetSites").disabled=true;
+      return;
+    }
+    const sites=(getState().sites||[]).filter(s=>s.governorate===street.governorate&&s.city===street.city)
+       .sort((a,b)=>a.code.localeCompare(b.code,undefined,{numeric:true}));
+    const eligible=sites.filter(s=>s.street_id!==id);
+    for(const siteId of [...streetSiteSelection])if(!eligible.some(s=>s.id===siteId))streetSiteSelection.delete(siteId);
+    target.innerHTML=sites.length?sites.map(s=>{
+      const linked=s.street_id===id;
+      return '<label><input type="checkbox" data-street-site="'+escape(s.id)+'" '+(linked?'checked disabled':streetSiteSelection.has(s.id)?'checked':'')+'>'+
+       '<span><strong>'+escape(s.code)+'</strong><small> • '+escape(s.area||"بدون حي")+'</small><small>'+ (linked?' • مربوط مسبقاً':' • '+escape(s.street||"غير مربوط"))+'</small></span></label>';
+    }).join(""):'<p class="admin-note">لا توجد قطع مسجّلة في هذه المدينة بعد.</p>';
+    target.querySelectorAll("[data-street-site]:not([disabled])").forEach(input=>input.addEventListener("change",()=>{
+      input.checked?streetSiteSelection.add(input.dataset.streetSite):streetSiteSelection.delete(input.dataset.streetSite);
+      $("dashLinkStreetSites").disabled=streetSiteSelection.size===0;
+    }));
+    $("dashLinkStreetSites").disabled=streetSiteSelection.size===0;
+  }
+  function renderStreets(){
+    if(!isAdmin())return;
+    const streets=getState().streets||[],sites=getState().sites||[];
+    $("dashStreetsRows").innerHTML=streets.length?streets.map(st=>{
+      const count=sites.filter(s=>s.street_id===st.id).length;
+      return '<div class="raafat-street-row"><div><strong>'+escape(st.name)+'</strong><small>'+escape(st.governorate)+' / '+escape(st.city)+' • '+count+' قطعة</small></div>'+
+       '<div class="raafat-street-row-actions"><button type="button" data-street-edit="'+escape(st.id)+'">تعديل</button>'+
+       (count?'':'<button type="button" data-street-delete="'+escape(st.id)+'">حذف</button>')+'</div></div>';
+    }).join(""):'<p class="admin-note">لم تُضف شوارع بعد.</p>';
+    $("dashStreetsRows").querySelectorAll("[data-street-edit]").forEach(button=>button.addEventListener("click",()=>{
+      const st=streets.find(row=>row.id===button.dataset.streetEdit);if(!st)return;
+      $("dashStreetEditId").value=st.id;
+      $("dashStreetGov").value=st.governorate;
+      $("dashStreetGov").dispatchEvent(new Event("raafat-select-sync"));
+      streetCityOptions(st.city);
+      $("dashStreetName").value=st.name;
+      $("dashStreetSave").textContent="حفظ تعديل الشارع";
+      $("dashStreetCancelEdit").hidden=false;
+      $("dashStreetName").focus();
+    }));
+    $("dashStreetsRows").querySelectorAll("[data-street-delete]").forEach(button=>button.addEventListener("click",async()=>{
+      const st=streets.find(row=>row.id===button.dataset.streetDelete);if(!st)return;
+      if(!(await raafatConfirm({title:"حذف اسم شارع",message:"حذف الشارع "+st.name+" من الدليل؟",detail:"يمكن حذف الشارع غير المرتبط بأي قطعة فقط.",danger:true,confirmText:"حذف الشارع"})))return;
+      const {error}=await db.from("ad_streets").delete().eq("id",st.id);
+      if(error){toast("تعذر حذف الشارع: "+error.message);return;}
+      streetSiteSelection.clear();
+      await reloadStreets();
+      renderStreets();
+      toast("تم حذف الشارع غير المستخدم.");
+    }));
+    const streetSelect=$("dashAssignStreet"),selected=streetSelect.value;
+    streetSelect.innerHTML='<option value="">اختر الشارع الهدف</option>'+streets.map(st=>
+      '<option value="'+escape(st.id)+'">'+escape(st.name)+' — '+escape(st.city)+'</option>').join("");
+    streetSelect.value=streets.some(st=>st.id===selected)?selected:"";
+    streetSelect.dispatchEvent(new Event("raafat-select-sync"));
+    renderStreetLinks();
+  }
+  async function saveStreet(event){
+    event.preventDefault();if(!isAdmin())return;
+    const id=$("dashStreetEditId").value,name=$("dashStreetName").value.trim().replace(/\\s+/g," ");
+    const governorate=$("dashStreetGov").value,city=$("dashStreetCity").value;
+    if(name.length<2||name.length>140||!(regions[governorate]||[]).includes(city)){
+      $("dashStreetMessage").textContent="راجع اسم الشارع والمحافظة والمدينة.";return;
+    }
+    const button=$("dashStreetSave");
+    button.disabled=true;$("dashStreetMessage").textContent="جارٍ حفظ الشارع…";
+    try{
+      const {error}=id
+        ?await db.from("ad_streets").update({governorate,city,name}).eq("id",id)
+        :await db.from("ad_streets").insert({governorate,city,name});
+      if(error)throw error;
+      resetStreetEditor();
+      await reloadStreets();
+      await loadSites();
+      renderStreets();
+      $("dashStreetMessage").textContent="تم حفظ اسم الشارع وربطه بدليل الموقع.";
+      toast("تم حفظ الشارع بنجاح.");
+    }catch(error){
+      $("dashStreetMessage").textContent=error.code==="23505"
+        ?"هذا الشارع محفوظ مسبقاً في نفس المدينة.":"تعذر الحفظ: "+error.message;
+    }finally{button.disabled=false;}
+  }
+  async function assignStreetSites(){
+    if(!isAdmin()||!streetSiteSelection.size)return;
+    const st=(getState().streets||[]).find(x=>x.id===$("dashAssignStreet").value);
+    if(!st)return;
+    const ids=[...streetSiteSelection].filter(id=>(getState().sites||[]).some(s=>s.id===id&&s.city===st.city&&s.governorate===st.governorate));
+    if(!ids.length)return;
+    if(!(await raafatConfirm({title:"ربط القطع بالشارع",message:"ربط "+ids.length+" قطعة مع "+st.name+"؟",detail:"لن تتغير الإحداثيات أو قياسات القطع، فقط اسم الشارع وربطه.",confirmText:"ربط القطع"})))return;
+    const button=$("dashLinkStreetSites");button.disabled=true;
+    $("dashStreetLinkMessage").textContent="جارٍ ربط القطع المحددة…";
+    try{
+      const {data,error}=await db.from("sites").update({street_id:st.id})
+        .in("id",ids).eq("governorate",st.governorate).eq("city",st.city).select("id");
+      if(error)throw error;
+      if((data||[]).length!==ids.length)throw Error("لم يتم تحديث كل القطع؛ راجع الصلاحيات.");
+      streetSiteSelection.clear();
+      await loadSites();
+      renderStreets();
+      $("dashStreetLinkMessage").textContent="تم ربط "+ids.length+" قطعة بشارع "+st.name+" بنجاح.";
+      toast("تم تحديث شوارع القطع المحددة.");
+    }catch(error){
+      $("dashStreetLinkMessage").textContent="تعذر الربط: "+error.message;
+      renderStreetLinks();
+    }finally{button.disabled=false;}
   }
   async function bulkUpdate(patch,description){
     if(!isAdmin()&&("status" in patch||"published" in patch)){toast("هذا الإجراء للمدير فقط.");return;}
@@ -462,6 +588,12 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     });
     $("dashChangePassword").addEventListener("click",()=>{close();$("changePasswordButton").click()});
     $("dashRefresh").addEventListener("click",async()=>{await loadSites();render();toast("تم تحديث البيانات.")});
+    streetCityOptions();
+    $("dashStreetGov").addEventListener("change",()=>streetCityOptions());
+    $("dashStreetForm").addEventListener("submit",event=>void saveStreet(event));
+    $("dashStreetCancelEdit").addEventListener("click",resetStreetEditor);
+    $("dashAssignStreet").addEventListener("change",()=>{streetSiteSelection.clear();renderStreetLinks()});
+    $("dashLinkStreetSites").addEventListener("click",()=>void assignStreetSites());
     for(const [id,event] of [["dashInventorySearch","input"],["dashInventoryStatus","change"],["dashInventoryPublication","change"]]){
       $(id).addEventListener(event,()=>{chosen.clear();renderInventory();});
     }
@@ -503,5 +635,5 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     document.addEventListener("raafat:activity-changed",()=>{if(activeTab==="activity"&&isAdmin())void loadActivity();});
   }
   initialize();
-  return {open,close,render,loadStaff};
+  return {open,close,render,loadStaff,openStreets:()=>{open();switchTab("streets");}};
 }
