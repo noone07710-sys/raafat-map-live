@@ -1,6 +1,7 @@
 import {raafatConfirm} from "./ui-dialog.js";
 import {enhanceAdminSelects} from "./admin-dropdown.js";
 import {downloadArabicCsv} from "./arabic-export.js";
+import {compressPhoto, MAX_PHOTO_BYTES} from "./photo-compression.js";
 /**
  * RA'AFAT CONTROL CENTER
  * All user management is delegated to the protected Supabase admin-staff
@@ -13,7 +14,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
   const labels={available:"متاحة",reserved:"محجوزة",booked:"مؤجرة",maintenance:"صيانة"};
   const roles={admin:"مدير كامل",editor:"محرر مواقع"};
   const chosen=new Set();
-  let staffLoaded=false,activeTab="overview",settingsLoaded=false,activityPage=0,activityTotal=0,exportBusy=false;
+  let staffLoaded=false,activeTab="overview",settingsLoaded=false,activityPage=0,activityTotal=0,exportBusy=false,compressBusy=false;
   const isAdmin=()=>getState().staffRole==="admin";
 
   function open(){
@@ -307,6 +308,85 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     }catch(err){$("dashSettingsMessage").textContent="تعذر الحفظ: "+(err.message||"راجع الصلاحيات.");}
     finally{button.disabled=false}
   }
+  async function compressExistingPhotos(){
+    if(!isAdmin()||compressBusy){if(!isAdmin())toast("ضغط الصور القديمة للمدير فقط.");return;}
+    const confirmed=await raafatConfirm({
+      title:"ضغط صور القطع القديمة",
+      message:"سيتم تنزيل الصور القديمة وضغط كل صورة تتجاوز 200 KB ثم حفظ النسخة المحسّنة وربطها بنفس القطعة.",
+      detail:"لن نحذف الصورة الأصلية إلا بعد نجاح رفع البديل وربطه. اترك هذه الصفحة مفتوحة حتى تنتهي العملية.",
+      confirmText:"ابدأ ضغط الصور"
+    });
+    if(!confirmed)return;
+    const button=$("dashCompressOldPhotos"),status=$("dashCompressOldStatus");
+    compressBusy=true;button.disabled=true;
+    status.textContent="جارٍ قراءة الصور المخزّنة…";
+    let converted=0,skipped=0,failed=0,bytesSaved=0;
+    try{
+      const rows=[];
+      for(let page=0;page<50;page++){
+        const {data,error}=await db.from("site_photos")
+          .select("id,site_id,storage_path,caption,created_at")
+          .order("created_at",{ascending:true}).order("id",{ascending:true})
+          .range(page*1000,page*1000+999);
+        if(error)throw error;
+        rows.push(...(data||[]));
+        if(!data||data.length<1000)break;
+      }
+      if(!rows.length){status.textContent="لا توجد صور قديمة تحتاج فحصاً.";return;}
+      for(let index=0;index<rows.length;index++){
+        const old=rows[index];
+        status.textContent="جاري معالجة الصورة "+(index+1)+" من "+rows.length+" • اكتملت "+converted+" صورة";
+        try{
+          const source=await db.storage.from("site-photos").download(old.storage_path);
+          if(source.error||!source.data)throw source.error||Error("تعذّر تنزيل الصورة.");
+          const filename=old.storage_path.split("/").pop()||"photo.jpg";
+          const extension=filename.split(".").pop()?.toLowerCase();
+          const inferredMime=extension==="png"?"image/png":extension==="webp"?"image/webp":"image/jpeg";
+          const mime=["image/jpeg","image/png","image/webp"].includes(source.data.type)?source.data.type:inferredMime;
+          const original=new File([source.data],filename,{type:mime});
+          if(original.size<=MAX_PHOTO_BYTES){skipped++;continue;}
+          const optimized=await compressPhoto(original);
+          if(optimized.finalSize>MAX_PHOTO_BYTES)throw Error("الحجم بعد الضغط تجاوز 200 KB.");
+          const nextPath=old.site_id+"/"+crypto.randomUUID()+".webp";
+          const uploaded=await db.storage.from("site-photos")
+            .upload(nextPath,optimized.blob,{contentType:"image/webp",upsert:false,cacheControl:"3600"});
+          if(uploaded.error)throw uploaded.error;
+          const added=await db.from("site_photos")
+            .insert({site_id:old.site_id,storage_path:nextPath,caption:old.caption||"",created_at:old.created_at})
+            .select("id").single();
+          if(added.error||!added.data?.id){
+            await db.storage.from("site-photos").remove([nextPath]);
+            throw added.error||Error("تعذّر ربط الصورة الجديدة.");
+          }
+          const removed=await db.from("site_photos").delete().eq("id",old.id).select("id").maybeSingle();
+          if(removed.error||!removed.data?.id){
+            // Never leave duplicate linked photos when the old row cannot be removed.
+            await db.from("site_photos").delete().eq("id",added.data.id);
+            await db.storage.from("site-photos").remove([nextPath]);
+            throw removed.error||Error("تعذّر استبدال رابط الصورة القديمة.");
+          }
+          const oldCleanup=await db.storage.from("site-photos").remove([old.storage_path]);
+          if(oldCleanup.error)console.warn("Old photo cleanup pending:",oldCleanup.error.message);
+          converted++;
+          bytesSaved+=Math.max(0,original.size-optimized.finalSize);
+        }catch(error){
+          failed++;
+          console.warn("Legacy photo optimization:",old.storage_path,error.message||error);
+        }
+      }
+      getState().photoUrls?.clear();
+      await loadSites();
+      if(getState().selected)selectSite(getState().selected);
+      const mb=(bytesSaved/1048576).toFixed(1);
+      status.textContent="اكتملت المعالجة: "+converted+" صورة مضغوطة، "+skipped+" صورة كانت صغيرة، "+failed+" تعذّر ضغطها. وفّرنا نحو "+mb+" MB. "+(failed?"يمكنك الضغط مرة أخرى لمحاولة الصور المتبقية.":"");
+      toast(failed?"ضُغطت "+converted+" صورة؛ تعذّر ضغط "+failed+".":"تم ضغط "+converted+" صورة قديمة بنجاح.");
+    }catch(error){
+      status.textContent="تعذّر إكمال المعالجة: "+(error.message||"تحقق من الاتصال والصلاحيات.");
+      toast("تعذّر بدء ضغط الصور القديمة.");
+    }finally{
+      compressBusy=false;button.disabled=false;
+    }
+  }
   async function saveMyName(event){
     event.preventDefault();
     const name=$("dashMyName").value.trim();
@@ -413,6 +493,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
     $("dashReloadStaff").addEventListener("click",()=>void loadStaff());
     enhanceAdminSelects($("adminDashboard"));
     $("dashSettingsForm").addEventListener("submit",event=>void saveSettings(event));
+    $("dashCompressOldPhotos").addEventListener("click",()=>void compressExistingPhotos());
     $("dashMyNameForm").addEventListener("submit",event=>void saveMyName(event));
     $("dashActivityRefresh").addEventListener("click",()=>void loadActivity());
     $("dashActivityEntity").addEventListener("change",()=>{activityPage=0;if(activeTab==="activity")void loadActivity();});
