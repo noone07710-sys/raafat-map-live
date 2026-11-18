@@ -1278,6 +1278,42 @@ async function loadSites(){
   console.error("Site fetch failed:",error.message);
  }
 }
+// Read the authoritative next code without consuming it. Supabase's insert trigger
+// still allocates the definitive code atomically at save time.
+let siteCodePreviewRequest=0;
+async function refreshSiteCodePreview(){
+ const input=el("fCode"),hint=el("fCodeInfo"),request=++siteCodePreviewRequest;
+ const governorate=el("fGovernorate").value;
+ const city=el("fCity").value;
+ const category=el("fPackageClass").value;
+ const original=state.editorId?state.sites.find(site=>site.id===state.editorId):null;
+ const unchanged=original&&original.governorate===governorate
+   &&original.city===city&&(original.package_class||packageForSite(original))===category;
+ if(unchanged){
+   input.value=original.code;
+   hint.textContent="هذا رمز القطعة المحفوظ؛ يبقى نفسه عند تعديل البيانات دون تغيير المدينة أو الفئة.";
+   return;
+ }
+ input.value=category+"-…";
+ hint.textContent="جارٍ جلب الرقم التالي لمدينة "+city+"، الفئة "+category+"…";
+ if(!db||!state.staff||!city)return;
+ try{
+   const {data,error}=await db.rpc("preview_site_code",{
+     p_governorate:governorate,p_city:city,p_package_class:category
+   });
+   // A slower response must not overwrite a newer city/package choice or a closed editor.
+   if(request!==siteCodePreviewRequest||el("siteModal").hidden)return;
+   if(error||!data)throw error||new Error("لا يوجد رقم متاح للمعاينة.");
+   input.value=String(data);
+   hint.textContent=(original?"الرقم المتوقع بعد تغيير المدينة أو الفئة. ":"الرقم التالي المتوقع لهذه المدينة والباقة. ")+
+     "سيُثبت الرقم النهائي عند الحفظ؛ قد يتغير إذا أضاف موظف آخر قطعة قبلك.";
+ }catch(error){
+   if(request!==siteCodePreviewRequest||el("siteModal").hidden)return;
+   input.value=category+"-…";
+   hint.textContent="تعذّرت معاينة الرقم الآن؛ سيولّده النظام تلقائياً عند الحفظ.";
+   console.warn("Could not preview next board code:",error?.message||error);
+ }
+}
 function openEditor(site=null){
  if(!state.staff){toast("هذا الإجراء للموظفين المصرح لهم فقط.");return;}
  state.editorId=site?.id||null;
@@ -1312,6 +1348,7 @@ function openEditor(site=null){
  el("fPublished").checked=Boolean(get("published",false));
  el("siteModal").querySelectorAll("select").forEach(select=>select.dispatchEvent(new Event("raafat-select-sync")));
  openModal("siteModal");
+ void refreshSiteCodePreview();
 }
 function updatePackageHint({selectionChanged=false}={}){
  const selected=el("fPackageClass").value;
@@ -1604,8 +1641,16 @@ function events(){
    el(filter).addEventListener("change",()=>{render();zoomAll()});
  }
  el("governorateFilter").addEventListener("change",()=>{renderCityOptions();renderStreetFilterOptions();render();zoomAll()});
- el("fGovernorate").addEventListener("change",()=>renderAdminCities());
- el("fCity").addEventListener("change",()=>renderAdminStreets());
+ el("fGovernorate").addEventListener("change",()=>{
+   renderAdminCities();
+   siteFormDirty=true;
+   void refreshSiteCodePreview();
+ });
+ el("fCity").addEventListener("change",()=>{
+   renderAdminStreets();
+   siteFormDirty=true;
+   void refreshSiteCodePreview();
+ });
  el("addStreetFromEditor").addEventListener("click",()=>{
   if(state.staffRole!=="admin"){toast("إضافة شارع جديد للمدير فقط.");return;}
   closeModal("siteModal");
@@ -1627,7 +1672,11 @@ function events(){
    category.dispatchEvent(new Event("change",{bubbles:true}));
    category.dispatchEvent(new Event("raafat-select-sync"));
  }));
- el("fPackageClass").addEventListener("change",()=>{updatePackageHint({selectionChanged:true});siteFormDirty=true;});
+ el("fPackageClass").addEventListener("change",()=>{
+   updatePackageHint({selectionChanged:true});
+   siteFormDirty=true;
+   void refreshSiteCodePreview();
+ });
  ["fWidth","fHeight"].forEach(id=>el(id).addEventListener("input",()=>updatePackageHint()));
  el("loginForm").addEventListener("submit",signIn);
  el("changePasswordButton").addEventListener("click",()=>{if(state.staff)openModal("passwordModal")});
@@ -1717,7 +1766,7 @@ async function main(){
  el("raafatThemeToggle")?.addEventListener("click",()=>{
    setVisualTheme(visualTheme()==="day"?"night":"day",{save:true});
  });
- adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,deleteSite,loadSites,selectSite,applySettings:applySiteSettings,reloadStreets:loadStreets});
+ adminDashboard=createAdminDashboard({db,getState:()=>state,toast,openEditor,deleteSite,loadSites,selectSite,applySettings:applySiteSettings,reloadStreets:loadStreets,refreshSiteCodePreview});
  bookingController=setupBookings({db,getState:()=>state,toast});
  document.addEventListener("raafat:booking-selection-changed",()=>render());
  document.addEventListener("raafat:inventory-refresh",()=>scheduleInventoryReload());
