@@ -208,9 +208,9 @@ jobs:
             'Board code must not be read from an editor input');
           assert.match(app,/query\.select\("id,code"\)\.single\(\)/,
             'Saved automatic board code must be returned from Supabase');
-          assert.match(app,/db\\.rpc\\("preview_site_code"/,'Preview must query the database counter');
-          assert.match(app,/function refreshSiteCodePreview\\(/,'Live code preview handler required');
-          assert.match(app,/void refreshSiteCodePreview\\(\\)/,'Code preview must refresh as user changes selections');
+          assert.ok(app.includes('db.rpc("preview_site_code"'), 'Preview must query the database counter');
+          assert.ok(app.includes('function refreshSiteCodePreview('), 'Live code preview handler required');
+          assert.ok(app.includes('void refreshSiteCodePreview()'), 'Code preview must refresh as user changes selections');
           assert.ok(ui.includes('id="fCodeInfo"'), 'Code preview status must be visible in editor');
           assert.match(app,/\["المساحة الإعلانية",format\(/,
             'Complete original dimensions must remain in immediate specs');
