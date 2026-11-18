@@ -201,6 +201,22 @@ jobs:
           assert.match(app,/<section class="vip-site-specification"/,'Full specifications should be visible');
           assert.ok(!app.includes('<details class="vip-site-specification"'),
             'Specifications must not hide behind an accordion');
+          // Backend assigns codes atomically per city/package. The browser never supplies one.
+          assert.ok(ui.includes('id="fCode" type="text" readonly'),'Board number must not be editable');
+          assert.ok(!ui.includes('id="fCode" required'),'New board number must not be manually required');
+          assert.ok(!app.includes('const rawCode=el("fCode").value.trim()'),
+            'Board code must not be read from an editor input');
+          assert.match(app,/query\.select\("id,code"\)\.single\(\)/,
+            'Saved automatic board code must be returned from Supabase');
+          assert.match(app,/\["المساحة الإعلانية",format\(/,
+            'Complete original dimensions must remain in immediate specs');
+          for(const label of ['رقم القطعة','المحافظة','المدينة / القضاء','المنطقة / الحي',
+            'اسم الشارع','أقرب معلم','نوع الإعلان','العرض','الارتفاع','المساحة الإعلانية',
+            'عدد الأوجه','الإنارة','اتجاه مواجهة الإعلان','الخامة / المادة']){
+            assert.ok(app.includes('["'+label+'"'),'Full specs missing: '+label);
+          }
+          assert.ok(!app.includes('<div class="vip-site-metric-grid">'),
+            'Do not repeat the same measurements in two competing panels');
           console.log('Booking, navigation and inventory regression contracts passed');
           MODULE
           node <<'NODE'
