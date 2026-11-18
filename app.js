@@ -836,6 +836,7 @@ function render(){
     window.setTimeout(()=>el("siteDetails").scrollIntoView({behavior:"smooth",block:"start"}),150);
   }));
  }
+ el("listing").hidden=Boolean(streetId);
  el("listing").innerHTML=sites.length ? sites.map(s=>
   '<button type="button" class="location-card '+(state.selected===s.id?'active':'')+'" data-site="'+escapeHtml(s.id)+'">'+
    '<div class="card-row"><strong>'+escapeHtml(streetName(s)||s.city)+'</strong>'+badge(s)+'</div>'+
@@ -1041,7 +1042,7 @@ async function renderDetail(){
    return;
  }
  const phone=String(state.siteSettings?.whatsapp_number||config.whatsappNumber||"").replace(/\D/g,"");
- const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent((state.siteSettings?.contact_message||"مرحباً، أود الاستفسار عن موقع إعلاني.")+"\nالقطعة: "+site.code+" - "+site.name):null;
+ const whatsapp=phone.length>=10? "https://wa.me/"+phone+"?text="+encodeURIComponent((state.siteSettings?.contact_message||"مرحباً، أود الاستفسار عن موقع إعلاني.")+"\nالقطعة: "+site.code+" - "+siteAddressLabel(site)):null;
  const routeIsAvailable=canNavigateToSite(site);
  const photos=Array.isArray(site.site_photos)?site.site_photos:[];
  const imageLinks=await Promise.all(photos.map(p=>photoUrl(p.storage_path)));
