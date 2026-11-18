@@ -726,7 +726,7 @@ function filteredSites(){
  const size=el("sizeFilter").value;
  const streetId=el("streetFilter").value;
  return state.sites.filter(s=>
-   (!query||[s.name,s.code,s.city,s.governorate,s.area,s.street,s.landmark,s.description].some(v=>String(v||"").toLocaleLowerCase().includes(query)))
+   (!query||[s.code,s.city,s.governorate,s.area,streetName(s),s.landmark,s.description].some(v=>String(v||"").toLocaleLowerCase().includes(query)))
    && (!gov||s.governorate===gov)
    && (!city||s.city===city)
    && (!type||s.type===type)
@@ -1367,7 +1367,7 @@ function sitePayload(){
  const width_m=preset?preset[0]:number(el("fWidth").value);
  const height_m=preset?preset[1]:number(el("fHeight").value);
  const faces=number(el("fFaces").value);
- if(!code||code.length>40||!name||name.length>140||!city||city.length>80)throw Error("تحقق من رمز القطعة واسم الموقع والمدينة.");
+ if(!code||code.length>40||!name||name.length>140||!city||city.length>80)throw Error("تحقق من رمز القطعة والحي والمدينة.");
  if(!REGIONS[governorate]||!REGIONS[governorate].includes(city))throw Error("المحافظة والمدينة غير متطابقتين.");
  if(street.length>200||landmark.length>200||facing.length>140||material.length>140)throw Error("بعض التفاصيل أطول من الحد المسموح.");
  if(!coords)throw Error("الإحداثيات غير صحيحة، استخدم: latitude, longitude");
