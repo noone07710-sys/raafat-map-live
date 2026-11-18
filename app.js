@@ -1056,11 +1056,22 @@ async function renderDetail(){
    '<div class="photo-gallery">'+photosAvailable.map((u,i)=>
       '<button class="photo-thumb '+(state.galleryIndex===i?'active':'')+'" type="button" data-photo-index="'+i+'" aria-label="عرض صورة رقم '+(i+1)+'"><img src="'+escapeHtml(u)+'" loading="lazy" alt="صورة '+(i+1)+'"></button>'
    ).join("")+'</div>':"";
+ // Show every stored field directly; never mix the technical values of other boards.
  const metaRows=[
+   ["رقم القطعة",site.code],
+   ["المحافظة",site.governorate||"صلاح الدين"],
+   ["المدينة / القضاء",site.city||"—"],
+   ["المنطقة / الحي",site.area||"—"],
+   ["اسم الشارع",streetName(site)||"—"],
+   ["أقرب معلم",site.landmark||"—"],
+   ["نوع الإعلان",types[site.type]||site.type||"—"],
+   ["العرض",format(site.width_m)+" m"],
+   ["الارتفاع",format(site.height_m)+" m"],
+   ["المساحة الإعلانية",format(Number(site.width_m)*Number(site.height_m))+" m²"],
+   ["عدد الأوجه",site.faces??"—"],
    ["الإنارة",site.lighting?"مضاءة":"غير مضاءة"],
-   ["الخامة / المادة",site.material||"—"],
    ["اتجاه مواجهة الإعلان",site.facing||"—"],
-   ["أقرب معلم",site.landmark||"—"]
+   ["الخامة / المادة",site.material||"—"]
  ];
  const category=packageForSite(site)||"custom";
  const dims=format(site.width_m)+" × "+format(site.height_m);
@@ -1085,20 +1096,14 @@ async function renderDetail(){
     '<div class="vip-site-overview">'+
       '<div class="vip-site-status-row"><span class="detail-category-tag category-'+category+'">'+(category==="custom"?"قياس خاص":"فئة "+category)+'</span>'+badge(site)+(site.published?'':'<span class="draft">غير منشورة</span>')+'</div>'+
 
-      '<div class="vip-site-metric-grid">'+
-        '<div class="vip-site-metric"><small>قياس اللوحة</small><strong class="raafat-number" dir="ltr">'+dims+' <em>m</em></strong></div>'+
-        '<div class="vip-site-metric"><small>المساحة</small><strong class="raafat-number" dir="ltr">'+format(site.width_m*site.height_m)+' <em>m²</em></strong></div>'+
-        '<div class="vip-site-metric"><small>عدد الأوجه</small><strong class="raafat-number">'+escapeHtml(site.faces||1)+'</strong></div>'+
-        '<div class="vip-site-metric"><small>نوع الإعلان</small><strong>'+safeType+'</strong></div>'+
-      '</div>'+
       '<div class="vip-site-action-stack">'+
         '<button class="btn btn-primary vip-site-book-button" type="button" data-book-site="'+escapeHtml(site.id)+'" '+(site.status!=="available"||category==="custom"?'disabled title="'+(category==="custom"?"القطعة تحتاج تسعيراً خاصاً":"هذه القطعة غير متاحة")+'"':'')+'>'+raafatIcon("calendar")+'<strong class="raafat-site-book-text">احجز الموقع الإعلاني</strong>'+raafatIcon("arrow")+'</button>'+
         '<div class="vip-site-action-grid"><button type="button" class="btn btn-ghost" id="raafatStartDirections" aria-label="الاتجاهات الداخلية إلى هذه القطعة">'+raafatIcon("route")+'<span>الاتجاهات</span></button>'+
           (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">'+raafatIcon("message")+'<span>استفسار واتساب</span></a>':
           '<button type="button" class="btn btn-ghost" id="copyInquiry">'+raafatIcon("copy")+'<span>نسخ للاستفسار</span></button>')+'</div>'+
       '</div>'+
-      '<section class="vip-site-specification" aria-label="تجهيزات القطعة"><div class="raafat-spec-visible-heading">التجهيزات والمواصفات</div>'+
-        '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
+      '<section class="vip-site-specification" aria-label="المواصفات الكاملة للقطعة"><div class="raafat-spec-visible-heading">المواصفات الكاملة</div>'+
+        '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong '+(["رقم القطعة","العرض","الارتفاع","المساحة الإعلانية","عدد الأوجه"].includes(label)?'class="raafat-number" dir="ltr"':'')+'>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
       '</section>'+
       (site.description?'<div class="vip-site-description"><span class="vip-section-eyebrow">ABOUT THE LOCATION</span><strong>وصف الموقع</strong><p>'+escapeHtml(site.description)+'</p></div>':"")+
       '<div class="vip-site-secondary-actions"><button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">'+raafatIcon("copy")+'<span>نسخ رابط القطعة</span></button>'+
