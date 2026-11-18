@@ -74,7 +74,7 @@ function buildOptionList(select,menu,button,sync){
 export function enhanceAdminSelects(scope=document){
  const root=scope||document;
  root.querySelectorAll("select:not([data-raafat-select])").forEach(select=>{
-   if(!select.closest("#adminDashboard,#siteModal,#bookingModal"))return;
+   if(!select.closest("#adminDashboard,#siteModal,#bookingModal,.browse"))return;
    select.dataset.raafatSelect="yes";
    const holder=document.createElement("span");
    holder.className="raafat-select-shell";
@@ -103,7 +103,7 @@ export function enhanceAdminSelects(scope=document){
      if(opened?.button===button){closeOpened({returnFocus:true});return;}
      closeOpened();
      const menu=document.createElement("div");
-     menu.className="raafat-select-menu";
+     menu.className="raafat-select-menu"+(select.closest(".browse")?" raafat-catalog-options":"");
      menu.id="raafat-listbox-"+(++serial);
      menu.setAttribute("role","listbox");
      menu.setAttribute("aria-label",button.getAttribute("aria-label"));
