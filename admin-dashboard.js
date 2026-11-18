@@ -136,7 +136,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
       const s=find(el.dataset.dashDuplicate);if(!s)return;close();
       openEditor(s);
       getState().editorId=null;
-      $("fCode").value="";
+      $("fCode").value=$("fPackageClass").value+"-…";
       $("formTitle").textContent="إنشاء نسخة جديدة";
       $("photoInfo").textContent="سيتم نسخ تفاصيل القطعة، لكن صورها لا تنسخ تلقائياً.";
       $("fPhotos").value="";
