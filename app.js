@@ -6,6 +6,7 @@ import { setupBookings, setupAdminBookings, packageForSite } from "./booking.js"
 import { createRaafatNavigation } from "./routing.js";
 import { raafatConfirm, raafatVerify } from "./ui-dialog.js";
 import {enhanceAdminSelects} from "./admin-dropdown.js";
+import {compressPhoto, MAX_PHOTO_BYTES, MAX_SOURCE_BYTES} from "./photo-compression.js";
 // The ?admin=1 entry URL is only a private UI shortcut; actual authorization uses Supabase Auth + staff RLS.
 const ADMIN_ENTRY = new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -78,10 +79,10 @@ function previewSelectedPhotos(){
  const selected=[...(input.files||[])];
  resetPhotoPreviews();
  const accepted=new Set(["image/jpeg","image/png","image/webp"]);
- const invalid=selected.find(file=>!accepted.has(file.type)||file.size<=0||file.size>5*1024*1024);
+ const invalid=selected.find(file=>!accepted.has(file.type)||file.size<=0||file.size>MAX_SOURCE_BYTES);
  if(selected.length>12||invalid){
    input.value="";
-   el("photoInfo").textContent="اختر حتى 12 صورة JPG أو PNG أو WebP، وأقل من 5 ميغابايت للصورة.";
+   el("photoInfo").textContent="اختر حتى 12 صورة JPG أو PNG أو WebP؛ تُضغط تلقائياً إلى 200 KB قبل الرفع (حتى 25 MB للصورة الأصلية).";
    toast(selected.length>12?"الحد الأقصى 12 صورة في المرة الواحدة.":"الصورة "+(invalid?.name||"")+" غير مدعومة أو تتجاوز 5 ميغابايت.");
    return;
  }
@@ -100,7 +101,7 @@ function previewSelectedPhotos(){
  }
  previews.hidden=!selected.length;
  el("photoInfo").textContent=selected.length
-   ?"تم اختيار "+selected.length+" صورة، وستُرفع عند الضغط على «حفظ القطعة»."
+   ?"تم اختيار "+selected.length+" صورة؛ ستُضغط كل صورة إلى 200 KB أو أقل قبل الرفع."
    :"اختر صوراً لإضافتها إلى معرض القطعة.";
  if(selected.length)siteFormDirty=true;
 }
@@ -1227,7 +1228,7 @@ function openEditor(site=null){
  sitePhotoPickerActive=false;
  sitePhotoPickerGuardUntil=0;
  el("formTitle").textContent=site?"تعديل قطعة إعلانية":"إضافة موقع إعلاني";
- el("photoInfo").textContent=site?"الصور القديمة ستبقى. الصور الجديدة تُضاف عند الحفظ.":"الصور الجديدة تُرفع بعد حفظ موقع القطعة.";
+ el("photoInfo").textContent=site?"الصور القديمة ستبقى. الصور الجديدة تُضغط إلى 200 KB أو أقل قبل رفعها.":"الصور الجديدة تُضغط تلقائياً إلى 200 KB أو أقل قبل الرفع.";
  const get=(field,defaultValue="") => site?.[field]??defaultValue;
  el("fCode").value=get("code");
  const originalClass=site?.package_class==="E"?"E":site?(packageForSite(site)||"E"):"A";
@@ -1324,13 +1325,23 @@ function sitePayload(){
  };
 }
 async function uploadPhotos(siteId, files){
- const accepted=["image/jpeg","image/png","image/webp"];
  const errors=[];
- for(const file of files){
-  if(!accepted.includes(file.type) || file.size>5*1024*1024){errors.push("الصورة "+file.name+" يجب أن تكون JPG/PNG/WebP وتحت 5 ميغابايت.");continue;}
-  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";
+ for(let index=0; index<files.length; index++){
+  const file=files[index];
+  let optimized;
+  try{
+   el("photoInfo").textContent="جاري ضغط الصورة "+(index+1)+" من "+files.length+" قبل الرفع…";
+   optimized=await compressPhoto(file);
+   if(optimized.finalSize>MAX_PHOTO_BYTES)throw Error("الحجم الناتج أكبر من 200 KB.");
+  }catch(error){
+   errors.push("تعذر تجهيز "+file.name+": "+(error.message||"تعذر ضغط الصورة."));
+   continue;
+  }
+  const photo=optimized.blob;
+  const ext=photo.type==="image/webp"?"webp":photo.type==="image/png"?"png":"jpg";
   const path=siteId+"/"+crypto.randomUUID()+"."+ext;
-  const uploaded=await db.storage.from("site-photos").upload(path,file,{contentType:file.type,upsert:false,cacheControl:"3600"});
+  el("photoInfo").textContent="جاري رفع الصورة "+(index+1)+" من "+files.length+" ("+Math.round(photo.size/1000)+" KB)…";
+  const uploaded=await db.storage.from("site-photos").upload(path,photo,{contentType:photo.type,upsert:false,cacheControl:"3600"});
   if(uploaded.error){errors.push("تعذر رفع الصورة "+file.name);continue;}
   const linked=await db.from("site_photos").insert({site_id:siteId,storage_path:path});
   if(linked.error){
