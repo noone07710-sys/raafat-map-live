@@ -1283,7 +1283,7 @@ function openEditor(site=null){
  el("formTitle").textContent=site?"تعديل قطعة إعلانية":"إضافة موقع إعلاني";
  el("photoInfo").textContent=site?"الصور القديمة ستبقى. الصور الجديدة تُضغط إلى 200 KB أو أقل قبل رفعها.":"الصور الجديدة تُضغط تلقائياً إلى 200 KB أو أقل قبل الرفع.";
  const get=(field,defaultValue="") => site?.[field]??defaultValue;
- el("fCode").value=get("code");
+ el("fCode").value=site?.code||"A-…";
  const originalClass=site?.package_class==="E"?"E":site?(packageForSite(site)||"E"):"A";
  el("fPackageClass").value=originalClass;
  el("fStatus").disabled=state.staffRole!=="admin";
@@ -1310,6 +1310,7 @@ function openEditor(site=null){
 }
 function updatePackageHint({selectionChanged=false}={}){
  const selected=el("fPackageClass").value;
+ if(!state.editorId)el("fCode").value=selected+"-…";
  const width=el("fWidth"),height=el("fHeight");
  const fixed=STANDARD_PACKAGES[selected];
  width.readOnly=Boolean(fixed);
@@ -1346,9 +1347,6 @@ function sitePayload(){
  const requestedClass=el("fPackageClass").value;
  const preset=STANDARD_PACKAGES[requestedClass];
  if(!preset&&requestedClass!=="E")throw Error("اختر فئة إعلانية صحيحة.");
- const rawCode=el("fCode").value.trim();
- const effectiveClass=requestedClass;
- const code=/^\d+$/.test(rawCode)?(effectiveClass||"X")+"-"+rawCode:rawCode;
  const street_id=el("fStreetId").value;
  const registeredStreet=state.streets.find(st=>st.id===street_id);
  const governorate=el("fGovernorate").value;
@@ -1367,14 +1365,14 @@ function sitePayload(){
  const width_m=preset?preset[0]:number(el("fWidth").value);
  const height_m=preset?preset[1]:number(el("fHeight").value);
  const faces=number(el("fFaces").value);
- if(!code||code.length>40||!name||name.length>140||!city||city.length>80)throw Error("تحقق من رمز القطعة والحي والمدينة.");
+ if(!name||name.length>140||!city||city.length>80)throw Error("تحقق من الحي والمدينة.");
  if(!REGIONS[governorate]||!REGIONS[governorate].includes(city))throw Error("المحافظة والمدينة غير متطابقتين.");
  if(street.length>200||landmark.length>200||facing.length>140||material.length>140)throw Error("بعض التفاصيل أطول من الحد المسموح.");
  if(!coords)throw Error("الإحداثيات غير صحيحة، استخدم: latitude, longitude");
  if(!Number.isFinite(width_m)||width_m<=0||width_m>1000||!Number.isFinite(height_m)||height_m<=0||height_m>1000)throw Error("القياس يجب أن يكون أكبر من صفر وأقل من 1000 متر.");
  if(!Number.isInteger(faces)||faces<1||faces>8)throw Error("عدد الأوجه من 1 إلى 8.");
  return {
-   code,name,governorate,city,area,street,street_id,landmark,facing,material,description,
+   name,governorate,city,area,street,street_id,landmark,facing,material,description,
    package_class:requestedClass,
    type:el("fType").value,status:el("fStatus").value,
    width_m,height_m,faces,lighting:el("fLighting").value==="true",
@@ -1420,7 +1418,7 @@ async function saveSite(event){
    const query=state.editorId?
      db.from("sites").update(payload).eq("id",state.editorId):
      db.from("sites").insert(payload);
-   const {data,error}=await query.select("id").single();
+   const {data,error}=await query.select("id,code").single();
    if(error)throw error;
    const photoErrors=await uploadPhotos(data.id,files);
    siteFormDirty=false;
@@ -1430,13 +1428,13 @@ async function saveSite(event){
    await loadSites();
    selectSite(data.id);
    document.dispatchEvent(new CustomEvent("raafat:activity-changed"));
-   toast(photoErrors.length?"تم حفظ القطعة، لكن بعض الصور لم تُرفع: "+photoErrors.join(" | "):"تم حفظ القطعة والصور بنجاح.");
+   toast(photoErrors.length?"تم حفظ القطعة "+data.code+"، لكن بعض الصور لم تُرفع: "+photoErrors.join(" | "):"تم حفظ القطعة "+data.code+" بنجاح.");
  }catch(error){
    console.error("Save failed:",error.message);
    if(/Set your staff display name|Admin name and admin permission required/i.test(error.message||"")){
    toast("لازم تحفظ اسمك من لوحة الإدارة قبل إضافة أو تعديل القطع.");
    adminDashboard?.open();
- }else toast(error.code==="23505"?"رمز القطعة مستخدم مسبقاً. اختر رمزاً مختلفاً.":"تعذر الحفظ: "+(error.message||"تحقق من البيانات والصلاحيات."));
+ }else toast(error.code==="23505"?"تعذر توليد رمز فريد. حاول حفظ القطعة مجدداً.":"تعذر الحفظ: "+(error.message||"تحقق من البيانات والصلاحيات."));
  }finally{actionBusy(false)}
 }
 async function cleanPendingPhotoFiles({silent=true}={}){
