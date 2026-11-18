@@ -24,6 +24,40 @@
    <link rel="stylesheet" href="./raafat-finish.css">
    <link rel="stylesheet" href="./daylight-unified.css">
    <link rel="stylesheet" href="./raafat-numbers.css">
+  <style>
+    /* Public entry to the existing, permission-gated staff sign-in modal. */
+    .header .header-actions #loginButton.raafat-login-button {
+      display:inline-flex!important;align-items:center;justify-content:center;gap:8px!important;
+      min-height:40px!important;width:auto!important;max-width:none!important;flex:0 0 auto!important;
+      padding:8px 13px!important;border-radius:12px!important;white-space:nowrap;
+      font-family:inherit;font-size:12px!important;font-weight:700!important;
+      color:#edf7ed!important;background:rgba(19,66,62,.67)!important;
+      border:1px solid rgba(190,216,193,.30)!important;
+      box-shadow:inset 0 1px rgba(255,255,255,.07)!important;
+      transition:background .18s,border-color .18s;
+    }
+    .header .header-actions #loginButton[hidden]{display:none!important}
+    .header .header-actions #loginButton .raafat-admin-svg{width:18px;height:18px;flex:0 0 18px}
+    .header .header-actions #loginButton:hover{background:#2e7367!important;border-color:#ddb881!important}
+    .header .header-actions #loginButton:focus-visible{outline:2px solid #f0ce96;outline-offset:3px}
+    html[data-raafat-theme="day"] .header .header-actions #loginButton{
+      color:#98531f!important;background:#f7efe5!important;
+      border-color:#e4d2bc!important;box-shadow:none!important;
+    }
+    html[data-raafat-theme="day"] .header .header-actions #loginButton:hover{
+      background:#f2e3d1!important;border-color:#d1a779!important;
+    }
+    @media(max-width:850px){
+      .header .header-actions #loginButton{min-height:36px!important;padding:7px 10px!important;font-size:11px!important}
+    }
+    /* On narrow phones, give the actions their own row rather than clipping the brand or buttons. */
+    @media(max-width:520px){
+      .header{flex:0 0 auto!important;flex-wrap:wrap;row-gap:7px!important;padding-block:9px!important}
+      .header .header-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}
+      .header .header-actions #loginButton{min-height:35px!important;font-size:10.5px!important}
+    }
+    @media(prefers-reduced-motion:reduce){.header .header-actions #loginButton{transition:none}}
+  </style>
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script defer src="https://unpkg.com/maplibre-gl@2.2.1/dist/maplibre-gl.js"></script>
@@ -47,7 +81,7 @@
       <button class="btn btn-primary booking-top-button" id="bookNow" type="button"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="3"/><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17m-12 5 2.3 2.2 4.6-4.8"/></svg><span class="raafat-book-label">احجز الآن</span></button>
       <button class="btn btn-primary raafat-header-icon" id="manageDashboard" type="button" aria-label="لوحة التحكم" data-tip="لوحة التحكم" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></button>
       <button class="btn btn-ghost raafat-header-icon" id="newSite" type="button" aria-label="إضافة قطعة" data-tip="إضافة قطعة" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-      <button class="btn btn-ghost raafat-header-icon" id="loginButton" type="button" aria-label="دخول الإدارة" data-tip="دخول الإدارة" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h4M15 8l5 4-5 4m5-4h-9"/></svg></button>
+      <button class="btn btn-ghost raafat-login-button" id="loginButton" type="button" aria-label="تسجيل الدخول" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h4M15 8l5 4-5 4m5-4h-9"/></svg><span class="raafat-login-text">تسجيل الدخول</span></button>
       <button class="btn btn-ghost raafat-header-icon" id="changePasswordButton" type="button" aria-label="تغيير كلمة المرور" data-tip="تغيير كلمة المرور" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
       <button class="btn btn-ghost raafat-header-icon" id="logoutButton" type="button" aria-label="تسجيل الخروج" data-tip="تسجيل الخروج" hidden><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h4M14 8l5 4-5 4m5-4H9"/></svg></button>
     </nav>
