@@ -1124,7 +1124,7 @@ function refreshAdmin(){
  el("staffTag").hidden=!state.staff;
  el("newSite").hidden=!state.staff;
  el("manageDashboard").hidden=!state.staff;
- el("loginButton").hidden=state.staff||!ADMIN_ENTRY;
+ el("loginButton").hidden=state.staff;
  el("changePasswordButton").hidden=!state.staff;
  el("logoutButton").hidden=!state.user;
 }
