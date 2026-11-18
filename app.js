@@ -43,7 +43,7 @@ const db = hasConfig ? createClient(config.supabaseUrl, config.supabaseAnonKey, 
 }) : null;
 
 const state = {
- sites: [], selected: null, editorId: null, staff: false, user: null, map: null,
+ sites: [], streets: [], selected: null, editorId: null, staff: false, user: null, map: null,
  markers: null, markerById:new Map(), mobilePinnedMarkers:[], pick:false, photoUrls: new Map(), busy:false, galleryIndex:0,
  basemap: null, osmBasemap:null, cityLabels: null, cityBeacon: null, fallbackTilesLoaded: false, showFallback: false,
  locationWatchId:null,locationGeneration:0,followLocation:false,lastLocation:null,gpsMarker:null,gpsAccuracy:null,
@@ -682,6 +682,41 @@ function freshGpsForListing(){
 function straightLineMeters(site,origin){
  return state.map.distance(origin,[Number(site.latitude),Number(site.longitude)]);
 }
+function streetName(site){return state.streets.find(st=>st.id===site.street_id)?.name||site.street||"";}
+function siteAddressLabel(site){return [streetName(site),site.area].filter(Boolean).join(" • ")||site.city||site.code;}
+function renderStreetFilterOptions(){
+ const select=el("streetFilter"),selected=select.value,gov=el("governorateFilter").value,city=el("cityFilter").value;
+ const streets=state.streets.filter(st=>(!gov||st.governorate===gov)&&(!city||st.city===city));
+ select.innerHTML='<option value="">جميع الشوارع</option>'+streets.map(st=>
+   '<option value="'+escapeHtml(st.id)+'">'+escapeHtml(st.name)+' ('+state.sites.filter(s=>s.street_id===st.id).length+')</option>').join("");
+ select.value=streets.some(st=>st.id===selected)?selected:"";
+}
+function renderAdminStreets(selectedId=""){
+ const select=el("fStreetId"),gov=el("fGovernorate").value,city=el("fCity").value;
+ const streets=state.streets.filter(st=>st.governorate===gov&&st.city===city);
+ select.innerHTML='<option value="">اختر الشارع المحفوظ</option>'+streets.map(st=>
+  '<option value="'+escapeHtml(st.id)+'">'+escapeHtml(st.name)+'</option>').join("");
+ select.value=streets.some(st=>st.id===selectedId)?selectedId:"";
+ el("fStreetHint").textContent=streets.length?"اختر اسم الشارع المعتمد؛ ترتبط القطعة به تلقائياً.":"لا يوجد شارع محفوظ في هذه المدينة بعد؛ أضفه من لوحة الإدارة أولاً.";
+ select.dispatchEvent(new Event("raafat-select-sync"));
+}
+async function loadStreets(){
+ if(!db)return;
+ try{
+  const streets=[];
+  for(let page=0;page<50;page++){
+   const {data,error}=await db.from("ad_streets").select("id,governorate,city,name")
+    .order("governorate").order("city").order("name").range(page*1000,page*1000+999);
+   if(error)throw error;
+   streets.push(...(data||[]));
+   if(!data||data.length<1000)break;
+  }
+  state.streets=streets;
+  renderStreetFilterOptions();
+  if(!el("siteModal").hidden)renderAdminStreets(el("fStreetId").value);
+  adminDashboard?.render();
+ }catch(error){console.warn("Street directory unavailable:",error.message);alertBanner("تعذّر تحميل دليل الشوارع. جرّب تحديث الصفحة.");}
+}
 function filteredSites(){
  const query=el("search").value.trim().toLocaleLowerCase();
  const gov=el("governorateFilter").value;
@@ -689,6 +724,7 @@ function filteredSites(){
  const type=el("typeFilter").value;
  const status=el("statusFilter").value;
  const size=el("sizeFilter").value;
+ const streetId=el("streetFilter").value;
  return state.sites.filter(s=>
    (!query||[s.name,s.code,s.city,s.governorate,s.area,s.street,s.landmark,s.description].some(v=>String(v||"").toLocaleLowerCase().includes(query)))
    && (!gov||s.governorate===gov)
@@ -696,6 +732,7 @@ function filteredSites(){
    && (!type||s.type===type)
    && (!status||s.status===status)
    && (!size||sizeKey(s)===size)
+   && (!streetId||s.street_id===streetId)
  );
 }
 function badge(s){
@@ -715,9 +752,11 @@ function renderAdminCities(selectedCity=""){
  el("fCity").innerHTML=cities.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join("");
  el("fCity").value=cities.includes(selectedCity)?selectedCity:(cities[0]||"");
  el("fCity").dispatchEvent(new Event("raafat-select-sync"));
+ renderAdminStreets();
 }
 function renderFilters(){
  renderCityOptions();
+ renderStreetFilterOptions();
  const selectedSize=el("sizeFilter").value;
  const dims=[...new Map(state.sites.map(s=>[sizeKey(s),s])).entries()]
    .sort((a,b)=>(Number(a[1].width_m)*Number(a[1].height_m))-(Number(b[1].width_m)*Number(b[1].height_m)));
@@ -744,6 +783,7 @@ function renderCityChips(){
    el("governorateFilter").value=wasActive?"":btn.dataset.governorate;
    renderCityOptions();
    el("cityFilter").value=wasActive?"":btn.dataset.city;
+   renderStreetFilterOptions();
    render();
    zoomAll();
  }));
@@ -780,9 +820,25 @@ function render(){
  el("cityCount").textContent=Object.values(REGIONS).flat().length;
  el("showingCount").textContent=sites.length+" قطعة";
  el("mapCount").textContent=sites.length;
+ const streetId=el("streetFilter").value,targetWrap=el("streetTargetsWrap");
+ targetWrap.hidden=!streetId;
+ if(streetId){
+  const st=state.streets.find(x=>x.id===streetId);
+  el("streetTargetsCount").textContent=(st?.name||"")+" • "+sites.length+" نقطة";
+  el("streetTargets").innerHTML=sites.length?sites.map(s=>
+   '<button type="button" data-street-jump="'+escapeHtml(s.id)+'" aria-pressed="'+String(s.id===state.selected)+'">'+
+   '<strong>'+escapeHtml(s.code)+'</strong><small>'+escapeHtml(s.area||s.landmark||s.city)+'</small>'+
+   '<small>'+escapeHtml(statuses[s.status]||s.status)+'</small></button>').join("")
+   :'<p class="admin-note">ماكو قطع مطابقة على هذا الشارع ضمن الفلاتر الحالية.</p>';
+  el("streetTargets").querySelectorAll("[data-street-jump]").forEach(btn=>btn.addEventListener("click",()=>{
+   selectSite(btn.dataset.streetJump);
+   if(window.matchMedia("(max-width:850px)").matches)
+    window.setTimeout(()=>el("siteDetails").scrollIntoView({behavior:"smooth",block:"start"}),150);
+  }));
+ }
  el("listing").innerHTML=sites.length ? sites.map(s=>
   '<button type="button" class="location-card '+(state.selected===s.id?'active':'')+'" data-site="'+escapeHtml(s.id)+'">'+
-   '<div class="card-row"><strong>'+escapeHtml(s.name)+'</strong>'+badge(s)+'</div>'+
+   '<div class="card-row"><strong>'+escapeHtml(streetName(s)||s.city)+'</strong>'+badge(s)+'</div>'+
    '<small><span class="listing-category-tag category-'+(packageForSite(s)||"custom")+'">'+(packageForSite(s)?"فئة "+packageForSite(s):"قياس خاص")+'</span> '+escapeHtml(s.code)+' • '+escapeHtml(s.governorate||"صلاح الدين")+' / '+escapeHtml(s.city)+(s.published?'':' <span class="draft">• مسودة غير منشورة</span>')+'</small>'+
    '<div class="card-meta"><span class="raafat-number">'+format(s.width_m)+' × '+format(s.height_m)+' m</span><span>'+escapeHtml(types[s.type]||s.type)+'</span><span>'+escapeHtml(s.area||s.landmark||"")+'</span></div>'+
    (position?'<small class="listing-straight-distance">≈ '+format(straightLineMeters(s,position)/1000)+' كم بخط مستقيم</small>':'')+
@@ -837,7 +893,7 @@ function renderMarkers(sites){
    });
    // Mobile has a dedicated details panel; tooltips cover nearby map pins on touch.
    if(!window.matchMedia("(max-width:850px)").matches){
-     marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(s.name),{direction:"top"});
+     marker.bindTooltip(escapeHtml(s.code)+" — "+escapeHtml(siteAddressLabel(s)),{direction:"top"});
    }
    if(compactMap&&(highlighted||bookingSelected)){
      marker.addTo(state.map);
@@ -895,7 +951,7 @@ function updateMapSiteCTA(){
  const label=el("mapSiteStatus");
  label.textContent="• "+(statuses[site.status]||site.status);
  label.className="vip-site-state "+(statuses[site.status]?site.status:"available");
- el("mapSiteTitle").textContent=site.code+" · "+site.name;
+ el("mapSiteTitle").textContent=site.code+" · "+siteAddressLabel(site);
  card.hidden=false;
  updateVipDirectLink();
 }
@@ -1000,21 +1056,17 @@ async function renderDetail(){
       '<button class="photo-thumb '+(state.galleryIndex===i?'active':'')+'" type="button" data-photo-index="'+i+'" aria-label="عرض صورة رقم '+(i+1)+'"><img src="'+escapeHtml(u)+'" loading="lazy" alt="صورة '+(i+1)+'"></button>'
    ).join("")+'</div>':"";
  const metaRows=[
-   ["رقم القطعة",site.code],["المحافظة",site.governorate||"صلاح الدين"],
-   ["المدينة / القضاء",site.city],["المنطقة / الحي",site.area||"—"],
-   ["الشارع",site.street||"—"],["أقرب معلم",site.landmark||"—"],
-   ["نوع الإعلان",types[site.type]||site.type],
-   ["العرض",format(site.width_m)+" m"],["الارتفاع",format(site.height_m)+" m"],
-   ["المساحة الإعلانية",format(site.width_m*site.height_m)+" m²"],
-   ["عدد الأوجه",site.faces],["الإنارة",site.lighting?"مضاءة":"غير مضاءة"],
-   ["اتجاه مواجهة الإعلان",site.facing||"—"],["الخامة / المادة",site.material||"—"]
+   ["الإنارة",site.lighting?"مضاءة":"غير مضاءة"],
+   ["الخامة / المادة",site.material||"—"],
+   ["اتجاه مواجهة الإعلان",site.facing||"—"],
+   ["أقرب معلم",site.landmark||"—"]
  ];
  const category=packageForSite(site)||"custom";
  const dims=format(site.width_m)+" × "+format(site.height_m);
  const statusText=statuses[site.status]||site.status;
  const areaText=[site.governorate||"صلاح الدين",site.city,site.area].filter(Boolean).join(" • ");
  const safeCode=escapeHtml(site.code);
- const safeName=escapeHtml(site.name);
+ const safeName=escapeHtml(streetName(site)||site.city);
  const safeArea=escapeHtml(areaText);
  const safeType=escapeHtml(types[site.type]||site.type);
  const photoHero=photosAvailable.length
@@ -1031,7 +1083,7 @@ async function renderDetail(){
     (thumbnails?'<div class="vip-site-gallery">'+thumbnails+'</div>':'')+
     '<div class="vip-site-overview">'+
       '<div class="vip-site-status-row"><span class="detail-category-tag category-'+category+'">'+(category==="custom"?"قياس خاص":"فئة "+category)+'</span>'+badge(site)+(site.published?'':'<span class="draft">غير منشورة</span>')+'</div>'+
-      '<div class="vip-site-intro"><span class="vip-section-eyebrow">ADVERTISING LOCATION</span><h4>'+safeName+'</h4><p>'+safeArea+'</p></div>'+
+
       '<div class="vip-site-metric-grid">'+
         '<div class="vip-site-metric"><small>قياس اللوحة</small><strong class="raafat-number" dir="ltr">'+dims+' <em>m</em></strong></div>'+
         '<div class="vip-site-metric"><small>المساحة</small><strong class="raafat-number" dir="ltr">'+format(site.width_m*site.height_m)+' <em>m²</em></strong></div>'+
@@ -1044,9 +1096,9 @@ async function renderDetail(){
           (whatsapp?'<a class="btn btn-ghost" href="'+whatsapp+'" target="_blank" rel="noopener noreferrer">'+raafatIcon("message")+'<span>استفسار واتساب</span></a>':
           '<button type="button" class="btn btn-ghost" id="copyInquiry">'+raafatIcon("copy")+'<span>نسخ للاستفسار</span></button>')+'</div>'+
       '</div>'+
-      '<details class="vip-site-specification"><summary><span><b>المواصفات الكاملة</b><small>العنوان والأبعاد والتجهيزات</small></span><span class="vip-spec-arrow" aria-hidden="true"><svg class="vip-spec-chevron-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>'+
-        '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong '+(['العرض','الارتفاع','المساحة الإعلانية','عدد الأوجه'].includes(label)?'class="raafat-number" dir="ltr"':'')+'>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
-      '</details>'+
+      '<section class="vip-site-specification" aria-label="تجهيزات القطعة"><div class="raafat-spec-visible-heading">التجهيزات والمواصفات</div>'+
+        '<div class="vip-site-spec-grid">'+metaRows.map(([label,val])=>'<div class="vip-site-spec-cell"><small>'+escapeHtml(label)+'</small><strong>'+escapeHtml(val)+'</strong></div>').join("")+'</div>'+
+      '</section>'+
       (site.description?'<div class="vip-site-description"><span class="vip-section-eyebrow">ABOUT THE LOCATION</span><strong>وصف الموقع</strong><p>'+escapeHtml(site.description)+'</p></div>':"")+
       '<div class="vip-site-secondary-actions"><button type="button" class="btn btn-ghost vip-copy-link" id="copySiteLink">'+raafatIcon("copy")+'<span>نسخ رابط القطعة</span></button>'+
       '<button type="button" class="btn btn-ghost vip-direct-route-button" id="vipDirectRoute" title="خط مستقيم تقريبي وليس مسار قيادة">'+raafatIcon("direct")+'<span>خط مباشر من موقعي</span></button></div>'+
@@ -1235,14 +1287,13 @@ function openEditor(site=null){
  el("fPackageClass").value=originalClass;
  el("fStatus").disabled=state.staffRole!=="admin";
  el("fPublished").disabled=state.staffRole!=="admin";
- el("fName").value=get("name");
  el("fGovernorate").value=get("governorate","صلاح الدين");
  renderAdminCities(get("city"));
- el("fStreet").value=get("street");
  el("fLandmark").value=get("landmark");
  el("fFacing").value=get("facing");
  el("fMaterial").value=get("material","فلكس");
  el("fArea").value=get("area");
+ renderAdminStreets(get("street_id",""));
  el("fType").value=get("type","sidewalk");
  el("fStatus").value=get("status","available");
  el("fWidth").value=get("width_m");
@@ -1297,11 +1348,16 @@ function sitePayload(){
  const rawCode=el("fCode").value.trim();
  const effectiveClass=requestedClass;
  const code=/^\d+$/.test(rawCode)?(effectiveClass||"X")+"-"+rawCode:rawCode;
- const name=el("fName").value.trim();
+ const street_id=el("fStreetId").value;
+ const registeredStreet=state.streets.find(st=>st.id===street_id);
  const governorate=el("fGovernorate").value;
  const city=el("fCity").value.trim();
  const area=el("fArea").value.trim();
- const street=el("fStreet").value.trim();
+ if(!registeredStreet||registeredStreet.governorate!==governorate||registeredStreet.city!==city)
+  throw Error("اختر شارعاً مسجلاً بنفس المحافظة والمدينة.");
+ if(!area)throw Error("اكتب اسم الحي أولاً.");
+ const street=registeredStreet.name;
+ const name=[street,area].join(" — ").slice(0,140);
  const landmark=el("fLandmark").value.trim();
  const facing=el("fFacing").value.trim();
  const material=el("fMaterial").value.trim();
@@ -1317,7 +1373,7 @@ function sitePayload(){
  if(!Number.isFinite(width_m)||width_m<=0||width_m>1000||!Number.isFinite(height_m)||height_m<=0||height_m>1000)throw Error("القياس يجب أن يكون أكبر من صفر وأقل من 1000 متر.");
  if(!Number.isInteger(faces)||faces<1||faces>8)throw Error("عدد الأوجه من 1 إلى 8.");
  return {
-   code,name,governorate,city,area,street,landmark,facing,material,description,
+   code,name,governorate,city,area,street,street_id,landmark,facing,material,description,
    package_class:requestedClass,
    type:el("fType").value,status:el("fStatus").value,
    width_m,height_m,faces,lighting:el("fLighting").value==="true",
