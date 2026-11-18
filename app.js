@@ -83,7 +83,7 @@ function previewSelectedPhotos(){
  if(selected.length>12||invalid){
    input.value="";
    el("photoInfo").textContent="اختر حتى 12 صورة JPG أو PNG أو WebP؛ تُضغط تلقائياً إلى 200 KB قبل الرفع (حتى 25 MB للصورة الأصلية).";
-   toast(selected.length>12?"الحد الأقصى 12 صورة في المرة الواحدة.":"الصورة "+(invalid?.name||"")+" غير مدعومة أو تتجاوز 5 ميغابايت.");
+   toast(selected.length>12?"الحد الأقصى 12 صورة في المرة الواحدة.":"الصورة "+(invalid?.name||"")+" غير مدعومة أو تتجاوز 25 ميغابايت.");
    return;
  }
  const previews=el("photoPreviews");
