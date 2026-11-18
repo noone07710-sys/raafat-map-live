@@ -62,6 +62,38 @@
     .raafat-photo-compression-card .admin-note{line-height:1.8}
     .raafat-photo-compression-card #dashCompressOldPhotos{margin:10px 0;white-space:normal}
     .raafat-photo-compression-card .raafat-compress-status{margin:7px 0 0}
+
+    /* Street directory, context filter, and exact map destination choices. */
+    .raafat-street-targets{margin:10px 0 14px;padding:13px;border:1px solid rgba(192,213,201,.25);border-radius:14px;background:rgba(25,66,60,.32)}
+    .raafat-street-targets-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:12px}
+    .raafat-street-targets-head small{font-size:11px;opacity:.75}
+    .raafat-street-targets-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px}
+    .raafat-street-targets-grid button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;padding:10px;text-align:right;color:inherit;font:inherit;background:rgba(95,137,117,.12);border:1px solid rgba(177,204,184,.25);border-radius:10px;cursor:pointer}
+    .raafat-street-targets-grid button strong{font-size:12px;direction:ltr;unicode-bidi:isolate}
+    .raafat-street-targets-grid button small{font-size:10px;opacity:.82}
+    .raafat-street-targets-grid button[aria-pressed="true"]{border-color:#c7a777;background:rgba(199,167,119,.19)}
+    .raafat-street-targets-grid button:hover{border-color:#c7a777}
+    .raafat-street-form{display:grid;grid-template-columns:140px minmax(0,1fr);gap:9px 12px;align-items:center}
+    .raafat-street-form label{font-weight:650;font-size:12px}
+    .raafat-street-form-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+    .raafat-street-form #dashStreetMessage{grid-column:1/-1;margin:0}
+    .raafat-street-admin{margin-bottom:14px}
+    .raafat-street-admin h4{margin:0 0 10px}
+    .raafat-street-directory{margin-top:15px}
+    .raafat-street-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 6px;border-top:1px solid rgba(150,166,155,.2)}
+    .raafat-street-row>div:first-child{min-width:0;display:flex;flex-direction:column;gap:4px}
+    .raafat-street-row strong{font-size:13px}
+    .raafat-street-row small{font-size:11px;opacity:.76}
+    .raafat-street-row-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .raafat-street-row-actions button{color:inherit;background:transparent;border:1px solid rgba(157,176,164,.4);border-radius:9px;padding:7px 10px;font:inherit;font-size:11px;cursor:pointer}
+    .raafat-street-link-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:7px;margin:11px 0;max-height:350px;overflow-y:auto}
+    .raafat-street-link-list label{display:flex;gap:8px;align-items:center;padding:9px;border:1px solid rgba(160,182,167,.28);border-radius:10px;font-size:12px}
+    .raafat-add-street-shortcut{display:inline-flex;margin-top:9px;padding:7px 9px;border:1px solid rgba(174,190,172,.35);background:transparent;color:inherit;border-radius:8px;font:inherit;font-size:11px;cursor:pointer}
+    .vip-site-specification .raafat-spec-visible-heading{padding:13px 15px;font-size:12px;font-weight:800}
+    html[data-raafat-theme="day"] .raafat-street-targets{background:#fcf8f1;border-color:#e2cdb5}
+    html[data-raafat-theme="day"] .raafat-street-targets-grid button{background:#fff;border-color:#dec5a7;color:#345345}
+    html[data-raafat-theme="day"] .raafat-street-targets-grid button[aria-pressed="true"]{background:#f8ecd9;border-color:#bc9059}
+    @media(max-width:650px){.raafat-street-form{grid-template-columns:1fr}.raafat-street-form-actions,.raafat-street-form #dashStreetMessage{grid-column:1}.raafat-street-targets-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
   <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script defer src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
@@ -110,6 +142,8 @@
       <select class="input" id="governorateFilter"><option value="">جميع المحافظات</option><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select>
       <label class="input-label" for="cityFilter">المدينة / القضاء</label>
       <select class="input" id="cityFilter"><option value="">جميع المدن</option></select>
+      <label class="input-label" for="streetFilter">اسم الشارع</label>
+      <select class="input" id="streetFilter"><option value="">جميع الشوارع</option></select>
       <label class="input-label" for="statusFilter">حالة القطعة</label>
       <select class="input" id="statusFilter">
         <option value="">جميع الحالات</option><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option>
@@ -128,6 +162,10 @@
         <button id="showAvailableOnly" class="listing-quick-button" type="button" aria-pressed="false"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"/></svg><span>المتاحة فقط</span></button>
         <button id="sortByNearest" class="listing-quick-button" type="button" aria-pressed="false" title="الترتيب حسب المسافة المباشرة وليس مسافة القيادة"><svg class="raafat-ui-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg><span>الأقرب إليّ</span></button>
       </div>
+      <section id="streetTargetsWrap" class="raafat-street-targets" aria-label="اختيار نقطة إعلانية على الشارع" hidden>
+        <div class="raafat-street-targets-head"><strong>اختر نقطة على هذا الشارع</strong><small id="streetTargetsCount"></small></div>
+        <div id="streetTargets" class="raafat-street-targets-grid"></div>
+      </section>
       <div id="listing" class="listing" aria-live="polite"><div class="empty">جاري تحميل المواقع...</div></div>
     </aside>
     <section class="map-area" aria-label="خريطة القطع الإعلانية">
@@ -222,6 +260,7 @@
       <nav class="admin-dashboard-tabs" aria-label="أقسام لوحة التحكم">
         <button type="button" data-dash-tab="overview" aria-selected="true" class="active"><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg><span class="raafat-nav-label">الرئيسية</span></button>
         <button type="button" data-dash-tab="inventory" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 10h18M9 10v10M14 14h4M14 17h4"/></svg><span class="raafat-nav-label">المواقع والقطع</span></button>
+        <button type="button" data-dash-tab="streets" id="dashStreetsTab" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5m0 8 4-3 4 3 4-3 4 3M8 5h12M8 19h12"/></svg><span class="raafat-nav-label">دليل الشوارع</span></button>
         <button type="button" data-dash-tab="bookings" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3v3M15 3v3M5 10h14m-10 4h6m-6 3h4"/></svg><span class="raafat-nav-label">طلبات الحجوزات</span><span id="dashBookingBadge" class="booking-notice-badge"></span></button>
         <button type="button" data-dash-tab="activity" id="dashActivityTab" aria-selected="false" class=""><svg class="raafat-admin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5m4-2v5l4 2"/></svg><span class="raafat-nav-label">سجل العمليات</span></button>
         <div class="raafat-sidebar-nav-title sub">إدارة النظام</div>
@@ -298,7 +337,7 @@
        <section class="admin-tab-panel" data-dash-panel="inventory" hidden>
          <div class="admin-section-heading"><div><h3>إدارة المخزون الإعلاني</h3><p>بحث وتحديث حالة المواقع ونشرها ونسخها</p></div></div>
          <div class="admin-inventory-tools">
-           <input id="dashInventorySearch" class="input" autocomplete="off" placeholder="بحث بالرمز أو الاسم أو المدينة">
+           <input id="dashInventorySearch" class="input" autocomplete="off" placeholder="بحث بالرمز أو الحي أو الشارع">
            <select id="dashInventoryStatus" class="input" aria-label="تصفية حسب الحالة">
              <option value="">كل الحالات</option><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option>
            </select>
@@ -315,10 +354,36 @@
            <button type="button" id="dashBulkHide">إخفاء المحدد</button>
          </div>
          <div class="admin-table-scroll"><table class="admin-data-table">
-           <thead><tr><th>اختيار</th><th>رمز القطعة</th><th>الموقع</th><th>القياس</th><th>الحالة</th><th>النشر</th><th>الإجراءات</th></tr></thead>
+           <thead><tr><th>اختيار</th><th>رمز القطعة</th><th>الحي والشارع</th><th>القياس</th><th>الحالة</th><th>النشر</th><th>الإجراءات</th></tr></thead>
            <tbody id="dashInventoryRows"></tbody>
          </table></div>
          <p id="dashInventoryCount" class="admin-note"></p>
+       </section>
+       <section class="admin-tab-panel" data-dash-panel="streets" hidden>
+         <div class="admin-section-heading"><div><h3>دليل الشوارع الإعلانية</h3><p>احفظ أسماء الشوارع حسب المحافظة والمدينة، واربط القطع القديمة والجديدة بالشارع الصحيح.</p></div></div>
+         <div class="admin-widget raafat-street-admin">
+           <form id="dashStreetForm" class="raafat-street-form" novalidate>
+             <input id="dashStreetEditId" type="hidden">
+             <label for="dashStreetGov">المحافظة</label>
+             <select class="input" id="dashStreetGov" required><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select>
+             <label for="dashStreetCity">المدينة / القضاء</label>
+             <select class="input" id="dashStreetCity" required></select>
+             <label for="dashStreetName">اسم الشارع</label>
+             <input class="input" id="dashStreetName" maxlength="140" required autocomplete="off" placeholder="مثال: شارع الأربعين">
+             <div class="raafat-street-form-actions"><button class="btn btn-primary" id="dashStreetSave" type="submit">حفظ الشارع</button><button class="btn btn-ghost" id="dashStreetCancelEdit" type="button" hidden>إلغاء التعديل</button></div>
+             <p id="dashStreetMessage" role="status" class="admin-note"></p>
+           </form>
+           <div class="raafat-street-directory"><h4>الشوارع المحفوظة</h4><div id="dashStreetsRows"></div></div>
+         </div>
+         <div class="admin-widget raafat-street-admin">
+           <h4>ربط القطع الموجودة بشارع</h4>
+           <p class="admin-note">اختَر الشارع، ثم حدّد القطع المطلوب نقلها إليه. يعرض النظام القطع من نفس المحافظة والمدينة فقط، ولا يغير القياسات أو الأسعار أو الإحداثيات.</p>
+           <label for="dashAssignStreet">الشارع الهدف</label>
+           <select class="input" id="dashAssignStreet"><option value="">اختر شارعاً أولاً</option></select>
+           <div id="dashStreetLinkList" class="raafat-street-link-list"></div>
+           <button type="button" class="btn btn-primary" id="dashLinkStreetSites">ربط القطع المحددة</button>
+           <p id="dashStreetLinkMessage" class="admin-note" role="status"></p>
+         </div>
        </section>
        <section class="admin-tab-panel" data-dash-panel="bookings" hidden>
  <div class="admin-section-heading"><div><h3>طلبات الحجز</h3><p>راجع الطلبات الجديدة، اعتمد الحجز، وراقب حالته ورقمه المختصر.</p></div><button type="button" class="admin-link" id="dashBookingRefresh">تحديث الطلبات</button></div>
@@ -455,11 +520,10 @@
     <div class="form-grid">
       <div class="span2 raafat-package-picker"><div class="raafat-package-picker-heading"><strong>فئة القطعة الإعلانية</strong><small>اختار الفئة ويظهر قياسها تلقائياً — E للقياس الخاص فقط</small></div><div class="raafat-package-card-grid" role="group" aria-label="اختر فئة القطعة"><button type="button" class="raafat-package-card is-active" data-raafat-package="A" aria-pressed="true"><span class="raafat-package-symbol">A</span><strong>فئة A</strong><small class="raafat-number" dir="ltr">1.2 × 2 m</small></button><button type="button" class="raafat-package-card" data-raafat-package="B" aria-pressed="false"><span class="raafat-package-symbol">B</span><strong>فئة B</strong><small class="raafat-number" dir="ltr">2 × 3 m</small></button><button type="button" class="raafat-package-card" data-raafat-package="C" aria-pressed="false"><span class="raafat-package-symbol">C</span><strong>فئة C</strong><small class="raafat-number" dir="ltr">2.5 × 3.5 m</small></button><button type="button" class="raafat-package-card" data-raafat-package="D" aria-pressed="false"><span class="raafat-package-symbol">D</span><strong>فئة D</strong><small class="raafat-number" dir="ltr">3 × 4 m</small></button><button type="button" class="raafat-package-card" data-raafat-package="E" aria-pressed="false"><span class="raafat-package-symbol">E</span><strong>فئة E</strong><small>قياس مخصص</small></button></div><select class="input" id="fPackageClass" aria-label="الفئة المختارة"><option value="A">A • 1.2 × 2 m</option><option value="B">B • 2 × 3 m</option><option value="C">C • 2.5 × 3.5 m</option><option value="D">D • 3 × 4 m</option><option value="E">E • أسطح / قياس خاص</option></select><div class="raafat-package-size-summary" id="fPackageSizeSummary" aria-live="polite"><span>قياس الفئة A</span><strong class="raafat-number" dir="ltr">1.2 × 2 m</strong><small>محسوب تلقائياً — ما يحتاج إدخال</small></div><div class="hint small-hint" id="fPackageHint">اختر الفئة؛ القياسات القياسية ثابتة تلقائياً.</div></div>
       <div><label for="fCode">رمز القطعة *</label><input class="input" id="fCode" required maxlength="40" placeholder="TK-0001"></div>
-      <div><label for="fName">اسم الموقع *</label><input class="input" id="fName" required maxlength="140" placeholder="شارع رئيسي — تقاطع..."></div>
       <div><label for="fGovernorate">المحافظة *</label><select class="input" id="fGovernorate" required><option value="صلاح الدين">صلاح الدين</option><option value="كركوك">كركوك</option></select></div>
       <div><label for="fCity">المدينة / القضاء *</label><select class="input" id="fCity" required></select></div>
-      <div><label for="fArea">المنطقة / الحي</label><input class="input" id="fArea" maxlength="160" placeholder="اسم المنطقة أو الحي"></div>
-      <div><label for="fStreet">الشارع</label><input class="input" id="fStreet" maxlength="200" placeholder="اسم الشارع"></div>
+      <div><label for="fArea">اسم الحي *</label><input class="input" id="fArea" required maxlength="160" placeholder="مثال: حي الأربعين"></div>
+      <div><label for="fStreetId">اسم الشارع *</label><select class="input" id="fStreetId" required><option value="">اختر الشارع المحفوظ</option></select><div id="fStreetHint" class="hint small-hint">الأسماء تُدار من دليل الشوارع.</div><button id="addStreetFromEditor" class="raafat-add-street-shortcut" type="button">إضافة شارع جديد من لوحة الإدارة</button></div>
       <div><label for="fLandmark">أقرب معلم معروف</label><input class="input" id="fLandmark" maxlength="200" placeholder="قرب تقاطع / مستشفى / جسر"></div>
       <div><label for="fType">نوع الإعلان</label><select class="input" id="fType"><option value="billboard">بيلبورد</option><option value="unipole">يوني بول</option><option value="led">شاشة LED</option><option value="bridge">إعلان جسر</option><option value="wall">جدارية</option><option value="building">إعلان على بناية</option><option value="sidewalk" selected>لوحة رصيف</option><option value="other">أخرى</option></select></div>
       <div><label for="fStatus">الحالة</label><select class="input" id="fStatus"><option value="available">متاحة</option><option value="reserved">محجوزة</option><option value="booked">مؤجرة</option><option value="maintenance">صيانة</option></select></div>
