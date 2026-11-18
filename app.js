@@ -271,6 +271,8 @@ function addPersistentCityLabels(){
      el("governorateFilter").value=governorate;
      renderCityOptions();
      el("cityFilter").value=city;
+     renderStreetFilterOptions();
+     for(const id of ["governorateFilter","cityFilter"])el(id).dispatchEvent(new Event("raafat-select-sync"));
      state.selected=null;
      render();
      zoomAll();
@@ -690,6 +692,7 @@ function renderStreetFilterOptions(){
  select.innerHTML='<option value="">جميع الشوارع</option>'+streets.map(st=>
    '<option value="'+escapeHtml(st.id)+'">'+escapeHtml(st.name)+' ('+state.sites.filter(s=>s.street_id===st.id).length+')</option>').join("");
  select.value=streets.some(st=>st.id===selected)?selected:"";
+ select.dispatchEvent(new Event("raafat-select-sync"));
 }
 function renderAdminStreets(selectedId=""){
  const select=el("fStreetId"),gov=el("fGovernorate").value,city=el("fCity").value;
@@ -745,6 +748,7 @@ function renderCityOptions(){
  el("cityFilter").innerHTML='<option value="">جميع المدن</option>'+
    cities.map(c=>'<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>').join("");
  el("cityFilter").value=cities.includes(current)?current:"";
+ el("cityFilter").dispatchEvent(new Event("raafat-select-sync"));
 }
 function renderAdminCities(selectedCity=""){
  const gov=el("fGovernorate").value;
@@ -763,6 +767,7 @@ function renderFilters(){
  el("sizeFilter").innerHTML='<option value="">جميع القياسات</option>'+
    dims.map(([key,s])=>'<option value="'+escapeHtml(key)+'">'+format(s.width_m)+' × '+format(s.height_m)+' m</option>').join("");
  el("sizeFilter").value=dims.some(([key])=>key===selectedSize)?selectedSize:"";
+ el("sizeFilter").dispatchEvent(new Event("raafat-select-sync"));
 }
 function renderCityChips(){
  const active=el("cityFilter").value,activeGov=el("governorateFilter").value;
@@ -783,6 +788,7 @@ function renderCityChips(){
    el("governorateFilter").value=wasActive?"":btn.dataset.governorate;
    renderCityOptions();
    el("cityFilter").value=wasActive?"":btn.dataset.city;
+   for(const id of ["governorateFilter","cityFilter"])el(id).dispatchEvent(new Event("raafat-select-sync"));
    renderStreetFilterOptions();
    render();
    zoomAll();
@@ -1594,6 +1600,7 @@ function events(){
  el("showAvailableOnly")?.addEventListener("click",()=>{
    const filter=el("statusFilter");
    filter.value=filter.value==="available"?"":"available";
+   filter.dispatchEvent(new Event("raafat-select-sync"));
    render();zoomAll();
  });
  el("sortByNearest")?.addEventListener("click",()=>{
@@ -1612,6 +1619,7 @@ function events(){
    state.selected=null;
    for(const id of ["search","governorateFilter","cityFilter","streetFilter","statusFilter","typeFilter","sizeFilter"]){
      el(id).value="";
+     el(id).dispatchEvent(new Event("raafat-select-sync"));
    }
    renderCityOptions();renderStreetFilterOptions();render();
    if(state.map){
@@ -1657,7 +1665,9 @@ function events(){
   adminDashboard?.openStreets();
  });
  el("clearFilters").addEventListener("click",()=>{
-  for(const id of ["search","governorateFilter","cityFilter","streetFilter","statusFilter","typeFilter","sizeFilter"])el(id).value="";
+  for(const id of ["search","governorateFilter","cityFilter","streetFilter","statusFilter","typeFilter","sizeFilter"]){
+   el(id).value="";el(id).dispatchEvent(new Event("raafat-select-sync"));
+  }
   renderCityOptions();renderStreetFilterOptions();render();zoomAll();
  });
  el("newSite").addEventListener("click",()=>openEditor());
