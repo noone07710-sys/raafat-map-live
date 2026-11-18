@@ -11,6 +11,7 @@ const PACKAGES = Object.freeze({
 const REGIONS={"صلاح الدين":["تكريت","بيجي","الدور","سامراء","الشرقاط","العلم","بلد","مناطق أخرى في صلاح الدين"],"كركوك":["كركوك","الحويجة","داقوق","الدبس","مناطق أخرى في كركوك"]};
 const $=id=>document.getElementById(id);
 const safe=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const boardAddress=s=>[s.street,s.area].filter(Boolean).join(" • ")||s.city||s.code;
 export function packageForSite(site){
  if(!site)return null;
  if(site.package_class==="E")return "E";
@@ -40,7 +41,7 @@ export function setupBookings({db,getState,toast}){
  function writeSites(){
    const options=inventory().filter(s=>available(s)&&s.governorate===countries.value&&s.city===cities.value&&packageForSite(s)===category.value);
    sites.innerHTML='<option value="">+ أضف قطعة من هذه المدينة</option>'+options.map(s=>
-     '<option value="'+safe(s.id)+'" '+(chosen.has(s.id)?"disabled":"")+'>'+safe(s.code+" — "+s.name)+(chosen.has(s.id)?" ✓":"")+'</option>').join("");
+     '<option value="'+safe(s.id)+'" '+(chosen.has(s.id)?"disabled":"")+'>'+safe(s.code+" — "+boardAddress(s))+(chosen.has(s.id)?" ✓":"")+'</option>').join("");
  }
  function renderCards(){
    $("bookingPackageCards").innerHTML=Object.entries(PACKAGES).map(([key,p])=>
@@ -93,7 +94,7 @@ export function setupBookings({db,getState,toast}){
    const arr=picked();
    $("bookingSelectedSites").innerHTML=arr.length?arr.map(s=>
      '<div class="booking-site-chip"><span class="booking-site-chip-code">'+safe(s.code)+'</span>'+
-     '<div class="booking-site-chip-info"><strong>'+safe(s.name)+'</strong><small>'+safe(s.governorate)+' / '+safe(s.city)+' • '+safe(s.area||"")+'</small></div>'+
+     '<div class="booking-site-chip-info"><strong>'+safe(boardAddress(s))+'</strong><small>'+safe(s.governorate)+' / '+safe(s.city)+' • '+safe(s.area||"")+'</small></div>'+
      '<button type="button" data-remove-booking-site="'+safe(s.id)+'" aria-label="إزالة القطعة '+safe(s.code)+'">×</button></div>').join("")
      :'<div class="booking-no-sites">لم تحدد أي قطعة بعد • بإمكانك إرسال طلب عام ويختار الفريق المواقع المناسبة لك.</div>';
    $("bookingSelectedCount").textContent=arr.length+" قطعة محددة";
@@ -174,7 +175,7 @@ export function setupBookings({db,getState,toast}){
   function trackUrl(token){return location.origin+location.pathname+"#booking="+encodeURIComponent(token);}
  function whatsappLink(result,payload,selected){
    const phone=String(getState().siteSettings?.whatsapp_number||window.RAAFAT_CONFIG?.whatsappNumber||"").replace(/\D/g,"");
-   const details=selected.length?selected.map((s,i)=>(i+1)+". "+s.code+" — "+s.name+" ("+s.governorate+" / "+s.city+")").join("\n"):"طلب عام بدون قطع محددة";
+   const details=selected.length?selected.map((s,i)=>(i+1)+". "+s.code+" — "+boardAddress(s)+" ("+s.governorate+" / "+s.city+")").join("\n"):"طلب عام بدون قطع محددة";
    const text="طلب حجز إعلاني - شركة رأفت\nرقم الطلب: "+result.reference+
      "\nالزبون: "+payload.p_customer_name+"\nالهاتف: "+payload.p_phone+"\nالجهة: "+payload.p_company_name+
      "\nالمحافظة: "+payload.p_governorate+" / "+payload.p_city+
@@ -225,7 +226,7 @@ export function setupBookings({db,getState,toast}){
        '<p>'+safe(row.governorate)+" / "+safe(row.city)+'</p>'+
        '<p>الفئة: '+safe(row.category)+' • المدة: '+safe(row.duration_months||"بعد الكشف")+'</p>'+
        '<p>القطع المختارة: '+requested.length+'</p>'+
-       requested.map(s=>'<p>'+safe(s.code)+' • '+safe(s.name)+' — '+safe(s.governorate)+' / '+safe(s.city)+'</p>').join("")+
+       requested.map(s=>'<p>'+safe(s.code)+' • '+safe(boardAddress(s))+' — '+safe(s.governorate)+' / '+safe(s.city)+'</p>').join("")+
        (row.category==='E'&&row.requested_area_m2?'<p>المساحة: '+safe(row.requested_area_m2)+' م²</p>':'')+
        '<p>الإجمالي: '+(row.quoted_price_usd?money(row.quoted_price_usd):"بعد الكشف")+'</p>':
        '<p>رابط المتابعة غير صالح أو غير متاح.</p>';
