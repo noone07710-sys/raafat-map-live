@@ -217,7 +217,7 @@ export function createAdminDashboard({db,getState,toast,openEditor,deleteSite,lo
   }
   async function saveStreet(event){
     event.preventDefault();if(!isAdmin())return;
-    const id=$("dashStreetEditId").value,name=$("dashStreetName").value.trim().replace(/\\s+/g," ");
+    const id=$("dashStreetEditId").value,name=$("dashStreetName").value.trim().replace(/\s+/g," ");
     const governorate=$("dashStreetGov").value,city=$("dashStreetCity").value;
     if(name.length<2||name.length>140||!(regions[governorate]||[]).includes(city)){
       $("dashStreetMessage").textContent="راجع اسم الشارع والمحافظة والمدينة.";return;
