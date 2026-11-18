@@ -1774,6 +1774,7 @@ async function main(){
  initializeCatalogLayout();
  initializeMap();events();
  enhanceAdminSelects(el("siteModal"));
+ enhanceAdminSelects(document.querySelector(".browse"));
  if(state.map){
    try{
      navigationController=createRaafatNavigation({
